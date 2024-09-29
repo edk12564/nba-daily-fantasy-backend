@@ -1,0 +1,6 @@
+
+config - contains spring configuration object
+repository - contains spring jpa repositories and database queries
+services - makes the repository calls and contains the core business logic
+controllers - contains the rest endpoint configuration and input validation. makes calls to services
+models - contains database models
