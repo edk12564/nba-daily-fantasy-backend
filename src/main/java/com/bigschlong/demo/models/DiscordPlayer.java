@@ -24,9 +24,10 @@ public class DiscordPlayer {
 //    private String name;
     
     // Join Table for NbaPlayer entity using the DailyRoster entity as the join table
-    @OneToMany(mappedBy = "discordPlayerId")
-    private Set<DailyRoster> dailyRosterEntries;
-    
-    @OneToMany(mappedBy = "discordPlayerId")
-    private Set<DiscordPlayerServer> discordPlayerServer;
+    // This might be a problem because Hibernate might automatically fetch this while run when joining and create a fetch loop with DailyRoster object.
+//    @OneToMany(mappedBy = "discordPlayerId", fetch = FetchType.LAZY)
+//    private Set<DailyRoster> dailyRosterEntries;
+//
+//    @OneToMany(mappedBy = "discordPlayerId", fetch = FetchType.LAZY)
+//    private Set<DiscordPlayerServer> discordPlayerServer;
 }

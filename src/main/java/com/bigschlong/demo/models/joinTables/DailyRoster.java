@@ -24,13 +24,13 @@ public class DailyRoster {
 //    @EmbeddedId
 //    private DailyRosterId dailyRosterId;
     
-    @ManyToOne
-    @MapsId("discordPlayerUid")
-    @JoinColumn(name = "discord_player_uid", nullable = false)
-    private DiscordPlayer discordPlayerId;
+//    @ManyToOne
+//    @MapsId("discordPlayerUid")
+//    @JoinColumn(name = "discord_player_uid", nullable = false)
+//    private DiscordPlayer discordPlayerId;
     
-    @ManyToOne
-    @MapsId("nbaPlayerUid")
-    @JoinColumn(name = "nba_player_uid", nullable = false)
-    private NbaPlayer nbaPlayerId;
+//    @ManyToOne
+//    @MapsId("nbaPlayerUid")
+//    @JoinColumn(name = "nba_player_uid", nullable = false)
+//    private NbaPlayer nbaPlayerId;
 }
