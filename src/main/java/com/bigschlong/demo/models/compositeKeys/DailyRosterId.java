@@ -1,7 +1,6 @@
 package com.bigschlong.demo.models.compositeKeys;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.JoinColumn;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.Hibernate;
@@ -12,14 +11,14 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Embeddable
+//@Embeddable
 public class DailyRosterId implements java.io.Serializable {
     @Serial
     private static final long serialVersionUID = -1329777488309363465L;
-    @Column(name = "discord_player_uid")
+    @JoinColumn(name = "discord_player_uid")
     private UUID discordPlayerUid;
 
-    @Column(name = "nba_player_uid")
+    @JoinColumn(name = "nba_player_uid")
     private UUID nbaPlayerUid;
 
     @Override

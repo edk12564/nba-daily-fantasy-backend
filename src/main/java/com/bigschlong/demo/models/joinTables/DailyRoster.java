@@ -1,19 +1,28 @@
 package com.bigschlong.demo.models.joinTables;
 
-import com.bigschlong.demo.models.DiscordPlayer;
-import com.bigschlong.demo.models.NbaPlayer;
 import com.bigschlong.demo.models.compositeKeys.DailyRosterId;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+
+import java.util.UUID;
 
 @Getter
 @Setter
-@Entity
-@Table(name = "daily_roster")
+//@Entity
+//@Table(name = "daily_roster")
 public class DailyRoster {
-    @EmbeddedId
-    private DailyRosterId dailyRosterId;
+    @Id
+    private DailyRosterId id;
+    
+    private UUID discord_player_uid;
+    
+    private UUID nba_player_uid;
+    
+    
+    
+//    @EmbeddedId
+//    private DailyRosterId dailyRosterId;
     
     @ManyToOne
     @MapsId("discordPlayerUid")

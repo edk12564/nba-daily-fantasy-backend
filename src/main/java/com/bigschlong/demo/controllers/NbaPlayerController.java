@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ public class NbaPlayerController {
     @GetMapping(value = "/{id}", produces = "application/json")
     public Optional<NbaPlayer> getPlayer(@PathVariable String id) {
         var player =  nbaPlayerRepository.findById(UUID.fromString(id));
+        
 //        if(player.isPresent()) {
 //           player.get().setDollarValue(0);
 //           nbaPlayerRepository.save(player.get());
@@ -29,10 +31,11 @@ public class NbaPlayerController {
         return player;
     }
 
-//    @GetMapping(value = "/", produces = "application/json")
-//    public List<NbaPlayer> getPlayers() {
-////        return nbaPlayerRepository.findAllByAgainstTeamAndDollarValueLessThan();
-//    }
+    @GetMapping(value = "/", produces = "application/json")
+    public List<NbaPlayer> getPlayers() {
+//        return nbaPlayerRepository.findAllByAgainstTeamAndDollarValueLessThan();
+        return List.of();
+    }
 
 }
 

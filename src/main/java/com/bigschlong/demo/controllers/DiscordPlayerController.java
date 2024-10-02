@@ -1,14 +1,14 @@
 package com.bigschlong.demo.controllers;
 
-import com.bigschlong.demo.models.DiscordPlayer;
-import com.bigschlong.demo.repositories.DiscordPlayerRepository;
+import com.bigschlong.demo.models.NbaPlayer;
+import com.bigschlong.demo.services.DiscordPlayerServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -16,13 +16,11 @@ import java.util.UUID;
 public class DiscordPlayerController {
     
     @Autowired
-    DiscordPlayerRepository discordPlayerRepository;
+     DiscordPlayerServices services;
     
-    @GetMapping(value = "/{id}", produces = "application/json")
-    public Optional<DiscordPlayer> getPlayer(@PathVariable String id)
-    {
-        var player =  discordPlayerRepository.findById(UUID.fromString(id));
-        
-        return player;
+    
+    @GetMapping(value="/{id}/roster", produces = "application/json")
+    public List<NbaPlayer> getRosterByDiscordId(@PathVariable String id) {
+        return services.getRosterByDiscordId(UUID.fromString(id));
     }
 }

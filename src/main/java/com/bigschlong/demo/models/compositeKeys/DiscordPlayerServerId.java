@@ -1,7 +1,6 @@
 package com.bigschlong.demo.models.compositeKeys;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.Hibernate;
@@ -11,7 +10,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Embeddable
+//@Embeddable
 public class DiscordPlayerServerId implements java.io.Serializable {
     private static final long serialVersionUID = 920478969601310848L;
     @Column(name = "discord_player_uid")
