@@ -13,9 +13,12 @@ import java.util.UUID;
 @Service
 public class ServerServices {
     
-    @Autowired
-    private ServerRepository serverRepository;
-    
+    private final ServerRepository serverRepository;
+
+    public ServerServices(ServerRepository serverRepository) {
+        this.serverRepository = serverRepository;
+    }
+
     public List<DiscordPlayer> getDiscordPlayersByServerId(UUID discordId) {
         return serverRepository.getDiscordPlayersByServerId(discordId);
     }

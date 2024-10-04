@@ -1,15 +1,17 @@
 package com.bigschlong.demo.models;
 
-import jakarta.persistence.Id;
+
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
 
 @Getter
 @Setter
 //@Entity
-//@Table(name = "discord_players")
+@Table(name = "discord_players")
 public class DiscordPlayer {
     @Id
     private UUID discord_player_uid;

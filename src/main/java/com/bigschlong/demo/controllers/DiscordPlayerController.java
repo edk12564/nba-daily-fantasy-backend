@@ -15,10 +15,14 @@ import java.util.UUID;
 @RequestMapping("discord-players")
 public class DiscordPlayerController {
     
-    @Autowired
-     DiscordPlayerServices services;
-    
-    
+    final
+    DiscordPlayerServices services;
+
+    public DiscordPlayerController(DiscordPlayerServices services) {
+        this.services = services;
+    }
+
+
     @GetMapping(value="/{id}/roster", produces = "application/json")
     public List<NbaPlayer> getRosterByDiscordId(@PathVariable String id) {
         return services.getRosterByDiscordId(UUID.fromString(id));

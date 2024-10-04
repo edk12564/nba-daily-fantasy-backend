@@ -13,9 +13,12 @@ import java.util.UUID;
 @Service
 public class NbaPlayerServices {
     
-    @Autowired
-    private NbaPlayerRepository nbaPlayerRepository;
-    
+    private final NbaPlayerRepository nbaPlayerRepository;
+
+    public NbaPlayerServices(NbaPlayerRepository nbaPlayerRepository) {
+        this.nbaPlayerRepository = nbaPlayerRepository;
+    }
+
     public List<Team> getTeamByPlayerId(UUID discordId) {
         return nbaPlayerRepository.getTeamByPlayerId(discordId);
     }

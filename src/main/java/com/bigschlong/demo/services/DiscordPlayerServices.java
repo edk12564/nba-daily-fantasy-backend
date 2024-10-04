@@ -13,9 +13,12 @@ import java.util.UUID;
 @Service
 public class DiscordPlayerServices {
 
-    @Autowired
-    private DiscordPlayerRepository discordPlayerRepository;
-    
+    private final DiscordPlayerRepository discordPlayerRepository;
+
+    public DiscordPlayerServices(DiscordPlayerRepository discordPlayerRepository) {
+        this.discordPlayerRepository = discordPlayerRepository;
+    }
+
     public List<NbaPlayer> getRosterByDiscordId(UUID discordId) {
         return discordPlayerRepository.getRosterByDiscordId(discordId);
     }

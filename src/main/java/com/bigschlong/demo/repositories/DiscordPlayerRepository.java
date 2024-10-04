@@ -2,7 +2,7 @@ package com.bigschlong.demo.repositories;
 
 import com.bigschlong.demo.models.DiscordPlayer;
 import com.bigschlong.demo.models.NbaPlayer;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,7 +17,7 @@ public interface DiscordPlayerRepository extends CrudRepository<DiscordPlayer, U
     JOIN discord_players dp on dp.discord_player_uid = dr.discord_player_uid
     JOIN  nba_players np on np.nba_player_uid = dr.nba_player_uid
     WHERE dp.discord_player_uid = :discordId
-    """, nativeQuery = true)
+    """)
     List<NbaPlayer> getRosterByDiscordId( UUID discordId);
     
     

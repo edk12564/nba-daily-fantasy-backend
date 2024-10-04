@@ -3,19 +3,20 @@ package com.bigschlong.demo.models;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
 
 @Getter
 @Setter
 //@Entity
-//@Table(name = "servers")
+@Table(name = "servers")
 public class Server {
     @Id
     private UUID server_uid;
     
     private String name;
-    
+
 //    @Id
 //    @Column(name = "server_uid", nullable = false)
 //    private UUID id;

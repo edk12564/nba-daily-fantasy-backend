@@ -4,20 +4,19 @@ import com.bigschlong.demo.models.compositeKeys.DailyRosterId;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
 
 @Getter
 @Setter
 //@Entity
-//@Table(name = "daily_roster")
+@Table(name = "daily_roster")
 public class DailyRoster {
     @Id
     private DailyRosterId id;
-    
-    private UUID discord_player_uid;
-    
-    private UUID nba_player_uid;
+
+}
     
     
     
@@ -33,4 +32,3 @@ public class DailyRoster {
 //    @MapsId("nbaPlayerUid")
 //    @JoinColumn(name = "nba_player_uid", nullable = false)
 //    private NbaPlayer nbaPlayerId;
-}

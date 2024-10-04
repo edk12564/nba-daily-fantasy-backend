@@ -17,9 +17,13 @@ import java.util.UUID;
 @RequestMapping("servers")
 public class ServerController {
     
-    @Autowired
+    final
     ServerServices serverServices;
-    
+
+    public ServerController(ServerServices serverServices) {
+        this.serverServices = serverServices;
+    }
+
     @GetMapping(value = "/{id}", produces = "application/json")
     public Optional<Server> getServer(@PathVariable String id)
     {

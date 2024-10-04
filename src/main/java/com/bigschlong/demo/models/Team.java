@@ -3,11 +3,12 @@ package com.bigschlong.demo.models;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @Setter
 //@Entity
-//@Table(name = "teams")
+@Table(name = "teams")
 public class Team {
     @Id
     private Integer team_id;

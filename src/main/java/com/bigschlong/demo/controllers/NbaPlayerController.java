@@ -16,8 +16,12 @@ import java.util.UUID;
 @RequestMapping("nba-players")
 public class NbaPlayerController {
 
-    @Autowired
+    final
     NbaPlayerRepository nbaPlayerRepository;
+
+    public NbaPlayerController(NbaPlayerRepository nbaPlayerRepository) {
+        this.nbaPlayerRepository = nbaPlayerRepository;
+    }
 
     @GetMapping(value = "/{id}", produces = "application/json")
     public Optional<NbaPlayer> getPlayer(@PathVariable String id) {
