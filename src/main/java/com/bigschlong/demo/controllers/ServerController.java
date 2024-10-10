@@ -3,7 +3,6 @@ package com.bigschlong.demo.controllers;
 import com.bigschlong.demo.models.DiscordPlayer;
 import com.bigschlong.demo.models.Server;
 import com.bigschlong.demo.services.ServerServices;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +27,7 @@ public class ServerController {
     public Optional<Server> getServer(@PathVariable String id)
     {
         
-        return serverServices.findById(UUID.fromString(id));
+        return serverServices.findServerById(UUID.fromString(id));
     
     }
     
