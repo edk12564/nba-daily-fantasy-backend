@@ -1,8 +1,6 @@
 package com.bigschlong.demo.models.compositeKeys;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serial;
 import java.util.Objects;
@@ -22,5 +20,5 @@ public class DiscordPlayerServerId implements java.io.Serializable {
     public int hashCode() {
         return Objects.hash(discordPlayerUid, serverUid);
     }
-
+    
 }
