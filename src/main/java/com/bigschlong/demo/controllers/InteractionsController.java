@@ -13,6 +13,7 @@ public class InteractionsController {
 
     @PostMapping(value = "/", produces = "application/json")
     public PingModel ping(PingModel pingModel) {
+        System.out.println(pingModel);
         if (pingModel.type == 1) {
             return new PingModel(1);
         }

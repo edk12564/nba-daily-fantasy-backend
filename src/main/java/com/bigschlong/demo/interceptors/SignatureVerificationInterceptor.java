@@ -17,22 +17,26 @@ public class SignatureVerificationInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        try {
+            // Extract necessary parameters from the request (assuming they are in headers or body)
+            String timestamp = request.getHeader("X-Signature-Timestamp"); // Extract timestamp from headers (example)
+            String body = extractRequestBody(request); // Utility method to extract the request body as a string
+            String signature = request.getHeader("X-Signature-Ed25519"); // Extract signature from headers (example)
+
+            // Perform signature verification
+            boolean isVerified = Crypto.signVerify(
+                    Crypto.signingPublicKey(DatatypeConverter.parseHexBinary(PUBLIC_KEY)),
+                    (timestamp + body).getBytes(StandardCharsets.UTF_8),
+                    DatatypeConverter.parseHexBinary(signature)
+            );
+
+            // If the verification fails, reject the request
+            if (!isVerified) {
+                throw new Exception("unverified");
+            }
 
 
-        // Extract necessary parameters from the request (assuming they are in headers or body)
-        String timestamp = request.getHeader("X-Signature-Timestamp"); // Extract timestamp from headers (example)
-        String body = extractRequestBody(request); // Utility method to extract the request body as a string
-        String signature = request.getHeader("X-Signature-Ed25519"); // Extract signature from headers (example)
-
-        // Perform signature verification
-        boolean isVerified = Crypto.signVerify(
-                Crypto.signingPublicKey(DatatypeConverter.parseHexBinary(PUBLIC_KEY)),
-                (timestamp + body).getBytes(StandardCharsets.UTF_8),
-                DatatypeConverter.parseHexBinary(signature)
-        );
-
-        // If the verification fails, reject the request
-        if (!isVerified) {
+        } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Signature verification failed.");
             return false; // Prevent further handling of the request
@@ -49,6 +53,5 @@ public class SignatureVerificationInterceptor implements HandlerInterceptor {
         }
 
         return null;
-
     }
 }
