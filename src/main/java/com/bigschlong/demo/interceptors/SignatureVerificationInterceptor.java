@@ -8,6 +8,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import software.pando.crypto.nacl.Crypto;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Component
@@ -37,6 +38,8 @@ public class SignatureVerificationInterceptor implements HandlerInterceptor {
 
 
         } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Signature verification failed.");
             return false; // Prevent further handling of the request
