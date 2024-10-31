@@ -8,7 +8,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import software.pando.crypto.nacl.Crypto;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Component
@@ -19,10 +18,15 @@ public class SignatureVerificationInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         try {
+            System.out.println("headers " + request.getHeaderNames());
             // Extract necessary parameters from the request (assuming they are in headers or body)
             String timestamp = request.getHeader("X-Signature-Timestamp"); // Extract timestamp from headers (example)
             String body = extractRequestBody(request); // Utility method to extract the request body as a string
             String signature = request.getHeader("X-Signature-Ed25519"); // Extract signature from headers (example)
+
+            System.out.println("timestamp:" + timestamp);
+            System.out.println("body:" + body);
+            System.out.println("signature:" + signature);
 
             // Perform signature verification
             boolean isVerified = Crypto.signVerify(
