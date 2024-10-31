@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/interactions ")
+@RequestMapping("/api/interactions")
 public class InteractionsController {
 
     @PostMapping(value = "/", produces = "application/json")
