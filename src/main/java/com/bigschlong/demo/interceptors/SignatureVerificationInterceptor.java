@@ -38,9 +38,10 @@ public class SignatureVerificationInterceptor implements HandlerInterceptor {
 
             // If the verification fails, reject the request
             if (!isVerified) {
-                throw new Exception("unverified");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Signature verification failed.");
+                return false; // Prevent further handling of the request
             }
-
 
         } catch (Exception e) {
             System.err.println(e.getMessage());
