@@ -2,7 +2,6 @@ package com.bigschlong.demo.interceptors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.xml.bind.DatatypeConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import software.pando.crypto.nacl.Crypto;
@@ -10,6 +9,8 @@ import software.pando.crypto.nacl.Crypto;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.stream.Collectors;
+
+import static jakarta.xml.bind.DatatypeConverter.parseHexBinary;
 
 @Component
 public class SignatureVerificationInterceptor implements HandlerInterceptor {
@@ -31,16 +32,19 @@ public class SignatureVerificationInterceptor implements HandlerInterceptor {
 
             // Perform signature verification
             boolean isVerified = Crypto.signVerify(
-                    Crypto.signingPublicKey(DatatypeConverter.parseHexBinary(PUBLIC_KEY)),
+                    Crypto.signingPublicKey(parseHexBinary(PUBLIC_KEY)),
                     (timestamp + body).getBytes(StandardCharsets.UTF_8),
-                    DatatypeConverter.parseHexBinary(signature)
-            );
+                    parseHexBinary(signature));
 
             // If the verification fails, reject the request
             if (!isVerified) {
+                System.out.println("unverified");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Signature verification failed.");
                 return false; // Prevent further handling of the request
+            } else {
+                // If verification succeeds, allow the request to proceed
+                return true;
             }
 
         } catch (Exception e) {
@@ -50,9 +54,6 @@ public class SignatureVerificationInterceptor implements HandlerInterceptor {
             response.getWriter().write("Signature verification failed.");
             return false; // Prevent further handling of the request
         }
-
-        // If verification succeeds, allow the request to proceed
-        return true;
     }
 
     // Utility method to extract request body as a string (optional, modify as per your use case)
