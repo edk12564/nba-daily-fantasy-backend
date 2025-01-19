@@ -1,4 +1,0 @@
-### GET request to example server
-@id = efcdf953-4cdf-4a1a-8c27-8b1d0f3cc16b
-GET localhost:8080/discord-players/{{id}}/roster
-###
