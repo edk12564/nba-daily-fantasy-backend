@@ -15,7 +15,7 @@ public class InteractionData {
     @Data
     @Jacksonized
     @Builder
-    static class Options {
+    public static class Options {
         String name;
         Integer type;
         String value;

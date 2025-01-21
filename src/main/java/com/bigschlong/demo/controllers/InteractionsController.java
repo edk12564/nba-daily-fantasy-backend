@@ -3,6 +3,7 @@ package com.bigschlong.demo.controllers;
 import com.bigschlong.demo.interceptors.CheckSignature;
 import com.bigschlong.demo.models.PingModel;
 import com.bigschlong.demo.models.discord.Interaction;
+import com.bigschlong.demo.services.NbaPlayerServices;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,11 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/api")
 public class InteractionsController {
 
     private final ObjectMapper mapper = new ObjectMapper();
+
+    NbaPlayerServices nbaPlayerServices;
 
     @SneakyThrows
     @PostMapping(value = "/interactions", produces = "application/json")
@@ -27,10 +32,15 @@ public class InteractionsController {
         if (body == null) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(401));
         }
-        var pingModel = mapper.readValue(body, Interaction.class);
+        var interaction = mapper.readValue(body, Interaction.class);
 
-        if (pingModel.getType() == Interaction.InteractionType.PING) {
+        if (interaction.getType() == Interaction.InteractionType.PING) {
             return new PingModel(1);
+        } else if (interaction.getType() == Interaction.InteractionType.APPLICATION_COMMAND) {
+            if (Objects.equals(interaction.getData().getName(), "setroster")) {
+                var position = interaction.getData().getOptions()[0];
+                nbaPlayerServices.getTodaysNbaPlayersByPosition(position.getValue());
+            }
         }
         return null;
     }
