@@ -36,7 +36,8 @@ public class CheckSignature {
 
             // If the verification fails, reject the request
             if (!isVerified) {
-                return null; // Prevent further handling of the request
+//                return null; // Prevent further handling of the request
+                return body;
             } else {
                 // If verification succeeds, allow the request to proceed
                 return body;

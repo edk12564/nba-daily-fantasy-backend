@@ -27,19 +27,25 @@ public class InteractionsController {
     @SneakyThrows
     @PostMapping(value = "/interactions", produces = "application/json")
     public PingModel ping(HttpServletRequest request) {
+
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
         String body = CheckSignature.checkSignature(request);
+
         if (body == null) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(401));
         }
+
         var interaction = mapper.readValue(body, Interaction.class);
 
         if (interaction.getType() == Interaction.InteractionType.PING) {
             return new PingModel(1);
-        } else if (interaction.getType() == Interaction.InteractionType.APPLICATION_COMMAND) {
+        }
+        else if (interaction.getType() == Interaction.InteractionType.APPLICATION_COMMAND) {
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
                 var position = interaction.getData().getOptions()[0];
-                nbaPlayerServices.getTodaysNbaPlayersByPosition(position.getValue());
+                // nbaPlayerServices.getTodaysNbaPlayersByPosition(position);
+                // return an interactionResponse with the information from nbaPlayerServices
             }
         }
         return null;
