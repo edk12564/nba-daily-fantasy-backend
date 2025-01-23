@@ -19,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/interactions")
 public class InteractionsController {
 
     private final ObjectMapper mapper = new ObjectMapper();
@@ -28,7 +28,7 @@ public class InteractionsController {
     DiscordPlayerServices discordPlayerServices;
 
     @SneakyThrows
-    @PostMapping(value = "/interactions", produces = "application/json")
+    @PostMapping(value = "/", produces = "application/json")
     public InteractionResponse ping(HttpServletRequest request) {
 
         // configure the object mapper to ignore unknown properties instead of throwing an exception
@@ -70,7 +70,7 @@ public class InteractionsController {
                 // return an interactionResponse with the information from nbaPlayerServices
             }
         }
-        
+
         // interaction where user resets their roster
 
         // interaction where user is viewing all players for all positions
