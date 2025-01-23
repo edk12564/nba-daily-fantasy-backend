@@ -77,7 +77,13 @@ public class InteractionsController {
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
                 var position = interaction.getData().getOptions()[0];
-                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(position.getValue());
+                String pval = position.toString();
+                if(position.equals("PG") || position.equals("SG")){
+                    pval = "G";
+                } else if (position.equals("SF") || position.equals("PF")) {
+                    pval = "F";
+                }
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval);
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players.toString())
                         .build();
