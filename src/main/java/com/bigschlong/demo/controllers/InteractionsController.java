@@ -76,7 +76,7 @@ public class InteractionsController {
             // will probably consist of multiple interactions to set each position
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
-                var position = interaction.getData().getOptions()[0];
+                var position = interaction.getData().getOptions()[0].getValue();
                 String pval = position.toString();
                 if(position.equals("PG") || position.equals("SG")){
                     pval = "G";
