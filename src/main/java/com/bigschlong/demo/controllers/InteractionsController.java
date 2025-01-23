@@ -2,6 +2,7 @@ package com.bigschlong.demo.controllers;
 
 import com.bigschlong.demo.interceptors.CheckSignature;
 import com.bigschlong.demo.models.DiscordPlayer;
+import com.bigschlong.demo.models.discord.InteractionData;
 import com.bigschlong.demo.models.discord.InteractionResponse;
 import com.bigschlong.demo.models.discord.Interaction;
 import com.bigschlong.demo.services.DiscordPlayerServices;
@@ -31,6 +32,7 @@ public class InteractionsController {
     @PostMapping(value = "/", produces = "application/json")
     public InteractionResponse ping(HttpServletRequest request) {
 
+
         // configure the object mapper to ignore unknown properties instead of throwing an exception
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -47,7 +49,7 @@ public class InteractionsController {
 
         // if the interaction is a ping, return a ping response
         if (interaction.getType() == Interaction.InteractionType.PING) {
-            return new InteractionResponse.PingModel(1);
+            return InteractionResponse.builder().type(1).build();
         }
 
         // now we handle the application commands using the Interaction model
@@ -57,14 +59,26 @@ public class InteractionsController {
         else if (interaction.getType() == Interaction.InteractionType.APPLICATION_COMMAND) {
             if (Objects.equals(interaction.getData().getName(), "register")) {
                 discordPlayerServices.saveDiscordPlayer(new DiscordPlayer(interaction.getUser().getId(), interaction.getUser().getUsername()));
-                return new InteractionResponse.Message(3, "You have been registered to play!");
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content("You have been registered to play!")
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
             }
 
             // interaction where user is setting their roster
             // will probably consist of multiple interactions to set each position
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
                 var position = interaction.getData().getOptions()[0];
-                return new InteractionResponse.Message(3, "hey you");
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content("You have been registered to play! " + position)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
                 // nbaPlayerServices.getTodaysNbaPlayersByPosition(position)
                 // services to set rosters for discord players
                 // return an interactionResponse with the information from nbaPlayerServices
