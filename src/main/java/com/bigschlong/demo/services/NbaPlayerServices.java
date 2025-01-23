@@ -51,7 +51,9 @@ public class NbaPlayerServices {
 
     // we'll call the db to get todays players
     //
-//    public getTodaysNbaPlayersByPosition(String value) {
-//
-//    }
+    public List<String> getTodaysNbaPlayersByPosition(String position) {
+      return nbaPlayerRepository.getTodaysNbaPlayerByPosition(position).stream()
+              .map(player -> player.getName() + " " + player.getDollar_value())
+              .toList();
+    }
 }

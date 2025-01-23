@@ -19,6 +19,14 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     """)
     List<Team> getTeamByPlayerId(UUID playerId);
 
+    @Query(value = """
+    SELECT np.* FROM nba_players np
+    WHERE np.position = :position
+    LIMIT 25
+    """)
+
+    List<NbaPlayer> getTodaysNbaPlayerByPosition(String position);
+
 }
 
 

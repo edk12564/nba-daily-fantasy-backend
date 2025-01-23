@@ -71,9 +71,11 @@ public class InteractionsController {
             // interaction where user is setting their roster
             // will probably consist of multiple interactions to set each position
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
+
                 var position = interaction.getData().getOptions()[0];
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(position.getValue());
                 var data = InteractionResponse.InteractionResponseData.builder()
-                        .content("You have been registered to play! " + position)
+                        .content(players.toString())
                         .build();
                 return InteractionResponse.builder()
                         .type(4)
