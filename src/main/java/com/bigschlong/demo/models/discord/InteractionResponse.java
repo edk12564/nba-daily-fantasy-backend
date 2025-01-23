@@ -1,5 +1,6 @@
 package com.bigschlong.demo.models.discord;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,10 +15,18 @@ import java.util.List;
 public class InteractionResponse {
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PingModel extends InteractionResponse {
+        public Integer type;
+    }
+
+    @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public class SelectMenu {
+    public static class SelectMenu extends InteractionResponse {
 
         private Integer type; // Type of select menu component (3, 5, 6, 7, 8)
         private String customId; // ID for the select menu
@@ -59,5 +68,14 @@ public class InteractionResponse {
             private String name; // Name of the emoji
             private Boolean animated; // Whether the emoji is animated
         }
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Message extends InteractionResponse {
+        private Integer type; // Type of message component (1, 2, 3, 4, 5)
+        private String message; // Message to send
     }
 }

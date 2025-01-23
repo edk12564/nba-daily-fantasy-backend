@@ -1,23 +1,25 @@
 package com.bigschlong.demo.models;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.UUID;
-
 @Getter
 @Setter
+@AllArgsConstructor
 //@Entity
 @Table(name = "discord_players")
 public class DiscordPlayer {
     @Id
-    private UUID discord_player_uid;
+    private String discord_player_id;
     
     private String name;
-    
+
+
 //    @Id
 //    @Column(name = "discord_player_uid", nullable = false)
 //    private UUID id;
