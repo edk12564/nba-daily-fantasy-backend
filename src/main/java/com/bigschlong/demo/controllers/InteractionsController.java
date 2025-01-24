@@ -77,7 +77,7 @@ public class InteractionsController {
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
                 var position = interaction.getData().getOptions()[0].getValue();
-                String pval = position.toString();
+                String pval = position;
                 if(position.equals("PG") || position.equals("SG")){
                     pval = "G";
                 } else if (position.equals("SF") || position.equals("PF")) {
