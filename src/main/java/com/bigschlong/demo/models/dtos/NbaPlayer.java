@@ -1,4 +1,4 @@
-package com.bigschlong.demo.models;
+package com.bigschlong.demo.models.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -38,7 +38,7 @@ public class NbaPlayer {
 //    private UUID id;
 //
 //    @Column(name = "nba_player_id", nullable = false)
-//    private Integer nbaPlayerId;
+//    private Integer nbaPlayerUid;
 //
 //    @Column(name = "name", nullable = false, length = Integer.MAX_VALUE)
 //    private String name;
@@ -65,7 +65,7 @@ public class NbaPlayer {
     
     // Inverse Join Table for DiscordPlayer entity but with custom DailyRoster entity
 //    This doesnt work for some reason.
-//    @OneToMany(mappedBy = "nbaPlayerId")
+//    @OneToMany(mappedBy = "nbaPlayerUid")
 //    private Set<DailyRoster> dailyRosterEntries;
 
 }

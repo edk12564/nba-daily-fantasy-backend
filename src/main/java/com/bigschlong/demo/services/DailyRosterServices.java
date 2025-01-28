@@ -1,0 +1,30 @@
+package com.bigschlong.demo.services;
+
+import com.bigschlong.demo.repositories.DailyRosterRepository;
+import com.bigschlong.demo.repositories.NbaPlayerRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class DailyRosterServices {
+
+    private final DailyRosterRepository dailyRosterRepository;
+
+    public DailyRosterServices(DailyRosterRepository dailyRosterRepository) {
+        this.dailyRosterRepository = dailyRosterRepository;
+    }
+
+    public List<String> getPlayerRoster(String discordId) {
+        return dailyRosterRepository.getRosterByDiscordId(discordId).stream()
+                .map(player -> player.getName() + " " + player.getDollarValue())
+                .toList();
+    }
+
+    public List<String> getGuildRoster(String guildId) {
+        return dailyRosterRepository.getRosterByGuildId(guildId).stream()
+                .map(player -> player.getName() + " " + player.getDollarValue())
+                .toList();
+    }
+
+}

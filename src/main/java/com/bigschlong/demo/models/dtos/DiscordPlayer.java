@@ -1,8 +1,7 @@
-package com.bigschlong.demo.models;
+package com.bigschlong.demo.models.dtos;
 
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;

@@ -1,4 +1,4 @@
-package com.bigschlong.demo.models;
+package com.bigschlong.demo.models.dtos;
 
 import lombok.Getter;
 import lombok.Setter;

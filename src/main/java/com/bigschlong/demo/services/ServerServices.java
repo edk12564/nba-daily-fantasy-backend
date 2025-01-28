@@ -1,7 +1,7 @@
 package com.bigschlong.demo.services;
 
-import com.bigschlong.demo.models.DiscordPlayer;
-import com.bigschlong.demo.models.Server;
+import com.bigschlong.demo.models.dtos.DiscordPlayer;
+import com.bigschlong.demo.models.dtos.Server;
 import com.bigschlong.demo.repositories.ServerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -32,3 +32,13 @@ build/
 ### VS Code ###
 .vscode/
 
+/pythonscriptsbroken/
+/pythonscriptsbroken/.venv/
+/pythonscriptsbroken/.venv/bin/
+/pythonscriptsbroken/.venv/include/
+/pythonscriptsbroken/.venv/lib/
+/pythonscriptsbroken/.venv/pyvenv.cfg
+/pythonscriptsbroken/pythonscripts.iml
+
+### Python VM ###
+.venv

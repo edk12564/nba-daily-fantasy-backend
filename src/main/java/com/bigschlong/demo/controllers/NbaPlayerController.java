@@ -1,8 +1,7 @@
 package com.bigschlong.demo.controllers;
 
-import com.bigschlong.demo.models.NbaPlayer;
+import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.repositories.NbaPlayerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

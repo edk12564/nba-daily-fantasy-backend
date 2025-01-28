@@ -1,4 +1,4 @@
-package com.bigschlong.demo.models.joinTables;
+package com.bigschlong.demo.models.dtos;
 
 import lombok.Builder;
 import lombok.Data;
@@ -7,8 +7,6 @@ import lombok.Setter;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -21,6 +19,7 @@ public class DailyRoster {
     private DailyRosterId id;
 
     String nickname;
+
 
     // discordplayerserver
     // playerId

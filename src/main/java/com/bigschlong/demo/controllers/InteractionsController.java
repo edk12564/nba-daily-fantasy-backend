@@ -1,10 +1,10 @@
 package com.bigschlong.demo.controllers;
 
 import com.bigschlong.demo.interceptors.CheckSignature;
-import com.bigschlong.demo.models.DiscordPlayer;
-import com.bigschlong.demo.models.discord.InteractionData;
+import com.bigschlong.demo.models.dtos.DiscordPlayer;
 import com.bigschlong.demo.models.discord.InteractionResponse;
 import com.bigschlong.demo.models.discord.Interaction;
+import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.DiscordPlayerServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,12 +24,14 @@ import java.util.Objects;
 @RequestMapping("/api/interactions")
 public class InteractionsController {
 
-    private final ObjectMapper mapper = new ObjectMapper();
-
     @Autowired
     NbaPlayerServices nbaPlayerServices;
     @Autowired
     DiscordPlayerServices discordPlayerServices;
+
+    private final ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private DailyRosterServices dailyRosterServices;
 
     @SneakyThrows
     @PostMapping(value = "/", produces = "application/json")
@@ -97,17 +98,81 @@ public class InteractionsController {
             }
         }
 
-        // interaction where user resets their roster
+            // interaction where user resets their roster
 
-        // interaction where user is viewing all players for all positions
+            // interaction where user is viewing all players for all positions
+            if (Objects.equals(interaction.getData().getName(), "viewallplayers")) {
+                var players = nbaPlayerServices.getAllTodaysNbaPlayers().toString();
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content(players)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
+            }
 
-        // interaction where user is viewing all players
+            // interaction where user is viewing all players for guards
+            if (Objects.equals(interaction.getData().getName(), "viewguards")) {
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("G").toString();
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content(players)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
+            }
 
-        // interaction where user is viewing their roster
+            // interaction where user is viewing all players for forwards
+            if (Objects.equals(interaction.getData().getName(), "viewforwards")) {
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("F").toString();
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content(players)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
+            }
 
-        // interaction where user is viewing all discord players' nba players
+            // interaction where user is viewing all players for centers
+            if (Objects.equals(interaction.getData().getName(), "viewcenters")) {
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("C").toString();
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content(players)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
+            }
 
-        // interaction where user is checking all players last played game's scores and rankings
+            // interaction where user is viewing their roster
+            if (Objects.equals(interaction.getData().getName(), "getmyroster")) {
+                var players = dailyRosterServices.getPlayerRoster(interaction.getUser().getId()).toString();
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content(players)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
+            }
+
+            // interaction where user is viewing all discord players' nba players
+            if (Objects.equals(interaction.getData().getName(), "getserverrosters")) {
+                var players = dailyRosterServices.getGuildRoster(interaction.getGuildId()).toString();
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content(players)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
+            }
+
+            // interaction where user is checking all players last played game's scores and rankings
 
         return null;
     }

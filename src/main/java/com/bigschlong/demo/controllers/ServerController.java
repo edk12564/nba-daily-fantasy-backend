@@ -1,7 +1,7 @@
 package com.bigschlong.demo.controllers;
 
-import com.bigschlong.demo.models.DiscordPlayer;
-import com.bigschlong.demo.models.Server;
+import com.bigschlong.demo.models.dtos.DiscordPlayer;
+import com.bigschlong.demo.models.dtos.Server;
 import com.bigschlong.demo.services.ServerServices;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

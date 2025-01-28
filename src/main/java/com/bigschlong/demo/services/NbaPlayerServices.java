@@ -1,14 +1,9 @@
 package com.bigschlong.demo.services;
 
-import com.bigschlong.demo.models.NbaPlayer;
-import com.bigschlong.demo.models.Team;
 import com.bigschlong.demo.repositories.NbaPlayerRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class NbaPlayerServices {
@@ -52,7 +47,13 @@ public class NbaPlayerServices {
     // we'll call the db to get todays players
     //
     public List<String> getTodaysNbaPlayersByPosition(String position) {
-      return nbaPlayerRepository.getTodaysNbaPlayerByPosition(position).stream()
+      return nbaPlayerRepository.getTodaysNbaPlayersByPosition(position).stream()
+              .map(player -> player.getName() + " " + player.getDollar_value())
+              .toList();
+    }
+
+    public List<String> getAllTodaysNbaPlayers() {
+      return nbaPlayerRepository.getAllTodaysNbaPlayers().stream()
               .map(player -> player.getName() + " " + player.getDollar_value())
               .toList();
     }

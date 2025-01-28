@@ -1,7 +1,7 @@
 package com.bigschlong.demo.repositories;
 
-import com.bigschlong.demo.models.NbaPlayer;
-import com.bigschlong.demo.models.Team;
+import com.bigschlong.demo.models.dtos.NbaPlayer;
+import com.bigschlong.demo.models.dtos.Team;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -24,8 +24,13 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     WHERE np.position = :position
     LIMIT 25
     """)
+    List<NbaPlayer> getTodaysNbaPlayersByPosition(String position);
 
-    List<NbaPlayer> getTodaysNbaPlayerByPosition(String position);
+    @Query(value = """
+    SELECT np.* FROM nba_players np
+    LIMIT 25
+    """)
+    List<NbaPlayer> getAllTodaysNbaPlayers();
 
 }
 
