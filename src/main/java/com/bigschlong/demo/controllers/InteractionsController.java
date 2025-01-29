@@ -95,9 +95,9 @@ public class InteractionsController {
                     pval = "C";
                 }
 
-                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval);
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
-                        .content(players.toString())
+                        .content(players)
                         .build();
                 return InteractionResponse.builder()
                         .type(4)
@@ -187,8 +187,11 @@ public class InteractionsController {
 
 
         }
+        var defaultdata = InteractionResponse.InteractionResponseData.builder()
+                .content("This is the default response. This means that the interaction was not recognized.")
+                .build();
 
-        return null;
+        return InteractionResponse.builder().type(4).data(defaultdata).build();
 
     }
 
