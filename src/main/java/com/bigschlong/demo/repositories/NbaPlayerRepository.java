@@ -23,14 +23,14 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     SELECT np.* FROM nba_players np
     WHERE np.position = :position
     ORDER BY np.dollar_value DESC
-    LIMIT 25
+    LIMIT 5
     """)
     List<NbaPlayer> getTodaysNbaPlayersByPosition(String position);
 
     @Query(value = """
     SELECT np.* FROM nba_players np
     ORDER BY np.dollar_value DESC
-    LIMIT 25
+    LIMIT 5
     """)
     List<NbaPlayer> getAllTodaysNbaPlayers();
 
