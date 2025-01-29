@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequestMapping("nba-players")
 public class NbaPlayerController {
 
-    final
+    private final
     NbaPlayerRepository nbaPlayerRepository;
 
     public NbaPlayerController(NbaPlayerRepository nbaPlayerRepository) {

@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,14 +23,20 @@ import java.util.Objects;
 @RequestMapping("/api/interactions")
 public class InteractionsController {
 
-    @Autowired
+    private final
     NbaPlayerServices nbaPlayerServices;
-    @Autowired
+    private final
     DiscordPlayerServices discordPlayerServices;
+    private final
+    ObjectMapper mapper = new ObjectMapper();
+    private final
+    DailyRosterServices dailyRosterServices;
 
-    private final ObjectMapper mapper = new ObjectMapper();
-    @Autowired
-    private DailyRosterServices dailyRosterServices;
+    public InteractionsController(NbaPlayerServices nbaPlayerServices, DiscordPlayerServices discordPlayerServices, DailyRosterServices dailyRosterServices) {
+        this.nbaPlayerServices = nbaPlayerServices;
+        this.discordPlayerServices = discordPlayerServices;
+        this.dailyRosterServices = dailyRosterServices;
+    }
 
     @SneakyThrows
     @PostMapping(value = "/", produces = "application/json")

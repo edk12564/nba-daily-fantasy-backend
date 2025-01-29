@@ -4,6 +4,7 @@ url = "https://discord.com/api/v10/applications/1290520169185280062/commands"
 
 json = {
     "name": "viewallplayers",
+    # Type 1 is used for slash commands
     "type": 1,
     "description": "View all players playing that day"
 }

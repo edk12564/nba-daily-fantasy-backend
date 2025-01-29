@@ -14,7 +14,7 @@ import java.util.UUID;
 @RequestMapping("discord-players")
 public class DiscordPlayerController {
     
-    final
+    private final
     DiscordPlayerServices services;
 
     public DiscordPlayerController(DiscordPlayerServices services) {

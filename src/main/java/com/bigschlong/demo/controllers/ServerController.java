@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequestMapping("servers")
 public class ServerController {
     
-    final
+    private final
     ServerServices serverServices;
 
     public ServerController(ServerServices serverServices) {
