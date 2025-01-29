@@ -84,12 +84,17 @@ public class InteractionsController {
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
                 var position = interaction.getData().getOptions()[0].getValue();
-                String pval = position;
+                String pval = "";
+
+                // TODO: account for combination players like C-F, F-C, etc. Note that they are not in order either. So it could be C-F or F-C and they are equivalent.
                 if (position.equals("PG") || position.equals("SG")) {
                     pval = "G";
                 } else if (position.equals("SF") || position.equals("PF")) {
                     pval = "F";
+                } else if (position.equals("C")) {
+                    pval = "C";
                 }
+
                 var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
@@ -108,10 +113,12 @@ public class InteractionsController {
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
-                return InteractionResponse.builder()
+                var result = InteractionResponse.builder()
                         .type(4)
                         .data(data)
                         .build();
+
+                return result;
             }
 
             // interaction where user is viewing all players for guards
