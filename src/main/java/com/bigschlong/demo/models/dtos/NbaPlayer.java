@@ -9,7 +9,6 @@ import java.util.UUID;
 
 @Getter
 @Setter
-//@Entity
 @Table(name = "nba_players")
 public class NbaPlayer {
     

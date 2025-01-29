@@ -11,7 +11,6 @@ import java.time.OffsetDateTime;
 
 @Getter
 @Setter
-//@Entity
 @Builder
 @Jacksonized
 @Table(name = "daily_roster")

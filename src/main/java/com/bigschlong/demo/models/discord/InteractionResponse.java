@@ -1,12 +1,14 @@
 package com.bigschlong.demo.models.discord;
 
 import com.bigschlong.demo.models.discord.components.Components;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.web.bind.annotation.BindParam;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class InteractionResponse {
     int type;
     InteractionResponseData data;

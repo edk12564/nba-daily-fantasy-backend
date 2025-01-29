@@ -10,11 +10,10 @@ import org.springframework.data.relational.core.mapping.Table;
 @Getter
 @Setter
 @AllArgsConstructor
-//@Entity
 @Table(name = "discord_players")
 public class DiscordPlayer {
     @Id
-    private String discord_player_id;
+    private String discord_player_uid;
     
     private String name;
 

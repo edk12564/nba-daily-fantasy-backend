@@ -17,13 +17,13 @@ public class DailyRosterServices {
 
     public List<String> getPlayerRoster(String discordId) {
         return dailyRosterRepository.getRosterByDiscordId(discordId).stream()
-                .map(player -> player.getName() + " " + player.getDollarValue())
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
     public List<String> getGuildRoster(String guildId) {
         return dailyRosterRepository.getRosterByGuildId(guildId).stream()
-                .map(player -> player.getName() + " " + player.getDollarValue())
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 

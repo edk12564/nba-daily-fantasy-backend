@@ -48,13 +48,13 @@ public class NbaPlayerServices {
     //
     public List<String> getTodaysNbaPlayersByPosition(String position) {
       return nbaPlayerRepository.getTodaysNbaPlayersByPosition(position).stream()
-              .map(player -> player.getName() + " " + player.getDollar_value())
+              .map(player -> player.getName() + " - " + player.getDollar_value().toString())
               .toList();
     }
 
     public List<String> getAllTodaysNbaPlayers() {
       return nbaPlayerRepository.getAllTodaysNbaPlayers().stream()
-              .map(player -> player.getName() + " " + player.getDollar_value())
+              .map(player -> player.getName() + " - " + player.getDollar_value().toString())
               .toList();
     }
 }
