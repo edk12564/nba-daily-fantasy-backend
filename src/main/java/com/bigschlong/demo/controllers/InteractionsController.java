@@ -42,6 +42,7 @@ public class InteractionsController {
     @PostMapping(value = "/", produces = "application/json")
     public InteractionResponse ping(HttpServletRequest request) {
 
+        System.out.println("this prints");
         // configure the object mapper to ignore unknown properties instead of throwing an exception
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -82,7 +83,7 @@ public class InteractionsController {
             // 2. for each set${position} interaction, return a select menu that allows you to choose your player for that position
             // 3. if user has set all positions, return a message that their roster is full and do a play command to lock in their roster
             else if (Objects.equals(interaction.getData().getName(), "setroster")) {
-
+                System.out.println("this prints set roster");
                 var position = interaction.getData().getOptions()[0].getValue();
                 String pval = "";
 
