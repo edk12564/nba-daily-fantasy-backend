@@ -95,9 +95,9 @@ public class InteractionsController {
                     pval = "C";
                 }
 
-                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval).toString();
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval);
                 var data = InteractionResponse.InteractionResponseData.builder()
-                        .content(players)
+                        .content(players.toString())
                         .build();
                 return InteractionResponse.builder()
                         .type(4)
