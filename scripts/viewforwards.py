@@ -13,5 +13,5 @@ headers = {
     "Authorization": "Bot MTI5MDUyMDE2OTE4NTI4MDA2Mg.GTf6eM.1tlwZTfU-0eNdSHZkDDuPtKVOP_Ax9aHnrvA0k"
 }
 
-r = requests.put(url, headers=headers, json=json)
+r = requests.post(url, headers=headers, json=json)
 print(r.json())

@@ -58,7 +58,7 @@ public class InteractionsController {
         }
 
         // now we handle the application commands using the Interaction model
-        // TODO: make each of these interactions nice and pretty with the S
+        // TODO: make each of these interactions nice and pretty with the Select Menu
 
         // interaction where user is registering to play
         else if (interaction.getType() == Interaction.InteractionType.APPLICATION_COMMAND) {
@@ -74,12 +74,14 @@ public class InteractionsController {
             }
 
             // interaction where user is setting their roster
-            // will probably consist of multiple interactions to set each position
+            // 1. return line to choose each position separately with set${position} interaction
+            // 2. for each set${position} interaction, return a select menu that allows you to choose your player for that position
+            // 3. if user has set all positions, return a message that their roster is full and do a play command to lock in their roster
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
                 var position = interaction.getData().getOptions()[0].getValue();
                 String pval = position;
-                if(position.equals("PG") || position.equals("SG")){
+                if (position.equals("PG") || position.equals("SG")) {
                     pval = "G";
                 } else if (position.equals("SF") || position.equals("PF")) {
                     pval = "F";
@@ -92,11 +94,7 @@ public class InteractionsController {
                         .type(4)
                         .data(data)
                         .build();
-                // nbaPlayerServices.getTodaysNbaPlayersByPosition(position)
-                // services to set rosters for discord players
-                // return an interactionResponse with the information from nbaPlayerServices
             }
-        }
 
             // interaction where user resets their roster
 
@@ -148,6 +146,8 @@ public class InteractionsController {
                         .build();
             }
 
+            // interaction where the user's roster is locked in and cannot be reset. This will only work when the roster is completely full.
+
             // interaction where user is viewing their roster
             if (Objects.equals(interaction.getData().getName(), "getmyroster")) {
                 var players = dailyRosterServices.getPlayerRoster(interaction.getUser().getId()).toString();
@@ -173,6 +173,11 @@ public class InteractionsController {
             }
 
             // interaction where user is checking all players last played game's scores and rankings
+
+
+        }
+
+
 
         return null;
     }
