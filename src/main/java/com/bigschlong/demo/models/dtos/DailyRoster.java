@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -19,6 +20,8 @@ public class DailyRoster {
     private DailyRosterId id;
 
     String nickname;
+
+    OffsetDateTime created_at;
 
 
     // discordplayerserver
@@ -34,11 +37,11 @@ public class DailyRoster {
     @Jacksonized
     @Builder
     public static class DailyRosterId {
-         long guildId;
+         long guild_id;
 
-         long nbaPlayerUid;
+         long nba_player_id;
 
-         long discordPlayerId;
+         long discord_player_id;
     }
 }
     

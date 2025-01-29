@@ -37,7 +37,6 @@ public class InteractionsController {
     @PostMapping(value = "/", produces = "application/json")
     public InteractionResponse ping(HttpServletRequest request) {
 
-
         // configure the object mapper to ignore unknown properties instead of throwing an exception
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -86,9 +85,9 @@ public class InteractionsController {
                 } else if (position.equals("SF") || position.equals("PF")) {
                     pval = "F";
                 }
-                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval);
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
-                        .content(players.toString())
+                        .content(players)
                         .build();
                 return InteractionResponse.builder()
                         .type(4)
@@ -149,7 +148,7 @@ public class InteractionsController {
             // interaction where the user's roster is locked in and cannot be reset. This will only work when the roster is completely full.
 
             // interaction where user is viewing their roster
-            if (Objects.equals(interaction.getData().getName(), "getmyroster")) {
+            if (Objects.equals(interaction.getData().getName(), "roster")) {
                 var players = dailyRosterServices.getPlayerRoster(interaction.getUser().getId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
