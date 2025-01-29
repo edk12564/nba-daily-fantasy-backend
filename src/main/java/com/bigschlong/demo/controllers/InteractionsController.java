@@ -81,7 +81,7 @@ public class InteractionsController {
             // 1. return line to choose each position separately with set${position} interaction
             // 2. for each set${position} interaction, return a select menu that allows you to choose your player for that position
             // 3. if user has set all positions, return a message that their roster is full and do a play command to lock in their roster
-            if (Objects.equals(interaction.getData().getName(), "setroster")) {
+            else if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
                 var position = interaction.getData().getOptions()[0].getValue();
                 String pval = "";
@@ -108,10 +108,10 @@ public class InteractionsController {
             // interaction where user resets their roster
 
             // interaction where user is viewing all players for all positions
-            if (Objects.equals(interaction.getData().getName(), "viewallplayers")) {
+            else if (Objects.equals(interaction.getData().getName(), "viewallplayers")) {
                 var players = nbaPlayerServices.getAllTodaysNbaPlayers().toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
-                        .content(players)
+                        .content("this works!")
                         .build();
                 var result = InteractionResponse.builder()
                         .type(4)
@@ -122,7 +122,7 @@ public class InteractionsController {
             }
 
             // interaction where user is viewing all players for guards
-            if (Objects.equals(interaction.getData().getName(), "viewguards")) {
+            else if (Objects.equals(interaction.getData().getName(), "viewguards")) {
                 var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("G").toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
@@ -134,7 +134,7 @@ public class InteractionsController {
             }
 
             // interaction where user is viewing all players for forwards
-            if (Objects.equals(interaction.getData().getName(), "viewforwards")) {
+            else if (Objects.equals(interaction.getData().getName(), "viewforwards")) {
                 var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("F").toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
@@ -146,7 +146,7 @@ public class InteractionsController {
             }
 
             // interaction where user is viewing all players for centers
-            if (Objects.equals(interaction.getData().getName(), "viewcenters")) {
+            else if (Objects.equals(interaction.getData().getName(), "viewcenters")) {
                 var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("C").toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
@@ -160,7 +160,7 @@ public class InteractionsController {
             // interaction where the user's roster is locked in and cannot be reset. This will only work when the roster is completely full.
 
             // interaction where user is viewing their roster
-            if (Objects.equals(interaction.getData().getName(), "roster")) {
+            else if (Objects.equals(interaction.getData().getName(), "roster")) {
                 var players = dailyRosterServices.getPlayerRoster(interaction.getUser().getId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
@@ -172,7 +172,7 @@ public class InteractionsController {
             }
 
             // interaction where user is viewing all discord players' nba players
-            if (Objects.equals(interaction.getData().getName(), "getserverrosters")) {
+            else if (Objects.equals(interaction.getData().getName(), "getserverrosters")) {
                 var players = dailyRosterServices.getGuildRoster(interaction.getGuildId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
@@ -188,9 +188,8 @@ public class InteractionsController {
 
         }
 
-
-
         return null;
+
     }
 
 }
