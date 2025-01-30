@@ -59,7 +59,9 @@ public class InteractionsController {
 
         // if the interaction is a ping, return a ping response
         if (interaction.getType() == Interaction.InteractionType.PING) {
-            return InteractionResponse.builder().type(1).build();
+            InteractionResponse build = InteractionResponse.builder().type(1).build();
+            System.out.println("ping" + build);
+            return build;
         }
 
         // now we handle the application commands using the Interaction model
