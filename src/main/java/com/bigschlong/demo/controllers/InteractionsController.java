@@ -58,7 +58,7 @@ public class InteractionsController {
         Interaction interaction = mapper.readValue(body, Interaction.class);
 
         // if the interaction is a ping, return a ping response
-        if (interaction.getType() == Interaction.InteractionType.PING) {
+        if (interaction.getType() == 1) {
             InteractionResponse build = InteractionResponse.builder().type(1).build();
             System.out.println("ping" + build);
             return build;
@@ -68,7 +68,7 @@ public class InteractionsController {
         // TODO: make each of these interactions nice and pretty with the Select Menu
 
         // interaction where user is registering to play
-        else if (interaction.getType() == Interaction.InteractionType.APPLICATION_COMMAND) {
+        else if (interaction.getType() == 2) {
             if (Objects.equals(interaction.getData().getName(), "register")) {
                 discordPlayerServices.saveDiscordPlayer(new DiscordPlayer(interaction.getUser().getId(), interaction.getUser().getUsername()));
                 var data = InteractionResponse.InteractionResponseData.builder()

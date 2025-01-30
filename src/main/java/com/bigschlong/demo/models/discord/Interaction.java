@@ -1,7 +1,6 @@
 package com.bigschlong.demo.models.discord;
 
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
@@ -10,7 +9,7 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @Jacksonized
 public class Interaction {
-    InteractionType type;
+    Integer type;
     int version;
     String token;
     String id;
@@ -35,20 +34,4 @@ public class Interaction {
     // Exists if invoked in DM
     User user;
 
-
-    public enum InteractionType {
-        PING(1),
-        APPLICATION_COMMAND(2),
-        MESSAGE_COMPONENT(3),
-        APPLICATION_COMMAND_AUTOCOMPLETE(4),
-        MODAL_SUBMIT(5);
-
-        @JsonValue
-        public final int value;
-
-        InteractionType(int value) {
-            this.value = value;
-        }
-
-    }
 }
