@@ -82,7 +82,6 @@ public class InteractionsController {
             // 2. for each set${position} interaction, return a select menu that allows you to choose your player for that position
             // 3. if user has set all positions, return a message that their roster is full and do a play command to lock in their roster
             else if (Objects.equals(interaction.getData().getName(), "setroster")) {
-                System.out.println("this prints set roster");
                 String pval = getPlayerValue(interaction);
 
                 var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval).toString();
@@ -101,7 +100,7 @@ public class InteractionsController {
             else if (Objects.equals(interaction.getData().getName(), "viewallplayers")) {
                 var players = nbaPlayerServices.getAllTodaysNbaPlayers().toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
-                        .content("this works!")
+                        .content(players)
                         .build();
                 var result = InteractionResponse.builder()
                         .type(4)
