@@ -1,9 +1,9 @@
 package com.bigschlong.demo.controllers;
 
 import com.bigschlong.demo.interceptors.CheckSignature;
-import com.bigschlong.demo.models.dtos.DiscordPlayer;
-import com.bigschlong.demo.models.discord.InteractionResponse;
 import com.bigschlong.demo.models.discord.Interaction;
+import com.bigschlong.demo.models.discord.InteractionResponse;
+import com.bigschlong.demo.models.dtos.DiscordPlayer;
 import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.DiscordPlayerServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
@@ -20,7 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/interactions")
+@RequestMapping("/api/")
 public class InteractionsController {
 
     private final
@@ -39,7 +39,7 @@ public class InteractionsController {
     }
 
     @SneakyThrows
-    @PostMapping(value = "/", produces = "application/json")
+    @PostMapping(value = "/interactions", produces = "application/json")
     public InteractionResponse ping(HttpServletRequest request) {
 
         System.out.println("this prints");
