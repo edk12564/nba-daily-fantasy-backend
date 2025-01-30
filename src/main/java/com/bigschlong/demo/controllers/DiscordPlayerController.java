@@ -21,7 +21,6 @@ public class DiscordPlayerController {
         this.services = services;
     }
 
-
     @GetMapping(value="/{id}/roster", produces = "application/json")
     public List<NbaPlayer> getRosterByDiscordId(@PathVariable String id) {
         return services.getRosterByDiscordId(UUID.fromString(id));
