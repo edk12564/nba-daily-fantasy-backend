@@ -42,7 +42,6 @@ public class InteractionsController {
     @PostMapping(value = "/interactions", produces = "application/json")
     public InteractionResponse ping(HttpServletRequest request) {
 
-        System.out.println("this prints");
         // configure the object mapper to ignore unknown properties instead of throwing an exception
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -59,9 +58,7 @@ public class InteractionsController {
 
         // if the interaction is a ping, return a ping response
         if (interaction.getType() == 1) {
-            InteractionResponse build = InteractionResponse.builder().type(1).build();
-            System.out.println("ping" + build);
-            return build;
+            return InteractionResponse.builder().type(1).build();
         }
 
         // now we handle the application commands using the Interaction model
@@ -86,17 +83,7 @@ public class InteractionsController {
             // 3. if user has set all positions, return a message that their roster is full and do a play command to lock in their roster
             else if (Objects.equals(interaction.getData().getName(), "setroster")) {
                 System.out.println("this prints set roster");
-                var position = interaction.getData().getOptions()[0].getValue();
-                String pval = "";
-
-                // TODO: account for combination players like C-F, F-C, etc. Note that they are not in order either. So it could be C-F or F-C and they are equivalent.
-                if (position.equals("PG") || position.equals("SG")) {
-                    pval = "G";
-                } else if (position.equals("SF") || position.equals("PF")) {
-                    pval = "F";
-                } else if (position.equals("C")) {
-                    pval = "C";
-                }
+                String pval = getPlayerValue(interaction);
 
                 var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(pval).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
@@ -190,12 +177,26 @@ public class InteractionsController {
 
 
         }
-        var defaultdata = InteractionResponse.InteractionResponseData.builder()
+        var defaultData = InteractionResponse.InteractionResponseData.builder()
                 .content("This is the default response. This means that the interaction was not recognized.")
                 .build();
 
-        return InteractionResponse.builder().type(4).data(defaultdata).build();
+        return InteractionResponse.builder().type(4).data(defaultData).build();
 
+    }
+
+    private static String getPlayerValue(Interaction interaction) {
+        var position = interaction.getData().getOptions()[0].getValue();
+        String pval = switch (position) {
+            case "PG", "SG" -> "G";
+            case "SF", "PF" -> "F";
+            case "C" -> "C";
+            default -> "";
+
+            // TODO: account for combination players like C-F, F-C, etc. Note that they are not in order either. So it could be C-F or F-C and they are equivalent.
+        };
+
+        return pval;
     }
 
 }

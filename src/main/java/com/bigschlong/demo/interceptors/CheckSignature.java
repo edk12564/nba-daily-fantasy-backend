@@ -24,9 +24,9 @@ public class CheckSignature {
             String body = extractRequestBody(request); // Utility method to extract the request body as a string
             String signature = request.getHeader("X-Signature-Ed25519"); // Extract signature from headers (example)
 
-            System.out.println("timestamp:" + timestamp);
-            System.out.println("body:" + body);
-            System.out.println("signature:" + signature);
+            System.out.println("timestamp: " + timestamp);
+            System.out.println("body: " + body);
+            System.out.println("signature: " + signature);
 
             // Perform signature verification
             boolean isVerified = Crypto.signVerify(
