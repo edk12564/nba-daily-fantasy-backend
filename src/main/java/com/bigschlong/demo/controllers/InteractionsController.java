@@ -83,7 +83,7 @@ public class InteractionsController {
                         .components(components)
                         .build();
                 return InteractionResponse.builder()
-                        .type(4)
+                        .type(6)
                         .data(data)
                         .build();
             }
