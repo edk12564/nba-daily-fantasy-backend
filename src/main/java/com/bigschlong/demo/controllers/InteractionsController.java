@@ -65,10 +65,10 @@ public class InteractionsController {
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
                 String playerPosition = GetPlayerPosition.getPlayerPosition(interaction);
 
-                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(playerPosition).stream()
+                List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(playerPosition).stream()
                         .map(player -> Components.SelectMenu.SelectOption.builder()
-                                .label(player.toString())
-                                .value(player.toString())
+                                .label(player)
+                                .value(player)
                                 .build())
                         .toList();
                 Components selectMenu = Components.SelectMenu.builder()
