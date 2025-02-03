@@ -67,8 +67,8 @@ public class InteractionsController {
 
                 var players = nbaPlayerServices.getTodaysNbaPlayersByPosition(playerPosition).stream()
                         .map(player -> Components.SelectMenu.SelectOption.builder()
-                                .label(player)
-                                .value(player)
+                                .label(player.toString())
+                                .value(player.toString())
                                 .build())
                         .toList();
                 Components selectMenu = Components.SelectMenu.builder()
