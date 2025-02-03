@@ -64,6 +64,7 @@ public class Components {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ActionRow extends Components {
+        private Integer type; // Type of action row component (1)
         private List<Components> components; // List of components in the action row
     }
 

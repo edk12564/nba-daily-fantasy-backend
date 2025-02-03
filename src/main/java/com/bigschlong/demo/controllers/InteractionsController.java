@@ -79,6 +79,7 @@ public class InteractionsController {
                         .build();
                 List<Components> components = List.of(selectMenu);
                 Components.ActionRow actionRow = Components.ActionRow.builder()
+                        .type(1)
                         .components(components)
                         .build();
                 var data = InteractionResponse.InteractionResponseData.builder()
