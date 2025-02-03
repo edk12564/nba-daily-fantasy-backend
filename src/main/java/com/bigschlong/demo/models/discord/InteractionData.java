@@ -4,22 +4,26 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
 @Data
 @Jacksonized
 @Builder
 public class InteractionData {
     String id;
     String name;
-    Option[] options;
+//    Option[] options;
 
-    @Data
-    @Jacksonized
-    @Builder
-    public static class Option {
-        String name;
-        Integer type;
-        String value;
-    }
+    List<String> values;
+
+//    @Data
+//    @Jacksonized
+//    @Builder
+//    public static class Option {
+//        String name;
+//        Integer type;
+//        String value;
+//    }
 }
 
 
