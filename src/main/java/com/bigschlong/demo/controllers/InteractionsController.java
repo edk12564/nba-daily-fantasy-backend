@@ -74,7 +74,7 @@ public class InteractionsController {
                 Components selectMenu = Components.SelectMenu.builder()
                         .type(3)
                         .customId("set " + playerPosition)
-                        .placeholder("You did not pick a player!")
+                        .placeholder("Pick a player")
                         .options(players)
                         .build();
                 List<Components> components = List.of(selectMenu);
@@ -178,7 +178,7 @@ public class InteractionsController {
             dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split(" ",2)[0]), interaction.getUser().getId(), interaction.getGuildId(), interaction.getUser().getUsername());
 
             // Create a response confirming the selected option
-            String content = "You have selected: " + selectedValue.split(" ",2)[0];
+            String content = "You have selected: " + selectedValue.split("-",2)[0];
             var data = InteractionResponse.InteractionResponseData.builder()
                     .content(content)
                     .build();
