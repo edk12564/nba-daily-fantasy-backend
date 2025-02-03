@@ -15,9 +15,9 @@ import java.util.UUID;
 public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID> {
 
     @Query(value = """
-    INSERT INTO daily_roster (discord_player_id, nba_player_id, guild_id, date, nickname)
+    INSERT INTO daily_roster (discord_player_id, nba_player_id, guild_id, created_at, nickname)
     VALUES (:discordPlayerId, :nbaPlayerId, :guildId, CURRENT_TIMESTAMP, :nickname)
-    ON CONFLICT (nickname, date) DO UPDATE
+    ON CONFLICT (nickname, created_at) DO UPDATE
     SET nickname = EXCLUDED.nickname, created_at = CURRENT_TIMESTAMP;
     """)
     void saveRosterChoice(UUID nbaPlayerId, String discordPlayerId, String guildId, String nickname);
