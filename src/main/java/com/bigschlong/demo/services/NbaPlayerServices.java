@@ -58,7 +58,7 @@ public class NbaPlayerServices {
     //
     public List<String> getTodaysNbaPlayersByPosition(String position) {
       return nbaPlayerRepository.getTodaysNbaPlayersByPosition(position).stream()
-              .map(player -> player.getName() + " - " + player.getDollar_value().toString())
+              .map(player -> player.getName() + "-" + player.getDollar_value().toString())
               .toList();
     }
 
