@@ -78,9 +78,12 @@ public class InteractionsController {
                         .options(players)
                         .build();
                 List<Components> components = List.of(selectMenu);
+                Components.ActionRow actionRow = Components.ActionRow.builder()
+                        .components(components)
+                        .build();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content("Choose a player for the " + playerPosition + " position")
-                        .components(components)
+                        .components(List.of(actionRow))
                         .build();
                 return InteractionResponse.builder()
                         .type(4)

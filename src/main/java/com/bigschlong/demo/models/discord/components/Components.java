@@ -56,6 +56,15 @@ public class Components {
             private String name; // Name of the emoji
             private Boolean animated; // Whether the emoji is animated
         }
+
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ActionRow extends Components {
+        private List<Components> components; // List of components in the action row
     }
 
 }
