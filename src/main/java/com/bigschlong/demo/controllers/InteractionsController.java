@@ -171,8 +171,8 @@ public class InteractionsController {
 
         // Select Menu Responses
         } else if (interaction.getType() == 3) {
-            var options = interaction.getData().getValues().get(0);
-            String selectedValue = options;
+            List<String> options = interaction.getData().getValues();
+            String selectedValue = String.valueOf(options);
 
             // Save the choice in the roster database
             dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split(" ",2)[0]), interaction.getUser().getId(), interaction.getGuildId(), interaction.getUser().getUsername());

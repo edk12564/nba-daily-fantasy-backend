@@ -12,18 +12,18 @@ import java.util.List;
 public class InteractionData {
     String id;
     String name;
-//    Option[] options;
+    Option[] options;
 
     List<String> values;
 
-//    @Data
-//    @Jacksonized
-//    @Builder
-//    public static class Option {
-//        String name;
-//        Integer type;
-//        String value;
-//    }
+    @Data
+    @Jacksonized
+    @Builder
+    public static class Option {
+        String name;
+        Integer type;
+        String value;
+    }
 }
 
 
