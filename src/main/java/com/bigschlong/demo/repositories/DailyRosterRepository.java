@@ -20,7 +20,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     ON CONFLICT (nickname, created_at) DO UPDATE
     SET nickname = EXCLUDED.nickname, created_at = now();
     """)
-    List<String> saveRosterChoice(NbaPlayer nbaPlayer, String discordPlayerId, String guildId, String nickname);
+    void saveRosterChoice(UUID nbaPlayerId, String discordPlayerId, String guildId, String nickname);
 
     // check to make sure this is the right join with uid and uid
     @Query(value = """
