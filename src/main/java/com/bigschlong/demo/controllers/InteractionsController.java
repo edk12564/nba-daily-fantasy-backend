@@ -176,7 +176,7 @@ public class InteractionsController {
             String selectedValue = interaction.getData().getValues().get(0);
 
             // Save the choice in the roster database
-            // change this later to not have to search the database. you should just use the interaction object
+            // change this later to not have to search the database. you should just use the interaction object. alternatively if you want to get more information from the player that you want to display to the user, you can do the search
             dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split("-",2)[0]), interaction.getMember().getUser().getId(), interaction.getGuildId(), interaction.getMember().getUser().getUsername());
 
             // Create a response confirming the selected option
