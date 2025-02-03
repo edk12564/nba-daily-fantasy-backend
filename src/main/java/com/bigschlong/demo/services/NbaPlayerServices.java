@@ -25,7 +25,7 @@ public class NbaPlayerServices {
 //
     @Transactional(readOnly = true)
     public NbaPlayer findNbaPlayerByUid(UUID uid) {
-        return nbaPlayerRepository.findById(uid);
+        return nbaPlayerRepository.findNbaPlayerByUid(uid);
     }
 
     @Transactional(readOnly = true)
