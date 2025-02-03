@@ -178,6 +178,7 @@ public class InteractionsController {
             dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split(" ",2)[0]), interaction.getUser().getId(), interaction.getGuildId(), interaction.getUser().getUsername());
 
             // Create a response confirming the selected option
+            System.out.println("you made it past save");
             String content = "You have selected: " + selectedValue.split("-",2)[0];
             var data = InteractionResponse.InteractionResponseData.builder()
                     .content(content)
