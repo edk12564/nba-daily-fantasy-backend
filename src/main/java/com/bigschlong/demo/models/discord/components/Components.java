@@ -14,7 +14,7 @@ public class Components {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class SelectMenu  {
+    public static class SelectMenu extends Components  {
 
         private Integer type; // Type of select menu component (3, 5, 6, 7, 8)
         private String customId; // ID for the select menu

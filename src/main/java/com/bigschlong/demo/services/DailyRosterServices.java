@@ -1,5 +1,7 @@
 package com.bigschlong.demo.services;
 
+import com.bigschlong.demo.models.dtos.DailyRoster;
+import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.repositories.DailyRosterRepository;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,12 @@ public class DailyRosterServices {
         return dailyRosterRepository.getRosterByGuildId(guildId).stream()
                 .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
+    }
+
+    public List<String> saveRosterChoice(NbaPlayer nbaPlayer, String discordPlayerId, String guildId, String nickname) {
+
+        return dailyRosterRepository.saveRosterChoice(nbaPlayer, discordPlayerId, guildId, nickname);
+
     }
 
 }

@@ -10,12 +10,12 @@ import lombok.extern.jackson.Jacksonized;
 public class InteractionData {
     String id;
     String name;
-    Options[] options;
+    Option[] options;
 
     @Data
     @Jacksonized
     @Builder
-    public static class Options {
+    public static class Option {
         String name;
         Integer type;
         String value;

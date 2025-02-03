@@ -1,6 +1,7 @@
 package com.bigschlong.demo.repositories;
 
 import com.bigschlong.demo.models.dtos.DailyRoster;
+import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -12,6 +13,14 @@ import java.util.UUID;
 
 @Repository
 public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID> {
+
+    @Query(value = """
+    INSERT INTO daily_roster (discord_player_id, nba_player_id, guild_id, date, nickname)
+    VALUES (:discordPlayerId, :nbaPlayerId, :guildId, :now(), :nickname)
+    ON CONFLICT (nickname, created_at) DO UPDATE
+    SET nickname = EXCLUDED.nickname, created_at = now();
+    """)
+    List<String> saveRosterChoice(NbaPlayer nbaPlayer, String discordPlayerId, String guildId, String nickname);
 
     // check to make sure this is the right join with uid and uid
     @Query(value = """

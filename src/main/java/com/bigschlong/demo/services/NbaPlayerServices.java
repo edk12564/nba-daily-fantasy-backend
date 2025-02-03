@@ -1,9 +1,13 @@
 package com.bigschlong.demo.services;
 
+import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.repositories.NbaPlayerRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class NbaPlayerServices {
@@ -19,10 +23,16 @@ public class NbaPlayerServices {
 //        return nbaPlayerRepository.getTeamByPlayerId(discordId);
 //    }
 //
-//    @Transactional(readOnly = true)
-//    public Optional<NbaPlayer> findNbaPlayerById(UUID id) {
-//        return nbaPlayerRepository.findById(id);
-//    }
+    @Transactional(readOnly = true)
+    public NbaPlayer findNbaPlayerByUid(UUID uid) {
+        return nbaPlayerRepository.findById(uid);
+    }
+
+    @Transactional(readOnly = true)
+    public NbaPlayer findNbaPlayerByName(String name) {
+        return nbaPlayerRepository.findNbaPlayerByName(name);
+    }
+
 //
 //    @Transactional(readOnly = true)
 //    public List<NbaPlayer> findAllNbaPlayers() {

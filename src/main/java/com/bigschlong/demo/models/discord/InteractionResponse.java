@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -18,6 +20,6 @@ public class InteractionResponse {
     @Builder
     public static class InteractionResponseData {
         String content;
-        Components[] components;
+        List<Components> components;
     }
 }

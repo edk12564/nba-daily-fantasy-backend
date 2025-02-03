@@ -7,6 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,6 +19,18 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     WHERE np.nba_player_uid = :playerId
     """)
     List<Team> getTeamByPlayerId(UUID playerId);
+
+    @Query(value = """
+    SELECT * FROM nba_players
+    WHERE nba_player_uid = :nbaPlayerUid;
+    """)
+    NbaPlayer findNbaPlayerByUid(UUID nbaPlayerUid);
+
+    @Query(value = """
+    SELECT * FROM nba_players
+    WHERE name = :name;
+    """)
+    NbaPlayer findNbaPlayerByName(String name);
 
     @Query(value = """
     SELECT np.* FROM nba_players np
