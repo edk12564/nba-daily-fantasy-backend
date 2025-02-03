@@ -145,7 +145,7 @@ public class InteractionsController {
 
             // interaction where user is viewing their roster
             else if (Objects.equals(interaction.getData().getName(), "roster")) {
-                var players = dailyRosterServices.getPlayerRoster(interaction.getUser().getId()).toString();
+                var players = dailyRosterServices.getPlayerRoster(interaction.getMember().getUser().getId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
@@ -175,7 +175,7 @@ public class InteractionsController {
             String selectedValue = String.valueOf(options);
 
             // Save the choice in the roster database
-            dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split(" ",2)[0]), interaction.getUser().getId(), interaction.getGuildId(), interaction.getUser().getUsername());
+            dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split(" ",2)[0]), interaction.getMember().getUser().getId(), interaction.getGuildId(), interaction.getMember().getUser().getUsername());
 
             // Create a response confirming the selected option
             System.out.println("you made it past save");
