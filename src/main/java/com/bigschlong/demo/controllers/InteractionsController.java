@@ -171,8 +171,9 @@ public class InteractionsController {
 
         // Select Menu Responses
         } else if (interaction.getType() == 3) {
-            List<String> options = interaction.getData().getValues();
-            String selectedValue = String.valueOf(options);
+//            List<String> options = interaction.getData().getValues();
+//            String selectedValue = String.valueOf(options);
+            String selectedValue = interaction.getData().getValues().get(0);
 
             // Save the choice in the roster database
             // change this later to not have to search the database. you should just use the interaction object
