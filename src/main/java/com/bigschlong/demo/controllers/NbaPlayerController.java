@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/nba-players")
-public class ActivityController {
+public class NbaPlayerController {
 
     @Autowired
     NbaPlayerServices nbaPlayerServices;
