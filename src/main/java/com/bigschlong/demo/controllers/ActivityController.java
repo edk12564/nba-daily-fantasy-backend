@@ -1,6 +1,5 @@
 package com.bigschlong.demo.controllers;
 
-import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.models.joinTables.NbaPlayerTeam;
 import com.bigschlong.demo.services.NbaPlayerServices;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/nba-players")
-public class NbaPlayerController {
+public class ActivityController {
 
     @Autowired
     NbaPlayerServices nbaPlayerServices;
