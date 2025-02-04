@@ -171,7 +171,7 @@ public class InteractionsController {
                         .build();
             }
 
-            // interaction where user is checking all players last played game's scores and rankings
+            // interaction where user is checking all players last played game's scores and rankings (leaderboard)
 
         // Select Menu Responses
         } else if (interaction.getType() == 3) {
