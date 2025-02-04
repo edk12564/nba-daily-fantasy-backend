@@ -6,17 +6,18 @@ import com.bigschlong.demo.models.discord.InteractionResponse;
 import com.bigschlong.demo.models.discord.components.Components;
 import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
+import com.bigschlong.demo.utils.GetPlayerPosition;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
+import okhttp3.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import com.bigschlong.demo.utils.GetPlayerPosition;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,9 +26,17 @@ import java.util.Objects;
 @RequestMapping("/api/")
 public class InteractionsController {
 
+    @Value("${discord.client.id}")
+    private String clientId;
+
+    @Value("${discord.client.secret}")
+    private String discordClientSecret;
+
     private final NbaPlayerServices nbaPlayerServices;
     private final ObjectMapper mapper = new ObjectMapper();
     private final DailyRosterServices dailyRosterServices;
+
+    OkHttpClient client = new OkHttpClient();
 
     public InteractionsController(NbaPlayerServices nbaPlayerServices, DailyRosterServices dailyRosterServices) {
         this.nbaPlayerServices = nbaPlayerServices;
@@ -94,10 +103,12 @@ public class InteractionsController {
 
             // interaction where user is viewing all players for all positions
             else if (Objects.equals(interaction.getData().getName(), "viewallplayers")) {
-                var players = nbaPlayerServices.getAllTodaysNbaPlayers().toString();
+                var players = nbaPlayerServices.getAllTodaysNbaPlayers().stream()
+                        .map(player -> player.getName() + " " + player.getDollar_value()).toList().toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
+
                 return InteractionResponse.builder()
                         .type(4)
                         .data(data)
@@ -169,17 +180,17 @@ public class InteractionsController {
 
             // interaction where user is checking all players last played game's scores and rankings
 
-        // Select Menu Responses
+            // Select Menu Responses
         } else if (interaction.getType() == 3) {
             var options = interaction.getData().getValues().get(0);
             String selectedValue = options;
 
             // Save the choice in the roster database
-            dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split(" ",2)[0]), interaction.getUser().getId(), interaction.getGuildId(), interaction.getUser().getUsername());
+            dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split(" ", 2)[0]), interaction.getUser().getId(), interaction.getGuildId(), interaction.getUser().getUsername());
 
             // Create a response confirming the selected option
             System.out.println("you made it past save");
-            String content = "You have selected: " + selectedValue.split("-",2)[0];
+            String content = "You have selected: " + selectedValue.split("-", 2)[0];
             var data = InteractionResponse.InteractionResponseData.builder()
                     .content(content)
                     .build();
@@ -188,7 +199,41 @@ public class InteractionsController {
                     .data(data)
                     .build();
         }
-
         return null;
     }
+
+    @PostMapping(value = "/token")
+    @SneakyThrows
+    public String getToken(@org.springframework.web.bind.annotation.RequestBody String code) {
+        RequestBody body = new FormBody.Builder()
+                .add("code", code)
+                .add("client_secret", discordClientSecret)
+                .add("client_id", clientId)
+                .add("grant_type", "authorization_code").build();
+
+        Request request = new Request.Builder()
+                .url("https://discord.com/api/oauth2/token")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .post(body)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return response.body() != null ? response.body().string() : response.message();
+        }
+    }
+
+    @SneakyThrows
+    @PostMapping(value = "/user")
+    public String getUserInfo(@org.springframework.web.bind.annotation.RequestBody String accessToken) {
+        var request = new Request.Builder()
+                .url("https://discord.com/api/users/@me")
+                .header("Authorization", "Bearer " + accessToken)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            String s = response.body() != null ? response.body().string() : response.message();
+            System.out.println(s);
+            return s;
+        }
+    }
+
 }

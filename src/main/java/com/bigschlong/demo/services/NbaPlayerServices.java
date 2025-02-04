@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -62,9 +61,7 @@ public class NbaPlayerServices {
               .toList();
     }
 
-    public List<String> getAllTodaysNbaPlayers() {
-      return nbaPlayerRepository.getAllTodaysNbaPlayers().stream()
-              .map(player -> player.getName() + "-" + player.getDollar_value().toString())
-              .toList();
+    public List<NbaPlayer> getAllTodaysNbaPlayers() {
+        return nbaPlayerRepository.getAllTodaysNbaPlayers();
     }
 }
