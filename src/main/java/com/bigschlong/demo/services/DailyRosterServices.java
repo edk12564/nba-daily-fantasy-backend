@@ -1,11 +1,10 @@
 package com.bigschlong.demo.services;
 
-import com.bigschlong.demo.models.dtos.DailyRoster;
-import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.repositories.DailyRosterRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DailyRosterServices {
@@ -28,9 +27,9 @@ public class DailyRosterServices {
                 .toList();
     }
 
-    public List<String> saveRosterChoice(NbaPlayer nbaPlayer, String discordPlayerId, String guildId, String nickname) {
+    public List<String> saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname) {
 
-        return dailyRosterRepository.saveRosterChoice(nbaPlayer, discordPlayerId, guildId, nickname);
+        return dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname);
 
     }
 
