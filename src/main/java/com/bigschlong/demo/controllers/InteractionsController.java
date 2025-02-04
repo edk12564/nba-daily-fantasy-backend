@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 import com.bigschlong.demo.utils.GetPlayerPosition;
 
@@ -40,6 +41,7 @@ public class InteractionsController {
 
         // configure the object mapper to ignore unknown properties instead of throwing an exception
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
 
         // check discord request signature
         String body = CheckSignature.checkSignature(request);
