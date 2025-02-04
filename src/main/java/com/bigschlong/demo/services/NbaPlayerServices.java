@@ -35,8 +35,8 @@ public class NbaPlayerServices {
     }
 
     @Transactional(readOnly = true)
-    public List<NbaPlayerTeam> getNbaPlayersByPositionWithTeam(String position) {
-        return getNbaPlayersByPositionWithTeam(position);
+    public List<NbaPlayerTeam> getNbaPlayersWithTeam() {
+        return getNbaPlayersWithTeam();
     }
 
 //

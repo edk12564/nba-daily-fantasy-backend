@@ -1,6 +1,7 @@
 package com.bigschlong.demo.controllers;
 
 import com.bigschlong.demo.models.dtos.NbaPlayer;
+import com.bigschlong.demo.models.joinTables.NbaPlayerTeam;
 import com.bigschlong.demo.services.NbaPlayerServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +19,10 @@ public class NbaPlayerController {
 
 
     @GetMapping(value = "/todays-players", produces = "application/json")
-    public List<NbaPlayer> getPlayers() {
-        return nbaPlayerServices.getAllTodaysNbaPlayers();
+    public List<NbaPlayerTeam> getPlayers() {
+
+        return nbaPlayerServices.getNbaPlayersWithTeam();
+
     }
 
 }

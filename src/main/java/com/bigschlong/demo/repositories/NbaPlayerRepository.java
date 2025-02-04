@@ -51,11 +51,10 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     SELECT np.name AS player_name, t.name AS team_name, np.dollar_value
     FROM nba_players np
     JOIN teams t on t.team_id = np.team_id
-    WHERE np.position = :position
     ORDER BY np.dollar_value DESC
     LIMIT 25
     """)
-    List<NbaPlayerTeam> getNbaPlayersByPositionWithTeam(String position);
+    List<NbaPlayerTeam> getNbaPlayersWithTeam();
 
 }
 
