@@ -52,6 +52,8 @@ public class InteractionsController {
         // if there is a body, deserialize it
         Interaction interaction = mapper.readValue(body, Interaction.class);
 
+        System.out.println(interaction);
+
         // if the interaction is a ping, return a ping response
         if (interaction.getType() == 1) {
             return InteractionResponse.builder().type(1).build();
