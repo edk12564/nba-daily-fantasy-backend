@@ -14,21 +14,14 @@ public class NbaPlayer {
     
     @Id
     private UUID nba_player_uid;
-    
+
     private Integer nba_player_id;
-    
     private String name;
-    
     private String date;
-    
     private String position;
-    
     private Integer against_team;
-    
     private Integer dollar_value;
-    
     private Double fantasy_score;
-    
     private Integer team_id;
     
 

@@ -13,7 +13,6 @@ public class InteractionData {
     String id;
     String name;
     Option[] options;
-
     List<String> values;
 
     @Data

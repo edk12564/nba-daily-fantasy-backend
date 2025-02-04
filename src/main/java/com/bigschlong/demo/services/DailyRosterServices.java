@@ -27,9 +27,9 @@ public class DailyRosterServices {
                 .toList();
     }
 
-    public List<String> saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname) {
+    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname) {
 
-        return dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname);
+        dailyRosterRepository.saveRosterChoice(nbaPlayer.getNba_player_uid(), discordPlayerId, guildId, nickname);
 
     }
 

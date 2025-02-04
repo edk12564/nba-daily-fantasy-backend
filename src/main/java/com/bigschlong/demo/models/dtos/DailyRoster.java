@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Getter
@@ -19,17 +21,7 @@ public class DailyRoster {
     private DailyRosterId id;
 
     String nickname;
-
-    OffsetDateTime created_at;
-
-
-    // discordplayerserver
-    // playerId
-    // guildId
-    // server nickname
-    // (guildId, nbaPlayerUid, discordPlayerId), nickname
-    //    ^composite primary key
-
+    LocalDate date;
 
     // Spring Boot knows to add these to the SQL table
     @Data
