@@ -12,4 +12,7 @@ import java.util.UUID;
 public class SetPlayerDTO {
     UUID nba_player_uid;
     String position;
+    String guild_id;
+    String nickname;
+    String discord_player_id;
 }

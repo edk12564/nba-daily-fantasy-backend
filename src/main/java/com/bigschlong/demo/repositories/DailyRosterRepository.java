@@ -2,6 +2,7 @@ package com.bigschlong.demo.repositories;
 
 import com.bigschlong.demo.models.dtos.DailyRoster;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -13,25 +14,26 @@ import java.util.UUID;
 @Repository
 public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID> {
 
+    @Modifying
     @Query(value = """
-    INSERT INTO daily_roster (discord_player_id, nba_player_id, guild_id, date, nickname)
-                    VALUES (:discordPlayerId, :nbaPlayerUid, :guildId, CURRENT_DATE, :nickname)
-    """)
-    void saveRosterChoice(UUID nbaPlayerId, String discordPlayerId, String guildId, String nickname);
+            INSERT INTO daily_roster (discord_player_id, nba_player_uid, guild_id, date, nickname, position)
+                            VALUES (:discordPlayerId, :nbaPlayerUid, :guildId, CURRENT_DATE, :nickname, :position::daily_roster_position)
+            """)
+    void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position);
 
     // check to make sure this is the right join with uid and uid
     @Query(value = """
-    SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
-    JOIN nba_players np on np.nba_player_uid = dr.nba_player_id
-    WHERE dr.discord_player_id = :discordId
-    """)
+            SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
+            JOIN nba_players np on np.nba_player_uid = dr.nba_player_id
+            WHERE dr.discord_player_id = :discordId
+            """)
     List<DailyRosterPlayer> getRosterByDiscordId(String discordId);
 
     @Query(value = """
-    SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
-    JOIN nba_players np on np.nba_player_uid = dr.nba_player_id
-    WHERE dr.guild_id = :guildId
-    """)
+            SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
+            JOIN nba_players np on np.nba_player_uid = dr.nba_player_id
+            WHERE dr.guild_id = :guildId
+            """)
     List<DailyRosterPlayer> getRosterByGuildId(String guildId);
 
 }

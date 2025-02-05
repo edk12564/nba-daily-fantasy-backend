@@ -9,6 +9,7 @@ import com.bigschlong.demo.services.NbaPlayerServices;
 import com.bigschlong.demo.utils.GetPlayerPosition;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpStatusCode;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 import java.util.List;
 import java.util.Objects;
@@ -185,7 +185,8 @@ public class InteractionsController {
             // Save the choice in the roster database
             // change this later to not have to search the database. you should just use the interaction object. alternatively if you want to get more information from the player that you want to display to the user, you can do the search
             System.out.println(interaction);
-            dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split("-", 2)[0]), interaction.getMember().getUser().getId(), interaction.getGuildId(), interaction.getMember().getUser().getUsername());
+            dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split("-", 2)[0]).getNba_player_uid(),
+                    interaction.getMember().getUser().getId(), interaction.getGuildId(), interaction.getMember().getUser().getUsername(), "PG");
 
             // Create a response confirming the selected option
             System.out.println("you made it past save");

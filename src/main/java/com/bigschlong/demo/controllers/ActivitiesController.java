@@ -1,7 +1,7 @@
 package com.bigschlong.demo.controllers;
 
-import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.models.dtos.SetPlayerDTO;
+import com.bigschlong.demo.models.joinTables.NbaPlayerTeam;
 import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
 import lombok.SneakyThrows;
@@ -34,13 +34,14 @@ public class ActivitiesController {
     OkHttpClient client = new OkHttpClient();
 
     @GetMapping(value = "/todays-players", produces = "application/json")
-    public List<NbaPlayer> getPlayers() {
-        return nbaPlayerServices.getAllTodaysNbaPlayers();
+    public List<NbaPlayerTeam> getPlayers() {
+        return nbaPlayerServices.getNbaPlayersWithTeam();
     }
 
     @PostMapping(value = "/set-player")
-    public void setPlayer(@RequestBody SetPlayerDTO player) {
-        dailyRosterServices.saveRosterChoice(player.getNba_player_uid(), player.getPosition());
+    public void setPlayer(@RequestBody SetPlayerDTO setPlayerDTO) {
+        dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(),
+                setPlayerDTO.getGuild_id(), setPlayerDTO.getNickname(), setPlayerDTO.getPosition());
     }
 
     @PostMapping(value = "/token")
