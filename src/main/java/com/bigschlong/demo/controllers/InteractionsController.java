@@ -162,9 +162,6 @@ public class InteractionsController {
                         .build();
             }
 
-            // interaction where the user's roster is locked in and cannot be reset. This will only work when the roster is completely full.
-
-
             // interaction where user is viewing their roster
             else if (Objects.equals(interaction.getData().getName(), "roster")) {
                 var players = dailyRosterServices.getPlayerRosterString(interaction.getMember().getUser().getId(), interaction.getGuildId()).toString();

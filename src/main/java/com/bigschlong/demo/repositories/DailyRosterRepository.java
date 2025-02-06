@@ -17,26 +17,26 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
 
     @Modifying
     @Query(value = """
-            INSERT INTO daily_roster (discord_player_id, nba_player_uid, guild_id, date, nickname, position)
-                            VALUES (:discordPlayerId, :nbaPlayerUid, :guildId, CURRENT_DATE, :nickname, :position::daily_roster_position)
-                            ON CONFLICT DO UPDATE
-                            SET nba_player_uid = :nbaPlayerUid
-            """)
+    INSERT INTO daily_roster (discord_player_id, nba_player_uid, guild_id, date, nickname, position)
+    VALUES (:discordPlayerId, :nbaPlayerUid, :guildId, CURRENT_DATE, :nickname, :position::daily_roster_position)
+    ON CONFLICT DO UPDATE
+    SET nba_player_uid = :nbaPlayerUid
+    """)
     void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position);
 
     @Query(value = """
-            SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-            WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId
-            """)
+    SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
+    JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+    WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId
+    """)
     List<DailyRosterPlayer> getRosterByDiscordIdAndGuildId(String discordId, String guildId);
 
     @Query(value = """
-            SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-            WHERE dr.guild_id = :guildId
+    SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
+    JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+    WHERE dr.guild_id = :guildId
     ORDER BY dr.nickname
-            """)
+    """)
     List<DailyRosterPlayer> getRostersByGuildId(String guildId);
 
     @Query(value = """

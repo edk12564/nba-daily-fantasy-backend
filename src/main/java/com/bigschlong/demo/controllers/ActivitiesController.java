@@ -38,6 +38,7 @@ public class ActivitiesController {
         return nbaPlayerServices.getNbaPlayersWithTeam();
     }
 
+    // potential problem. i want to pass in an nbaplayer but i cant do this because sriram made a setplayerdto class instead. it has to use uuid now.
     @PostMapping(value = "/set-player")
     public void setPlayer(@RequestBody SetPlayerDTO setPlayerDTO) {
         dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(),
