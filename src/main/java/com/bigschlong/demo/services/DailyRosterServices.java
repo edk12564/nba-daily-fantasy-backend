@@ -54,7 +54,7 @@ public class DailyRosterServices {
     }
 
     public Integer getTodaysRosterPrice(String discordId, String guildId) {
-        AtomicInteger result = new AtomicInteger();
+        AtomicInteger result = new AtomicInteger(0);
         dailyRosterRepository.getTodaysRosterPrice(discordId, guildId).forEach(price -> result.addAndGet(price));
         return result.get();
     }
