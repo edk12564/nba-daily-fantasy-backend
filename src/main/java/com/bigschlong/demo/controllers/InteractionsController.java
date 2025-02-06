@@ -66,7 +66,7 @@ public class InteractionsController {
         else if (interaction.getType() == 2) {
 
             // route for info on the bot's application commands
-            if (Objects.equals(interaction.getData().getName(), "commands")) {
+            if (Objects.equals(interaction.getData().getName(), "info")) {
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content("Here are the available commands: \n" +
                                 "/setroster - Set your roster for the day\n" +

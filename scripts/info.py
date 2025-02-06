@@ -3,7 +3,7 @@ import requests
 url = "https://discord.com/api/v10/applications/1290520169185280062/commands"
 
 json = {
-    "name": "commands",
+    "name": "info",
     "type": 1,
     "description": "Get available application commands"
 }
