@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class DailyRosterServices {
@@ -59,9 +60,9 @@ public class DailyRosterServices {
     }
 
     public Double getTodaysRosterFantasyScore(String discordId, String guildId) {
-        Double result = 0.0;
-        dailyRosterRepository.getTodaysRosterFantasyScores(discordId, guildId).forEach(score -> result += score);
-        return result;
+        AtomicReference<Double> result = new AtomicReference<>(0.0);
+        dailyRosterRepository.getTodaysRosterFantasyScores(discordId, guildId).forEach(score -> result.updateAndGet(v -> v + score));
+        return result.get();
     }
 
 }
