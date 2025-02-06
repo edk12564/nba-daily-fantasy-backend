@@ -18,9 +18,8 @@ import java.time.LocalDate;
 public class DailyRoster {
     @Id
     private DailyRosterId id;
-
-    String nickname;
-    LocalDate date;
+    private String nickname;
+    private LocalDate date;
 
 
     // Spring Boot knows to add these to the SQL table
