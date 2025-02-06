@@ -9,7 +9,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -19,9 +18,8 @@ import java.time.OffsetDateTime;
 public class DailyRoster {
     @Id
     private DailyRosterId id;
-
-    String nickname;
-    LocalDate date;
+    private String nickname;
+    private LocalDate date;
 
     // Spring Boot knows to add these to the SQL table
     @Data
@@ -30,7 +28,7 @@ public class DailyRoster {
     public static class DailyRosterId {
          long guild_id;
 
-         long nba_player_id;
+         long nba_player_uid;
 
          long discord_player_id;
     }

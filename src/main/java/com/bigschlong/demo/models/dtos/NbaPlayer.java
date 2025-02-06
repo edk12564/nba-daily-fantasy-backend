@@ -29,7 +29,7 @@ public class NbaPlayer {
 //    @Column(name = "nba_player_uid", nullable = false)
 //    private UUID id;
 //
-//    @Column(name = "nba_player_id", nullable = false)
+//    @Column(name = "nba_player_uid", nullable = false)
 //    private Integer nbaPlayerUid;
 //
 //    @Column(name = "name", nullable = false, length = Integer.MAX_VALUE)
