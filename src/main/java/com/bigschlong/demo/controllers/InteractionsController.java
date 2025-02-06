@@ -7,7 +7,6 @@ import com.bigschlong.demo.models.discord.components.Components;
 import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.IsLockedServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
-import com.bigschlong.demo.utils.GetPlayerPosition;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -156,8 +155,20 @@ public class InteractionsController {
             }
 
             // interaction where user is viewing all players for guards
-            else if (Objects.equals(interaction.getData().getName(), "viewguards")) {
-                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("G").toString();
+            else if (Objects.equals(interaction.getData().getName(), "viewpointguards")) {
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("PG").toString();
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content(players)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
+            }
+
+            // interaction where user is viewing all players for shooting guards
+            else if (Objects.equals(interaction.getData().getName(), "viewshootingguards")) {
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("SG").toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
@@ -168,8 +179,20 @@ public class InteractionsController {
             }
 
             // interaction where user is viewing all players for forwards
-            else if (Objects.equals(interaction.getData().getName(), "viewforwards")) {
-                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("F").toString();
+            else if (Objects.equals(interaction.getData().getName(), "viewsmallforwards")) {
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("SF").toString();
+                var data = InteractionResponse.InteractionResponseData.builder()
+                        .content(players)
+                        .build();
+                return InteractionResponse.builder()
+                        .type(4)
+                        .data(data)
+                        .build();
+            }
+
+            // interaction where user is viewing all players for power forwards
+            else if (Objects.equals(interaction.getData().getName(), "viewpowerforwards")) {
+                var players = nbaPlayerServices.getTodaysNbaPlayersByPosition("PF").toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();

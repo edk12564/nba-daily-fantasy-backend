@@ -3,7 +3,7 @@ import requests
 url = "https://discord.com/api/v10/applications/1290520169185280062/commands"
 
 json = {
-    "name": "viewguards",
+    "name": "viewsmallforwards",
     "type": 1,
     "description": "View all guards playing today"
 }
