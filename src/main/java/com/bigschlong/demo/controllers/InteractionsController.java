@@ -26,7 +26,6 @@ import java.util.Objects;
 @RequestMapping("/api/")
 public class InteractionsController {
 
-
     private final NbaPlayerServices nbaPlayerServices;
     private final ObjectMapper mapper = new ObjectMapper();
     private final DailyRosterServices dailyRosterServices;
