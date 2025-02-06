@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface IsLockedRepository extends CrudRepository<IsLocked, UUID> {
 
     @Query(value = """
-    SELECT il.* FROM is_locked il
+    SELECT il.date, il.is_locked FROM is_locked il
     WHERE il.date = CURRENT_DATE
     """)
     IsLocked isTodayLocked();
