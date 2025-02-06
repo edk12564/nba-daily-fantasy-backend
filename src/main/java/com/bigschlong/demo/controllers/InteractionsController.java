@@ -65,7 +65,7 @@ public class InteractionsController {
         // Application Commands
         else if (interaction.getType() == 2) {
 
-            // route for info on the bot's application commands
+            // interaction for info on the bot's application commands
             if (Objects.equals(interaction.getData().getName(), "info")) {
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content("Here are the available commands: \n" +
@@ -142,7 +142,9 @@ public class InteractionsController {
                 System.out.println("you got to viewallplayers");
 
                 var players = nbaPlayerServices.getAllTodaysNbaPlayers().stream()
-                        .map(player -> player.getName() + " " + player.getDollar_value()).toList().toString();
+                        .map(player -> player.getName() + " " + player.getDollar_value())
+                        .toList()
+                        .toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
@@ -191,7 +193,7 @@ public class InteractionsController {
 
             // interaction where user is viewing their roster
             else if (Objects.equals(interaction.getData().getName(), "myroster")) {
-                var players = dailyRosterServices.getPlayerRosterString(interaction.getMember().getUser().getId(), interaction.getGuildId()).toString();
+                var players = dailyRosterServices.getPlayerRostersStrings(interaction.getMember().getUser().getId(), interaction.getGuildId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();

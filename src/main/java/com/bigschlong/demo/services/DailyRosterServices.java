@@ -19,7 +19,7 @@ public class DailyRosterServices {
     }
 
     // String version
-    public List<String> getPlayerRosterString(String discordId, String guildId) {
+    public List<String> getPlayerRostersStrings(String discordId, String guildId) {
         return dailyRosterRepository.getTodaysRosterByDiscordIdAndGuildId(discordId, guildId).stream()
                 .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();

@@ -18,8 +18,8 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     @Query(value = """
     INSERT INTO daily_roster (discord_player_id, nba_player_uid, guild_id, date, nickname, position)
     VALUES (:discordPlayerId, :nbaPlayerUid, :guildId, CURRENT_DATE, :nickname, :position::daily_roster_position)
-    ON CONFLICT DO UPDATE
-    SET nba_player_uid = :nbaPlayerUid
+    ON CONFLICT (nba_player_uid, position) DO UPDATE
+    SET nba_player_uid = :nbaPlayerUid, position = :position
     """)
     void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position);
 
