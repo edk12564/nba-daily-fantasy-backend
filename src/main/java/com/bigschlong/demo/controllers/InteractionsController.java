@@ -98,7 +98,7 @@ public class InteractionsController {
 
                 if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
                     var data = InteractionResponse.InteractionResponseData.builder()
-                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", GetPlayerPosition.getPlayerPosition(interaction)))
+                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue()))
                             .build();
                     return InteractionResponse.builder()
                             .type(4)
@@ -106,7 +106,7 @@ public class InteractionsController {
                             .build();
                 }
 
-                String playerPosition = GetPlayerPosition.getPlayerPosition(interaction);
+                String playerPosition = interaction.getData().getOptions()[0].getValue();
 
                 List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(playerPosition).stream()
                         .map(player -> Components.SelectMenu.SelectOption.builder()
