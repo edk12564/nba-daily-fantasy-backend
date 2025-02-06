@@ -1,5 +1,8 @@
 package com.bigschlong.demo.services;
 
+import com.bigschlong.demo.models.dtos.DailyRoster;
+import com.bigschlong.demo.models.dtos.NbaPlayer;
+import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import com.bigschlong.demo.repositories.DailyRosterRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,15 +18,22 @@ public class DailyRosterServices {
         this.dailyRosterRepository = dailyRosterRepository;
     }
 
-    public List<String> getPlayerRoster(String discordId) {
-        return dailyRosterRepository.getRosterByDiscordId(discordId).stream()
+    // String version
+    public List<String> getPlayerRosterString(String discordId, String guildId) {
+        return dailyRosterRepository.getRosterByDiscordIdAndGuildId(discordId, guildId).stream()
                 .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
-    public List<String> getGuildRoster(String guildId) {
-        return dailyRosterRepository.getRosterByGuildId(guildId).stream()
-                .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
+    // Entity version
+    public List<DailyRosterPlayer> getPlayerRoster(String discordId, String guildId) {
+        return dailyRosterRepository.getRosterByDiscordIdAndGuildId(discordId, guildId);
+    }
+
+
+    public List<String> getGuildRostersString(String guildId) {
+        return dailyRosterRepository.getRostersByGuildId(guildId).stream()
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getPosition() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
@@ -32,5 +42,6 @@ public class DailyRosterServices {
         dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname, position);
 
     }
+
 
 }

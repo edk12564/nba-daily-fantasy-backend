@@ -5,6 +5,7 @@ import com.bigschlong.demo.models.discord.Interaction;
 import com.bigschlong.demo.models.discord.InteractionResponse;
 import com.bigschlong.demo.models.discord.components.Components;
 import com.bigschlong.demo.services.DailyRosterServices;
+import com.bigschlong.demo.services.IsLockedServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
 import com.bigschlong.demo.utils.GetPlayerPosition;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -29,11 +30,13 @@ public class InteractionsController {
     private final NbaPlayerServices nbaPlayerServices;
     private final ObjectMapper mapper = new ObjectMapper();
     private final DailyRosterServices dailyRosterServices;
+    private final IsLockedServices isLockedServices;
 
 
-    public InteractionsController(NbaPlayerServices nbaPlayerServices, DailyRosterServices dailyRosterServices) {
+    public InteractionsController(NbaPlayerServices nbaPlayerServices, DailyRosterServices dailyRosterServices, IsLockedServices isLockedServices) {
         this.nbaPlayerServices = nbaPlayerServices;
         this.dailyRosterServices = dailyRosterServices;
+        this.isLockedServices = isLockedServices;
     }
 
     @SneakyThrows
@@ -67,7 +70,19 @@ public class InteractionsController {
         else if (interaction.getType() == 2) {
 
             // interaction where user is setting their roster
+
+            // check if the rosters are locked out for the day
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
+                if (isLockedServices.isTodayLocked().getIsLocked()) {
+                    var data = InteractionResponse.InteractionResponseData.builder()
+                            .content("Today's roster is locked. You cannot make any changes.")
+                            .build();
+                    return InteractionResponse.builder()
+                            .type(4)
+                            .data(data)
+                            .build();
+                }
+
                 String playerPosition = GetPlayerPosition.getPlayerPosition(interaction);
 
                 List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(playerPosition).stream()
@@ -152,7 +167,7 @@ public class InteractionsController {
 
             // interaction where user is viewing their roster
             else if (Objects.equals(interaction.getData().getName(), "roster")) {
-                var players = dailyRosterServices.getPlayerRoster(interaction.getMember().getUser().getId()).toString();
+                var players = dailyRosterServices.getPlayerRosterString(interaction.getMember().getUser().getId(), interaction.getGuildId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
@@ -162,9 +177,9 @@ public class InteractionsController {
                         .build();
             }
 
-            // interaction where user is viewing all discord players' nba players
+            // interaction where user is viewing rosters for the whole server (eventually make this prettier somehow)
             else if (Objects.equals(interaction.getData().getName(), "getserverrosters")) {
-                var players = dailyRosterServices.getGuildRoster(interaction.getGuildId()).toString();
+                var players = dailyRosterServices.getGuildRostersString(interaction.getGuildId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
@@ -175,6 +190,7 @@ public class InteractionsController {
             }
 
             // interaction where user is checking all players last played game's scores and rankings (leaderboard)
+
 
             // Select Menu Responses
         } else if (interaction.getType() == 3) {

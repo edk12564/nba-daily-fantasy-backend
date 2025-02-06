@@ -18,9 +18,8 @@ import java.time.LocalDate;
 public class DailyRoster {
     @Id
     private DailyRosterId id;
-
-    String nickname;
-    LocalDate date;
+    private String nickname;
+    private LocalDate date;
 
 
     // Spring Boot knows to add these to the SQL table
@@ -30,7 +29,7 @@ public class DailyRoster {
     public static class DailyRosterId {
          long guild_id;
 
-        long nba_player_uid;
+         long nba_player_uid;
 
          long discord_player_id;
 

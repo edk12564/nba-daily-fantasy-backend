@@ -1,6 +1,7 @@
 package com.bigschlong.demo.repositories;
 
 import com.bigschlong.demo.models.dtos.DailyRoster;
+import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -23,19 +24,20 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position);
 
-    // check to make sure this is the right join with uid and uid
     @Query(value = """
             SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_id
-            WHERE dr.discord_player_id = :discordId
+            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+            WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId
             """)
-    List<DailyRosterPlayer> getRosterByDiscordId(String discordId);
+    List<DailyRosterPlayer> getRosterByDiscordIdAndGuildId(String discordId, String guildId);
 
     @Query(value = """
             SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_id
+            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
             WHERE dr.guild_id = :guildId
+    ORDER BY dr.nickname
             """)
-    List<DailyRosterPlayer> getRosterByGuildId(String guildId);
+    List<DailyRosterPlayer> getRostersByGuildId(String guildId);
+
 
 }
