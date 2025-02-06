@@ -3,9 +3,9 @@ import requests
 url = "https://discord.com/api/v10/applications/1290520169185280062/commands"
 
 json = {
-    "name": "getserverrosters",
+    "name": "serverrosters",
     "type": 1,
-    "description": "Get your roster for the day"
+    "description": "Get all the server rosters for today"
 }
 
 # For authorization, you can use either your bot token

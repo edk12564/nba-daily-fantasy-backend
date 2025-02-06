@@ -5,7 +5,7 @@ url = "https://discord.com/api/v10/applications/1290520169185280062/commands"
 json = {
     "name": "viewguards",
     "type": 1,
-    "description": "View all guards playing that day"
+    "description": "View all guards playing today"
 }
 
 # For authorization, you can use either your bot token

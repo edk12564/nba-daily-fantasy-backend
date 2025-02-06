@@ -21,5 +21,6 @@ public class DailyRosterPlayer {
     private String name;
     private String position;
     private Integer dollarValue;
+    private Double fantasyScore;
 
 }

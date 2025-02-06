@@ -1,7 +1,6 @@
 package com.bigschlong.demo.repositories;
 
 import com.bigschlong.demo.models.dtos.DailyRoster;
-import com.bigschlong.demo.models.dtos.IsLocked;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -27,24 +26,46 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     @Query(value = """
     SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-    WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId
+    WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId AND dr.date = CURRENT_DATE
     """)
-    List<DailyRosterPlayer> getRosterByDiscordIdAndGuildId(String discordId, String guildId);
+    List<DailyRosterPlayer> getTodaysRosterByDiscordIdAndGuildId(String discordId, String guildId);
 
     @Query(value = """
     SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-    WHERE dr.guild_id = :guildId
+    WHERE dr.guild_id = :guildId AND dr.date = CURRENT_DATE
     ORDER BY dr.nickname
     """)
-    List<DailyRosterPlayer> getRostersByGuildId(String guildId);
+    List<DailyRosterPlayer> getTodaysRostersByGuildId(String guildId);
+
+    @Query(value = """
+    SELECT dr.*, np.name, np.position, np.dollar_value, np.fantasy_score FROM daily_roster dr
+    JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+    WHERE dr.guild_id = :guildId AND dr.date = CURRENT_DATE
+    ORDER BY dr.nickname
+    """)
+    List<DailyRosterPlayer> getTodaysRostersByGuildIdWithFantasyScore(String guildId);
 
     @Query(value = """
     SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
     WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId AND dr.date = CURRENT_DATE AND np.position = :position
     """)
-    List<DailyRosterPlayer> getAllTodaysPlayersOnRosterByPosition(String discordId, String guildId, String position);
+    List<DailyRosterPlayer> getTodaysRosterByPosition(String discordId, String guildId, String position);
+
+    @Query(value = """
+    SELECT dr.dollar_value FROM daily_roster dr
+    JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+    WHERE dr.guild_id = :guildId AND dr.discord_player_id = :discordId AND dr.date = CURRENT_DATE
+    """)
+    List<Integer> getTodaysRosterPrice(String discordId, String guildId);
+
+    @Query(value = """
+    SELECT np.fantasy_score FROM nba_player np
+    JOIN daily_roster dr on np.nba_player_uid = dr.nba_player_uid
+    WHERE dr.guild_id = :guildId AND dr.discord_player_id = :discordId AND dr.date = CURRENT_DATE
+    """)
+    List<Double> getTodaysRosterFantasyScores(String discordId, String guildId);
 
 
 }

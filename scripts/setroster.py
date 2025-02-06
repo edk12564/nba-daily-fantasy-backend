@@ -6,7 +6,7 @@ url = "https://discord.com/api/v10/applications/1290520169185280062/commands"
 json = {
         "name": "setroster",
         "type": 1,
-        "description": "Set your roster for the day",
+        "description": "Set your roster for today",
         "options": [
             {
                 "name": "position",
