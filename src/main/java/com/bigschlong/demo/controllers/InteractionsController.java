@@ -137,9 +137,6 @@ public class InteractionsController {
             // interaction where user is viewing all players for all positions
             else if (Objects.equals(interaction.getData().getName(), "viewallplayers")) {
 
-                // testing
-                System.out.println("you got to viewallplayers");
-
                 var players = nbaPlayerServices.getAllTodaysNbaPlayers().stream()
                         .map(player -> player.getName() + " " + player.getDollar_value())
                         .toList()
