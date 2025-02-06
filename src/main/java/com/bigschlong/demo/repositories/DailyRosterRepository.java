@@ -1,7 +1,7 @@
 package com.bigschlong.demo.repositories;
 
 import com.bigschlong.demo.models.dtos.DailyRoster;
-import com.bigschlong.demo.models.dtos.NbaPlayer;
+import com.bigschlong.demo.models.dtos.IsLocked;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -38,6 +38,13 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     ORDER BY dr.nickname
             """)
     List<DailyRosterPlayer> getRostersByGuildId(String guildId);
+
+    @Query(value = """
+    SELECT dr.*, np.name, np.position, np.dollar_value FROM daily_roster dr
+    JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+    WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId AND dr.date = CURRENT_DATE AND np.position = :position
+    """)
+    List<DailyRosterPlayer> getAllTodaysPlayersOnRosterByPosition(String discordId, String guildId, String position);
 
 
 }

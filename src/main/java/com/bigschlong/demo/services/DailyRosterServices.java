@@ -37,11 +37,12 @@ public class DailyRosterServices {
                 .toList();
     }
 
-    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position) {
-
-        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname, position);
-
+    public void saveRosterChoice(NbaPlayer nbaPlayer, String discordPlayerId, String guildId, String nickname, String position) {
+        dailyRosterRepository.saveRosterChoice(nbaPlayer.getNba_player_uid(), discordPlayerId, guildId, nickname, position);
     }
 
+    public List<DailyRosterPlayer> getTodaysPlayersOnRosterByPosition(String discordId, String guildId, String position) {
+        return dailyRosterRepository.getAllTodaysPlayersOnRosterByPosition(discordId, guildId, position);
+    }
 
 }
