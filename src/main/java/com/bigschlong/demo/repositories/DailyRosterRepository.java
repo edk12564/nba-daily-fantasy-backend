@@ -24,14 +24,14 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position);
 
     @Query(value = """
-    SELECT dr.*, np.name, dr.daily_roster_position AS position, np.dollar_value FROM daily_roster dr
+    SELECT dr.*, np.name, np.dollar_value FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
     WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId AND dr.date = CURRENT_DATE
     """)
     List<DailyRosterPlayer> getTodaysRosterByDiscordIdAndGuildId(String discordId, String guildId);
 
     @Query(value = """
-    SELECT dr.*, np.name, dr.daily_roster_position AS position, np.dollar_value FROM daily_roster dr
+    SELECT dr.*, np.name, np.dollar_value FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
     WHERE dr.guild_id = :guildId AND dr.date = CURRENT_DATE
     ORDER BY dr.nickname
@@ -39,7 +39,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     List<DailyRosterPlayer> getTodaysRostersByGuildId(String guildId);
 
     @Query(value = """
-    SELECT dr.*, np.name, dr.daily_roster_position AS position, np.dollar_value, np.fantasy_score FROM daily_roster dr
+    SELECT dr.*, np.name, np.dollar_value, np.fantasy_score FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
     WHERE dr.guild_id = :guildId AND dr.date = CURRENT_DATE
     ORDER BY dr.nickname
@@ -47,7 +47,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     List<DailyRosterPlayer> getTodaysRostersByGuildIdWithFantasyScore(String guildId);
 
     @Query(value = """
-    SELECT dr.*, np.name, dr.daily_roster_position AS position, np.dollar_value FROM daily_roster dr
+    SELECT dr.*, np.name, np.dollar_value FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
     WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId AND dr.date = CURRENT_DATE AND np.position = :position
     """)
