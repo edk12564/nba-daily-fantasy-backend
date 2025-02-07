@@ -14,8 +14,10 @@ json = {
                 "type": 3,  # Type 3 is STRING
                 "required": True,
                 "choices": [
-                    {"name": "G", "value": "G"},
-                    {"name": "F", "value": "F"},
+                    {"name": "PG", "value": "PG"},
+                    {"name": "SG", "value": "SG"},
+                    {"name": "PF", "value": "PF"},
+                    {"name": "SF", "value": "SF"},
                     {"name": "C", "value": "C"}
                 ]
             }
