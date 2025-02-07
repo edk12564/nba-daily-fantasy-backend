@@ -2,8 +2,8 @@ package com.bigschlong.demo.utils;
 
 import com.bigschlong.demo.models.discord.Interaction;
 
-public class GetPlayerPosition {
-    public static String getPlayerPosition(Interaction interaction) {
+public class GetSimplePlayerPosition {
+    public static String getSimplePlayerPosition(Interaction interaction) {
         var position = interaction.getData().getOptions()[0].getValue();
         String pval = switch (position) {
             case "PG", "SG" -> "G";

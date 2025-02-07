@@ -7,7 +7,7 @@ import com.bigschlong.demo.models.discord.components.Components;
 import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.IsLockedServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
-import com.bigschlong.demo.utils.GetPlayerPosition;
+import com.bigschlong.demo.utils.GetSimplePlayerPosition;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -98,7 +98,7 @@ public class InteractionsController {
 
                 if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
                     var data = InteractionResponse.InteractionResponseData.builder()
-                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue()))
+                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue()).toString())
                             .build();
                     return InteractionResponse.builder()
                             .type(4)
@@ -106,7 +106,7 @@ public class InteractionsController {
                             .build();
                 }
 
-                String playerPosition = GetPlayerPosition.getPlayerPosition(interaction);
+                String playerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
 
                 List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(playerPosition).stream()
                         .map(player -> Components.SelectMenu.SelectOption.builder()
