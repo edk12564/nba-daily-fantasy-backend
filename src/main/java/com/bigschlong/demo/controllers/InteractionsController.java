@@ -85,7 +85,7 @@ public class InteractionsController {
             }
 
             // interaction where user is setting their roster
-//            if (Objects.equals(interaction.getData().getName(), "setroster")) {
+            if (Objects.equals(interaction.getData().getName(), "setroster")) {
 //                if (isLockedServices.isTodayLocked().getIsLocked()) {
 //                    var data = InteractionResponse.InteractionResponseData.builder()
 //                            .content("Today's roster is locked. You cannot make any changes.")
