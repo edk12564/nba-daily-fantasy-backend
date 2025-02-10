@@ -31,7 +31,8 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     List<DailyRosterPlayer> getTodaysRosterByDiscordIdAndGuildId(String discordId, String guildId);
 
     @Query(value = """
-    SELECT dr.*, np.name, np.dollar_value FROM daily_roster dr
+    SELECT dr.discord_player_id, dr.nba_player_uid, dr.guild_id, dr.date, dr.nickname, dr.position, np.name, np.dollar_value
+    FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
     WHERE dr.guild_id = :guildId AND dr.date = CURRENT_DATE
     ORDER BY dr.nickname
@@ -39,7 +40,8 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     List<DailyRosterPlayer> getTodaysRostersByGuildId(String guildId);
 
     @Query(value = """
-    SELECT dr.*, np.name, np.dollar_value, np.fantasy_score FROM daily_roster dr
+    SELECT dr.discord_player_id, dr.nba_player_uid, dr.guild_id, dr.date, dr.nickname, dr.position, np.name, np.dollar_value, np.fantasy_score 
+    FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
     WHERE dr.guild_id = :guildId AND dr.date = CURRENT_DATE
     ORDER BY dr.nickname
