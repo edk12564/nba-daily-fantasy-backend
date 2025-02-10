@@ -29,10 +29,10 @@ public class DailyRoster {
     @Jacksonized
     @Builder
     public static class DailyRosterId {
-         long guildId;
-         long discordPlayerId;
-         Position position;
-         LocalDate date;
+         private long guildId;
+         private long discordPlayerId;
+         private Position position;
+         private LocalDate date;
     }
 
     public enum Position {
