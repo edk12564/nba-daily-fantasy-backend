@@ -1,7 +1,9 @@
 package com.bigschlong.demo.services;
 
+import com.bigschlong.demo.models.dtos.DailyRoster;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import com.bigschlong.demo.repositories.DailyRosterRepository;
+import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,13 +34,13 @@ public class DailyRosterServices {
 
     public List<String> getGuildRostersString(String guildId) {
         return dailyRosterRepository.getTodaysRostersByGuildId(guildId).stream()
-                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getPosition() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getId().getPosition() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
     public List<String> getLeaderboard(String guildId) {
         List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
-                .map(player -> player.getNickname() + " chose " + player.getName() + " (" + player.getPosition() + ") - " + player.getFantasyScore().toString())
+                .map(player -> player.getNickname() + " chose " + player.getName() + " (" + player.getId().getPosition() + ") - " + player.getFantasyScore().toString())
                 .toList();
         leaderboard.add(0, "Leaderboard:");
 
@@ -66,3 +68,13 @@ public class DailyRosterServices {
     }
 
 }
+//
+//@Id
+//private DailyRoster.DailyRosterId id;
+//private UUID nbaPlayerUid;
+//private String nickname;
+//private String name;
+//private Integer dollarValue;
+//private Double fantasyScore;
+
+

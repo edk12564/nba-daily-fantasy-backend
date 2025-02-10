@@ -19,6 +19,7 @@ import java.util.UUID;
 public class DailyRoster {
     @Id
     private DailyRosterId id;
+
     private String nickname;
     private UUID nbaPlayerUid;
 
@@ -30,8 +31,12 @@ public class DailyRoster {
     public static class DailyRosterId {
          long guildId;
          long discordPlayerId;
-         String position;
+         Position position;
          LocalDate date;
+    }
+
+    public enum Position {
+        PG, SG, SF, PF, C
     }
 }
     

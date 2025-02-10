@@ -229,7 +229,7 @@ public class InteractionsController {
 
             // interaction where user is viewing rosters for the whole server (eventually make this prettier somehow)
             else if (Objects.equals(interaction.getData().getName(), "serverrosters")) {
-                var players = dailyRosterServices.getGuildRostersString(interaction.getGuildId()).toString();
+                String players = dailyRosterServices.getGuildRostersString(interaction.getGuildId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
