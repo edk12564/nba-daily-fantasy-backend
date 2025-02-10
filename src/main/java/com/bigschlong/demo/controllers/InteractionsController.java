@@ -84,6 +84,8 @@ public class InteractionsController {
                         .build();
             }
 
+            System.out.println("before setroster");
+
             // interaction where user is setting their roster
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
                 System.out.println("1");
@@ -139,6 +141,8 @@ public class InteractionsController {
                         .data(data)
                         .build();
             }
+
+            System.out.println("after setroster");
 
             // interaction where user is viewing all players for all positions
             else if (Objects.equals(interaction.getData().getName(), "viewallplayers")) {
