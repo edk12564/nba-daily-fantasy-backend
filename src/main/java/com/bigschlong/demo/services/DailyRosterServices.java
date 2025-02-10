@@ -34,13 +34,13 @@ public class DailyRosterServices {
 
     public List<String> getGuildRostersString(String guildId) {
         return dailyRosterRepository.getTodaysRostersByGuildId(guildId).stream()
-                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getId().getPosition() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getId().getPosition().toString() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
     public List<String> getLeaderboard(String guildId) {
         List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
-                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getName() + " (" + dailyRosterPlayer.getId().getPosition() + ") - " + dailyRosterPlayer.getFantasyScore().toString())
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getName() + " (" + dailyRosterPlayer.getId().getPosition().toString() + ") - " + dailyRosterPlayer.getFantasyScore().toString())
                 .toList();
         leaderboard.add(0, "Leaderboard:");
 
