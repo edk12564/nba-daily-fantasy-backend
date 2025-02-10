@@ -87,25 +87,25 @@ public class InteractionsController {
             // interaction where user is setting their roster
             else if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
-                if (isLockedServices.isTodayLocked().getIsLocked()) {
-                    var data = InteractionResponse.InteractionResponseData.builder()
-                            .content("Today's roster is locked. You cannot make any changes.")
-                            .build();
-                    return InteractionResponse.builder()
-                            .type(4)
-                            .data(data)
-                            .build();
-                }
-
-                if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
-                    var data = InteractionResponse.InteractionResponseData.builder()
-                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue().toString()))
-                            .build();
-                    return InteractionResponse.builder()
-                            .type(4)
-                            .data(data)
-                            .build();
-                }
+//                if (isLockedServices.isTodayLocked().getIsLocked()) {
+//                    var data = InteractionResponse.InteractionResponseData.builder()
+//                            .content("Today's roster is locked. You cannot make any changes.")
+//                            .build();
+//                    return InteractionResponse.builder()
+//                            .type(4)
+//                            .data(data)
+//                            .build();
+//                }
+//
+//                if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
+//                    var data = InteractionResponse.InteractionResponseData.builder()
+//                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue().toString()))
+//                            .build();
+//                    return InteractionResponse.builder()
+//                            .type(4)
+//                            .data(data)
+//                            .build();
+//                }
 
                 String simplifiedPlayerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
 
