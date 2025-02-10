@@ -7,9 +7,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 public class DailyRosterServices {
@@ -38,10 +40,11 @@ public class DailyRosterServices {
                 .toList();
     }
 
+    // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
     public List<String> getLeaderboard(String guildId) {
         List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
                 .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getName() + " (" + dailyRosterPlayer.getId().getPosition().toString() + ") - " + dailyRosterPlayer.getFantasyScore().toString())
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
         leaderboard.add(0, "Leaderboard:");
 
         return leaderboard;
