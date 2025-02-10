@@ -4,7 +4,6 @@ import com.bigschlong.demo.interceptors.CheckSignature;
 import com.bigschlong.demo.models.discord.Interaction;
 import com.bigschlong.demo.models.discord.InteractionResponse;
 import com.bigschlong.demo.models.discord.components.Components;
-import com.bigschlong.demo.models.dtos.IsLocked;
 import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.IsLockedServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
@@ -100,7 +99,7 @@ public class InteractionsController {
 
                 if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
                     var data = InteractionResponse.InteractionResponseData.builder()
-                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue()))
+                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue().toString()))
                             .build();
                     return InteractionResponse.builder()
                             .type(4)
@@ -108,9 +107,9 @@ public class InteractionsController {
                             .build();
                 }
 
-                String playerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
+                String simplifiedPlayerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
 
-                List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(playerPosition).stream()
+                List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(simplifiedPlayerPosition).stream()
                         .map(player -> Components.SelectMenu.SelectOption.builder()
                                 .label(player)
                                 .value(player)
@@ -118,7 +117,7 @@ public class InteractionsController {
                         .toList();
                 Components selectMenu = Components.SelectMenu.builder()
                         .type(3)
-                        .customId("set " + playerPosition)
+                        .customId("set " + simplifiedPlayerPosition)
                         .placeholder("Pick a player")
                         .options(players)
                         .build();
@@ -128,7 +127,7 @@ public class InteractionsController {
                         .components(components)
                         .build();
                 var data = InteractionResponse.InteractionResponseData.builder()
-                        .content("Choose a player for the " + interaction.getData().getOptions()[0].getValue() + " position")
+                        .content("Choose a player for the " + interaction.getData().getOptions()[0].getValue().toString() + " position")
                         .components(List.of(actionRow))
                         .build();
                 return InteractionResponse.builder()
