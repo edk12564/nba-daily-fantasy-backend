@@ -86,7 +86,9 @@ public class InteractionsController {
 
             // interaction where user is setting their roster
             if (Objects.equals(interaction.getData().getName(), "setroster")) {
+                System.out.println("1");
                 if (isLockedServices.isTodayLocked().getIsLocked()) {
+                    System.out.println("2");
                     var data = InteractionResponse.InteractionResponseData.builder()
                             .content("Today's roster is locked. You cannot make any changes.")
                             .build();
@@ -97,6 +99,7 @@ public class InteractionsController {
                 }
 
                 if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
+                    System.out.println("3");
                     var data = InteractionResponse.InteractionResponseData.builder()
                             .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue()))
                             .build();
@@ -107,6 +110,8 @@ public class InteractionsController {
                 }
 
                 String playerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
+
+                System.out.println("4");
 
                 List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(playerPosition).stream()
                         .map(player -> Components.SelectMenu.SelectOption.builder()
