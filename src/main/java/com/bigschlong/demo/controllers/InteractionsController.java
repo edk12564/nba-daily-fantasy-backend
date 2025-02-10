@@ -241,7 +241,7 @@ public class InteractionsController {
 
             // interaction where user is checking all players last played game's scores and rankings (leaderboard)
             else if (Objects.equals(interaction.getData().getName(), "leaderboard")) {
-                var players = dailyRosterServices.getLeaderboard(interaction.getGuildId()).toString();
+                String players = dailyRosterServices.getLeaderboard(interaction.getGuildId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();

@@ -40,7 +40,7 @@ public class DailyRosterServices {
 
     public List<String> getLeaderboard(String guildId) {
         List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
-                .map(player -> player.getNickname() + " chose " + player.getName() + " (" + player.getId().getPosition() + ") - " + player.getFantasyScore().toString())
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getName() + " (" + dailyRosterPlayer.getId().getPosition() + ") - " + dailyRosterPlayer.getFantasyScore().toString())
                 .toList();
         leaderboard.add(0, "Leaderboard:");
 

@@ -29,8 +29,8 @@ public class DailyRosterPlayer {
     @Jacksonized
     @Builder
     public static class DailyRosterId {
-        private long guildId;
-        private long discordPlayerId;
+        private String guildId;
+        private String discordPlayerId;
         private Position position;
         private LocalDate date;
     }
