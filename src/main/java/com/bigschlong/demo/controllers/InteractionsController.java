@@ -4,6 +4,7 @@ import com.bigschlong.demo.interceptors.CheckSignature;
 import com.bigschlong.demo.models.discord.Interaction;
 import com.bigschlong.demo.models.discord.InteractionResponse;
 import com.bigschlong.demo.models.discord.components.Components;
+import com.bigschlong.demo.models.dtos.IsLocked;
 import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.IsLockedServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
@@ -86,6 +87,7 @@ public class InteractionsController {
 
             // interaction where user is setting their roster
             else if (Objects.equals(interaction.getData().getName(), "setroster")) {
+
                 if (isLockedServices.isTodayLocked().getIsLocked()) {
                     var data = InteractionResponse.InteractionResponseData.builder()
                             .content("Today's roster is locked. You cannot make any changes.")
