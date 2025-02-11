@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/")
+@RequestMapping("/api/interactions")
 public class InteractionsController {
 
     private final NbaPlayerServices nbaPlayerServices;
@@ -39,7 +39,7 @@ public class InteractionsController {
     }
 
     @SneakyThrows
-    @PostMapping(value = "/interactions", produces = "application/json")
+    @PostMapping(value = "", produces = "application/json")
     public InteractionResponse ping(HttpServletRequest request) {
 
         // configure the object mapper to ignore unknown properties instead of throwing an exception
