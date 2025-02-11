@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Service
 public class NbaPlayerServices {
-    
+
     private final NbaPlayerRepository nbaPlayerRepository;
 
     public NbaPlayerServices(NbaPlayerRepository nbaPlayerRepository) {
@@ -36,7 +36,7 @@ public class NbaPlayerServices {
 
     @Transactional(readOnly = true)
     public List<NbaPlayerTeam> getNbaPlayersWithTeam() {
-        return getNbaPlayersWithTeam();
+        return nbaPlayerRepository.getNbaPlayersWithTeam();
     }
 
 //
@@ -63,9 +63,9 @@ public class NbaPlayerServices {
     // we'll call the db to get todays players
     //
     public List<String> getTodaysNbaPlayersByPosition(String position) {
-      return nbaPlayerRepository.getTodaysNbaPlayersByPosition(position).stream()
-              .map(player -> player.getName() + "-" + player.getDollar_value().toString())
-              .toList();
+        return nbaPlayerRepository.getTodaysNbaPlayersByPosition(position).stream()
+                .map(player -> player.getName() + "-" + player.getDollar_value().toString())
+                .toList();
     }
 
     public List<NbaPlayer> getAllTodaysNbaPlayers() {

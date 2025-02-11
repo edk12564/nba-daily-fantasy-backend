@@ -1,11 +1,17 @@
 package com.bigschlong.demo.services;
 
-import com.bigschlong.demo.models.dtos.NbaPlayer;
+import com.bigschlong.demo.models.dtos.DailyRoster;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import com.bigschlong.demo.repositories.DailyRosterRepository;
+import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 public class DailyRosterServices {
@@ -17,29 +23,61 @@ public class DailyRosterServices {
     }
 
     // String version
-    public List<String> getPlayerRosterString(String discordId, String guildId) {
-        return dailyRosterRepository.getRosterByDiscordIdAndGuildId(discordId, guildId).stream()
+    public List<String> getPlayerRostersStrings(String discordId, String guildId) {
+        return dailyRosterRepository.getTodaysRosterByDiscordIdAndGuildId(discordId, guildId).stream()
                 .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
     // Entity version
     public List<DailyRosterPlayer> getPlayerRoster(String discordId, String guildId) {
-        return dailyRosterRepository.getRosterByDiscordIdAndGuildId(discordId, guildId);
+        return dailyRosterRepository.getTodaysRosterByDiscordIdAndGuildId(discordId, guildId);
     }
 
-
     public List<String> getGuildRostersString(String guildId) {
-        return dailyRosterRepository.getRostersByGuildId(guildId).stream()
-                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getPosition() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
+        return dailyRosterRepository.getTodaysRostersByGuildId(guildId).stream()
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getId().getPosition().toString() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
-    public void saveRosterChoice(NbaPlayer nbaPlayer, String discordPlayerId, String guildId, String nickname) {
+    // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
+    public List<String> getLeaderboard(String guildId) {
+        List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getName() + " (" + dailyRosterPlayer.getId().getPosition().toString() + ") - " + dailyRosterPlayer.getFantasyScore().toString())
+                .collect(Collectors.toCollection(ArrayList::new));
+        leaderboard.add(0, "Leaderboard:");
 
-        dailyRosterRepository.saveRosterChoice(nbaPlayer.getNba_player_uid(), discordPlayerId, guildId, nickname);
-
+        return leaderboard;
     }
 
+    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position) {
+        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname, position);
+    }
+
+    public List<DailyRosterPlayer> getTodaysPlayersOnRosterByPosition(String discordId, String guildId, String position) {
+        return dailyRosterRepository.getTodaysRosterByPosition(discordId, guildId, position);
+    }
+
+    public Integer getTodaysRosterPrice(String discordId, String guildId) {
+        AtomicInteger result = new AtomicInteger(0);
+        dailyRosterRepository.getTodaysRosterPrice(discordId, guildId).forEach(price -> result.addAndGet(price));
+        return result.get();
+    }
+
+    public Double getTodaysRosterFantasyScore(String discordId, String guildId) {
+        AtomicReference<Double> result = new AtomicReference<>(0.0);
+        dailyRosterRepository.getTodaysRosterFantasyScores(discordId, guildId).forEach(score -> result.updateAndGet(v -> v + score));
+        return result.get();
+    }
 
 }
+//
+//@Id
+//private DailyRoster.DailyRosterId id;
+//private UUID nbaPlayerUid;
+//private String nickname;
+//private String name;
+//private Integer dollarValue;
+//private Double fantasyScore;
+
+

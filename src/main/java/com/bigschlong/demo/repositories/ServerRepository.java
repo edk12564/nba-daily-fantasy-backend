@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface ServerRepository extends CrudRepository<Server, UUID> {
-    
+
     @Query(value = """
     SELECT dp.* FROM discord_player_servers dps
     JOIN servers s on s.server_uid = dps.server_uid

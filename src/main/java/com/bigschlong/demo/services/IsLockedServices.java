@@ -4,6 +4,9 @@ import com.bigschlong.demo.repositories.IsLockedRepository;
 import org.springframework.stereotype.Service;
 import com.bigschlong.demo.models.dtos.IsLocked;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 @Service
 public class IsLockedServices {
 
@@ -14,7 +17,8 @@ public class IsLockedServices {
     }
 
     public IsLocked isTodayLocked() {
-        return isLockedRepository.isTodayLocked();
+        IsLocked isLocked = isLockedRepository.isTodayLocked().orElse(new IsLocked(LocalDate.now(), false));
+        return isLocked;
     }
 
 }
