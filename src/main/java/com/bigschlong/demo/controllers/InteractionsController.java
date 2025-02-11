@@ -128,7 +128,7 @@ public class InteractionsController {
                         .components(components)
                         .build();
                 var data = InteractionResponse.InteractionResponseData.builder()
-                        .content("Choose a player for the " + interaction.getData().getOptions()[0].getValue().toString() + " position")
+                        .content("Choose a player for the " + simplifiedPlayerPosition + " position")
                         .components(List.of(actionRow))
                         .build();
                 return InteractionResponse.builder()
