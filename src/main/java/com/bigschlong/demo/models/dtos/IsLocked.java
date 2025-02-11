@@ -1,5 +1,6 @@
 package com.bigschlong.demo.models.dtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 @Setter
 @Builder
 @Jacksonized
+@AllArgsConstructor
 @Table(name = "is_locked")
 public class IsLocked {
 
