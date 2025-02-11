@@ -85,6 +85,7 @@ public class InteractionsController {
             }
 
             // interaction where user is setting their roster
+            // TODO: Get this shit working
             else if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
 //                if (isLockedServices.isTodayLocked().getIsLocked()) {
