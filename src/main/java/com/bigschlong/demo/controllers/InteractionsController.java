@@ -133,7 +133,7 @@ public class InteractionsController {
                         String applicationId = interaction.getApplicationId(); // You might get this from config or the interaction itself
                         String editUrl = String.format(
                                 "https://discord.com/api/v8/webhooks/%s/%s/messages/@original",
-                                interaction.getApplicationId(),
+                                applicationId,
                                 interaction.getToken()
                         );
 
