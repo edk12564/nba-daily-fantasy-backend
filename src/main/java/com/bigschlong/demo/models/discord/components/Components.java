@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class Components {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Jacksonized
     public static class SelectMenu extends Components  {
 
         private Integer type; // Type of select menu component (3, 5, 6, 7, 8)
