@@ -33,10 +33,10 @@ public class InteractionsController {
     private final ObjectMapper mapper = new ObjectMapper();
     private final DailyRosterServices dailyRosterServices;
     private final IsLockedServices isLockedServices;
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
 
-    public InteractionsController(NbaPlayerServices nbaPlayerServices, DailyRosterServices dailyRosterServices, IsLockedServices isLockedServices) {
+    public InteractionsController(NbaPlayerServices nbaPlayerServices, DailyRosterServices dailyRosterServices, IsLockedServices isLockedServices, RestTemplate restTemplate) {
         this.nbaPlayerServices = nbaPlayerServices;
         this.dailyRosterServices = dailyRosterServices;
         this.isLockedServices = isLockedServices;
@@ -93,7 +93,7 @@ public class InteractionsController {
             // TODO: Get this shit working
             else if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
-            // Process the interaction asynchronously
+                // Process the interaction asynchronously
                 CompletableFuture.runAsync(() -> {
                     try {
                         // Extract the simplified player position from the interaction
