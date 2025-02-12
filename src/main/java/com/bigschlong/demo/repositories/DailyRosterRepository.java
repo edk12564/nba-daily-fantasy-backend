@@ -15,6 +15,7 @@ import java.util.UUID;
 public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID> {
 
     @Modifying
+    // sriram says this one wrong. update the on conflict stuff
     @Query(value = """
     INSERT INTO daily_roster (discord_player_id, nba_player_uid, guild_id, date, nickname, position)
     VALUES (:discordPlayerId, :nbaPlayerUid, :guildId, CURRENT_DATE, :nickname, :position::daily_roster_position)

@@ -13,14 +13,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/interactions")
@@ -30,12 +33,14 @@ public class InteractionsController {
     private final ObjectMapper mapper = new ObjectMapper();
     private final DailyRosterServices dailyRosterServices;
     private final IsLockedServices isLockedServices;
+    private RestTemplate restTemplate;
 
 
     public InteractionsController(NbaPlayerServices nbaPlayerServices, DailyRosterServices dailyRosterServices, IsLockedServices isLockedServices) {
         this.nbaPlayerServices = nbaPlayerServices;
         this.dailyRosterServices = dailyRosterServices;
         this.isLockedServices = isLockedServices;
+        this.restTemplate = restTemplate;
     }
 
     @SneakyThrows
@@ -88,52 +93,84 @@ public class InteractionsController {
             // TODO: Get this shit working
             else if (Objects.equals(interaction.getData().getName(), "setroster")) {
 
-//                if (isLockedServices.isTodayLocked().getIsLocked()) {
-//                    var data = InteractionResponse.InteractionResponseData.builder()
-//                            .content("Today's roster is locked. You cannot make any changes.")
-//                            .build();
-//                    return InteractionResponse.builder()
-//                            .type(4)
-//                            .data(data)
-//                            .build();
-//                }
-//
-//                if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
-//                    var data = InteractionResponse.InteractionResponseData.builder()
-//                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue().toString()))
-//                            .build();
-//                    return InteractionResponse.builder()
-//                            .type(4)
-//                            .data(data)
-//                            .build();
-//                }
+            // Process the interaction asynchronously
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        // Extract the simplified player position from the interaction
+                        String simplifiedPlayerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
 
-                String simplifiedPlayerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
+                        // Retrieve the list of players and build select options
+                        List<Components.SelectMenu.SelectOption> players = nbaPlayerServices
+                                .getTodaysNbaPlayersByPosition(simplifiedPlayerPosition)
+                                .stream()
+                                .map(player -> Components.SelectMenu.SelectOption.builder()
+                                        .label(player)
+                                        .value(player)
+                                        .build())
+                                .collect(Collectors.toList());
 
-                List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(simplifiedPlayerPosition).stream()
-                        .map(player -> Components.SelectMenu.SelectOption.builder()
-                                .label(player)
-                                .value(player)
-                                .build())
-                        .toList();
-                Components selectMenu = Components.SelectMenu.builder()
-                        .type(3)
-                        .customId("set " + simplifiedPlayerPosition)
-                        .placeholder("Pick a player")
-                        .options(players)
-                        .build();
-                List<Components> components = List.of(selectMenu);
-                Components.ActionRow actionRow = Components.ActionRow.builder()
-                        .type(1)
-                        .components(components)
-                        .build();
-                var data = InteractionResponse.InteractionResponseData.builder()
-                        .content("Choose a player for the " + simplifiedPlayerPosition + " position")
-                        .components(List.of(actionRow))
-                        .build();
+                        // Build the select menu component
+                        Components selectMenu = Components.SelectMenu.builder()
+                                .type(3)
+                                .customId("set " + simplifiedPlayerPosition)
+                                .placeholder("Pick a player")
+                                .options(players)
+                                .build();
+
+                        // Wrap the select menu in an ActionRow
+                        Components.ActionRow actionRow = Components.ActionRow.builder()
+                                .type(1)
+                                .components(List.of(selectMenu))
+                                .build();
+
+                        // Build the interaction response data including content and components
+                        InteractionResponse.InteractionResponseData data = InteractionResponse.InteractionResponseData.builder()
+                                .content("Choose a player for the " + simplifiedPlayerPosition + " position")
+                                .components(List.of(actionRow))
+                                .build();
+
+                        // Construct the callback URL using the interaction ID and token
+                        String callbackUrl = String.format(
+                                "https://discord.com/api/v8/interactions/%s/%s/callback",
+                                interaction.getId(),
+                                interaction.getToken()
+                        );
+
+                        // Prepare HTTP headers
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+
+                        // Build the callback response (type 4) with our updated message data
+                        InteractionResponse callbackResponse = InteractionResponse.builder()
+                                .type(4)
+                                .data(data)
+                                .build();
+
+                        HttpEntity<InteractionResponse> requestEntity = new HttpEntity<>(callbackResponse, headers);
+
+                        // Make the POST request to Discord's callback endpoint
+                        ResponseEntity<String> response = restTemplate.exchange(
+                                callbackUrl,
+                                HttpMethod.POST,
+                                requestEntity,
+                                String.class
+                        );
+
+                        // Check if the response status indicates success
+                        if (!response.getStatusCode().is2xxSuccessful()) {
+                            throw new ResponseStatusException(response.getStatusCode(), "Failed to send interaction callback");
+                        }
+                    } catch (Exception e) {
+                        // Log any other exceptions that occur during processing
+                        e.printStackTrace();
+                    }
+
+                    System.out.println("Asynchronous process completed.");
+                });
+
+                // Immediately return a deferred response (type 5) to comply with Discord's 3-second requirement
                 return InteractionResponse.builder()
-                        .type(4)
-                        .data(data)
+                        .type(5)
                         .build();
             }
 
@@ -252,6 +289,8 @@ public class InteractionsController {
                         .data(data)
                         .build();
             }
+
+
         }
 
         // Select Menu Responses

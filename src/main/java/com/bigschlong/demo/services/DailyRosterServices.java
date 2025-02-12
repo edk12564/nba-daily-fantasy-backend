@@ -71,13 +71,23 @@ public class DailyRosterServices {
     }
 
 }
+
+//                if (isLockedServices.isTodayLocked().getIsLocked()) {
+//                    var data = InteractionResponse.InteractionResponseData.builder()
+//                            .content("Today's roster is locked. You cannot make any changes.")
+//                            .build();
+//                    return InteractionResponse.builder()
+//                            .type(4)
+//                            .data(data)
+//                            .build();
+//                }
 //
-//@Id
-//private DailyRoster.DailyRosterId id;
-//private UUID nbaPlayerUid;
-//private String nickname;
-//private String name;
-//private Integer dollarValue;
-//private Double fantasyScore;
-
-
+//                if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
+//                    var data = InteractionResponse.InteractionResponseData.builder()
+//                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue().toString()))
+//                            .build();
+//                    return InteractionResponse.builder()
+//                            .type(4)
+//                            .data(data)
+//                            .build();
+//                }
