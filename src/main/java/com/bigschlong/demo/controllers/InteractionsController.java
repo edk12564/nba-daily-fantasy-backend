@@ -129,10 +129,11 @@ public class InteractionsController {
                                 .components(List.of(actionRow))
                                 .build();
 
-                        // Construct the callback URL using the interaction ID and token
-                        String callbackUrl = String.format(
-                                "https://discord.com/api/v8/interactions/%s/%s/callback",
-                                interaction.getId(),
+                        // Construct the edit URL using your application ID and the interaction token
+                        String applicationId = interaction.getApplicationId(); // You might get this from config or the interaction itself
+                        String editUrl = String.format(
+                                "https://discord.com/api/v8/webhooks/%s/%s/messages/@original",
+                                interaction.getApplicationId(),
                                 interaction.getToken()
                         );
 
@@ -140,25 +141,25 @@ public class InteractionsController {
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
 
-                        // Build the callback response (type 4) with our updated message data
-                        InteractionResponse callbackResponse = InteractionResponse.builder()
-                                .type(4)
-                                .data(data)
+                        // Build the updated message payload (this can still be your type 4-like content)
+                        InteractionResponse updatedResponse = InteractionResponse.builder()
+                                .type(4) // The type here is ignored by the edit endpoint
+                                .data(data)  // Your InteractionResponseData built earlier
                                 .build();
 
-                        HttpEntity<InteractionResponse> requestEntity = new HttpEntity<>(callbackResponse, headers);
+                        HttpEntity<InteractionResponse> requestEntity = new HttpEntity<>(updatedResponse, headers);
 
-                        // Make the POST request to Discord's callback endpoint
+                        // Use PATCH instead of POST
                         ResponseEntity<String> response = restTemplate.exchange(
-                                callbackUrl,
-                                HttpMethod.POST,
+                                editUrl,
+                                HttpMethod.PATCH,
                                 requestEntity,
                                 String.class
                         );
 
                         // Check if the response status indicates success
                         if (!response.getStatusCode().is2xxSuccessful()) {
-                            throw new ResponseStatusException(response.getStatusCode(), "Failed to send interaction callback");
+                            throw new ResponseStatusException(response.getStatusCode(), "Failed to send interaction followup");
                         }
                     } catch (Exception e) {
                         // Log any other exceptions that occur during processing
