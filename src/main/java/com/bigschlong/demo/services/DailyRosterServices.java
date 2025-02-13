@@ -40,8 +40,14 @@ public class DailyRosterServices {
 
     //TODO convert to activity version
     // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
-    public List<String> getLeaderboard(String guildId) {
-        List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
+    public List<DailyRosterPlayer> getLeaderboard(String guildId) {
+        List<DailyRosterPlayer> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId);
+
+        return leaderboard;
+    }
+
+    public List<String> getLeaderboardString(String guildId) {
+        List <String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
                 .map(dailyRosterPlayer -> STR."\{dailyRosterPlayer.getNickname()} chose \{dailyRosterPlayer.getName()} (\{dailyRosterPlayer.getPosition().toString()}) - \{dailyRosterPlayer.getFantasyScore().toString()}")
                 .collect(Collectors.toCollection(ArrayList::new));
         leaderboard.addFirst("Leaderboard:");
@@ -71,13 +77,23 @@ public class DailyRosterServices {
     }
 
 }
+
+//                if (isLockedServices.isTodayLocked().getIsLocked()) {
+//                    var data = InteractionResponse.InteractionResponseData.builder()
+//                            .content("Today's roster is locked. You cannot make any changes.")
+//                            .build();
+//                    return InteractionResponse.builder()
+//                            .type(4)
+//                            .data(data)
+//                            .build();
+//                }
 //
-//@Id
-//private DailyRoster.DailyRosterId id;
-//private UUID nbaPlayerUid;
-//private String nickname;
-//private String name;
-//private Integer dollarValue;
-//private Double fantasyScore;
-
-
+//                if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
+//                    var data = InteractionResponse.InteractionResponseData.builder()
+//                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue().toString()))
+//                            .build();
+//                    return InteractionResponse.builder()
+//                            .type(4)
+//                            .data(data)
+//                            .build();
+//                }

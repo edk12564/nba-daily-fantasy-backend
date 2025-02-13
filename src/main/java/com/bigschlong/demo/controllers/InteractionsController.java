@@ -13,14 +13,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/interactions")
@@ -30,12 +33,14 @@ public class InteractionsController {
     private final ObjectMapper mapper = new ObjectMapper();
     private final DailyRosterServices dailyRosterServices;
     private final IsLockedServices isLockedServices;
+    private final RestTemplate restTemplate;
 
 
-    public InteractionsController(NbaPlayerServices nbaPlayerServices, DailyRosterServices dailyRosterServices, IsLockedServices isLockedServices) {
+    public InteractionsController(NbaPlayerServices nbaPlayerServices, DailyRosterServices dailyRosterServices, IsLockedServices isLockedServices, RestTemplate restTemplate) {
         this.nbaPlayerServices = nbaPlayerServices;
         this.dailyRosterServices = dailyRosterServices;
         this.isLockedServices = isLockedServices;
+        this.restTemplate = restTemplate;
     }
 
     @SneakyThrows
@@ -86,56 +91,90 @@ public class InteractionsController {
 
             // interaction where user is setting their roster
             // TODO: Get this shit working
-            else if (Objects.equals(interaction.getData().getName(), "setroster")) {
-
-//                if (isLockedServices.isTodayLocked().getIsLocked()) {
-//                    var data = InteractionResponse.InteractionResponseData.builder()
-//                            .content("Today's roster is locked. You cannot make any changes.")
-//                            .build();
-//                    return InteractionResponse.builder()
-//                            .type(4)
-//                            .data(data)
-//                            .build();
-//                }
+            // This below is mostly right but I need to try creating a new editinteractionresponse DTO without the type field and adhering to the docs @Edit Webhook Message. This is because the fields are different for edit responses
+//            else if (Objects.equals(interaction.getData().getName(), "setroster")) {
 //
-//                if (dailyRosterServices.getTodaysRosterPrice(interaction.getMember().getUser().getId(), interaction.getGuildId()) > 150) {
-//                    var data = InteractionResponse.InteractionResponseData.builder()
-//                            .content(String.format("You have gone over the dollar limit of $150. Make changes to your other positions or choose a cheaper %s", interaction.getData().getOptions()[0].getValue().toString()))
-//                            .build();
-//                    return InteractionResponse.builder()
-//                            .type(4)
-//                            .data(data)
-//                            .build();
-//                }
-
-                String simplifiedPlayerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
-
-                List<Components.SelectMenu.SelectOption> players = nbaPlayerServices.getTodaysNbaPlayersByPosition(simplifiedPlayerPosition).stream()
-                        .map(player -> Components.SelectMenu.SelectOption.builder()
-                                .label(player)
-                                .value(player)
-                                .build())
-                        .toList();
-                Components selectMenu = Components.SelectMenu.builder()
-                        .type(3)
-                        .customId("set " + simplifiedPlayerPosition)
-                        .placeholder("Pick a player")
-                        .options(players)
-                        .build();
-                List<Components> components = List.of(selectMenu);
-                Components.ActionRow actionRow = Components.ActionRow.builder()
-                        .type(1)
-                        .components(components)
-                        .build();
-                var data = InteractionResponse.InteractionResponseData.builder()
-                        .content("Choose a player for the " + simplifiedPlayerPosition + " position")
-                        .components(List.of(actionRow))
-                        .build();
-                return InteractionResponse.builder()
-                        .type(4)
-                        .data(data)
-                        .build();
-            }
+//                // Process the interaction asynchronously
+//                CompletableFuture.runAsync(() -> {
+//                    try {
+//                        // Extract the simplified player position from the interaction
+//                        String simplifiedPlayerPosition = GetSimplePlayerPosition.getSimplePlayerPosition(interaction);
+//
+//                        // Retrieve the list of players and build select options
+//                        List<Components.SelectMenu.SelectOption> players = nbaPlayerServices
+//                                .getTodaysNbaPlayersByPosition(simplifiedPlayerPosition)
+//                                .stream()
+//                                .map(player -> Components.SelectMenu.SelectOption.builder()
+//                                        .label(player)
+//                                        .value(player)
+//                                        .build())
+//                                .collect(Collectors.toList());
+//
+//                        // Build the select menu component
+//                        Components selectMenu = Components.SelectMenu.builder()
+//                                .type(3)
+//                                .customId("set " + simplifiedPlayerPosition)
+//                                .placeholder("Pick a player")
+//                                .options(players)
+//                                .build();
+//
+//                        // Wrap the select menu in an ActionRow
+//                        Components.ActionRow actionRow = Components.ActionRow.builder()
+//                                .type(1)
+//                                .components(List.of(selectMenu))
+//                                .build();
+//
+//                        // Build the interaction response data including content and components
+//                        InteractionResponse.InteractionResponseData data = InteractionResponse.InteractionResponseData.builder()
+//                                .content("Choose a player for the " + simplifiedPlayerPosition + " position")
+//                                .components(List.of(actionRow))
+//                                .build();
+//
+//                        // Construct the edit URL using your application ID and the interaction token
+//                        String applicationId = interaction.getApplicationId(); // You might get this from config or the interaction itself
+//                        String editUrl = String.format(
+//                                "https://discord.com/api/v8/webhooks/%s/%s/messages/@original",
+//                                applicationId,
+//                                interaction.getToken()
+//                        );
+//
+//                        // Prepare HTTP headers
+//                        HttpHeaders headers = new HttpHeaders();
+//                        headers.setContentType(MediaType.APPLICATION_JSON);
+//
+//                        // Build the updated message payload (this can still be your type 4-like content)
+//                        InteractionResponse updatedResponse = InteractionResponse.builder()
+//                                .type(3)
+//                                .data(data)  // Your InteractionResponseData built earlier
+//                                .build();
+//
+//                        HttpEntity<InteractionResponse> requestEntity = new HttpEntity<>(updatedResponse, headers);
+//
+//                        // Use PATCH instead of POST
+//                        ResponseEntity<String> response = restTemplate.exchange(
+//                                editUrl,
+//                                HttpMethod.PATCH,
+//                                requestEntity,
+//                                String.class
+//                        );
+//
+//                        // Check if the response status indicates success
+//                        if (!response.getStatusCode().is2xxSuccessful()) {
+//                            throw new ResponseStatusException(response.getStatusCode(), "Failed to send interaction followup");
+//                        }
+//                    } catch (Exception e) {
+//                        // Log any other exceptions that occur during processing
+//                        e.printStackTrace();
+//                    }
+//
+//                    System.out.println("Asynchronous process completed.");
+//                });
+//
+//                // Immediately return a deferred response (type 5) to comply with Discord's 3-second requirement
+//                return InteractionResponse.builder()
+//                        .type(5)
+//                        .build();
+//            }
 
             // interaction where user is viewing all players for all positions
             else if (Objects.equals(interaction.getData().getName(), "viewallplayers")) {
@@ -243,7 +282,7 @@ public class InteractionsController {
 
             // interaction where user is checking all players last played game's scores and rankings (leaderboard)
             else if (Objects.equals(interaction.getData().getName(), "leaderboard")) {
-                String players = dailyRosterServices.getLeaderboard(interaction.getGuildId()).toString();
+                String players = dailyRosterServices.getLeaderboardString(interaction.getGuildId()).toString();
                 var data = InteractionResponse.InteractionResponseData.builder()
                         .content(players)
                         .build();
@@ -252,6 +291,8 @@ public class InteractionsController {
                         .data(data)
                         .build();
             }
+
+
         }
 
         // Select Menu Responses
