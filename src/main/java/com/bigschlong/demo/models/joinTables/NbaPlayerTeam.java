@@ -9,17 +9,25 @@ import java.util.UUID;
 @Setter
 public class NbaPlayerTeam {
 
-    private UUID nba_player_uid;
+    UUID nba_player_uid;
+    Integer nba_player_id;
+    String player_name;
+    String date;
+    String position;
+    Integer against_team;
+    Integer dollar_value;
+    Double fantasy_score;
+    Integer team_id;
+    String team_name;
+    String against_team_name;
+    String status;
+    String jersey_num;
 
-    private Integer nba_player_id;
-    private String player_name;
-    private String date;
-    private String position;
-    private Integer against_team;
-    private Integer dollar_value;
-    private Double fantasy_score;
-    private Integer team_id;
-    private String team_name;
-    private String against_team_name;
+    String avg_stl;
+    String avg_tov;
+    String avg_reb;
+    String avg_pts;
+    String avg_ast;
+    String avg_blk;
 
 }

@@ -7,6 +7,7 @@ import com.bigschlong.demo.repositories.NbaPlayerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +37,8 @@ public class NbaPlayerServices {
 
     @Transactional(readOnly = true)
     public List<NbaPlayerTeam> getNbaPlayersWithTeam() {
-        return nbaPlayerRepository.getNbaPlayersWithTeam();
+        System.out.println(LocalDate.now());
+        return nbaPlayerRepository.getNbaPlayersWithTeam(LocalDate.now().toString());
     }
 
 //
