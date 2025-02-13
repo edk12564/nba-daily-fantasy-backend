@@ -3,10 +3,9 @@ import requests
 url = "https://discord.com/api/v10/applications/1290520169185280062/commands"
 
 json = {
-    "name": "viewallplayers",
-    # Type 1 is used for slash commands
+    "name": "leaderboard",
     "type": 1,
-    "description": "View all players playing today"
+    "description": "Get the discord leaderboard for the previous day"
 }
 
 # For authorization, you can use either your bot token

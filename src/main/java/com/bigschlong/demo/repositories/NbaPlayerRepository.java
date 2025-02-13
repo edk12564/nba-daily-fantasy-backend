@@ -2,12 +2,12 @@ package com.bigschlong.demo.repositories;
 
 import com.bigschlong.demo.models.dtos.NbaPlayer;
 import com.bigschlong.demo.models.dtos.Team;
+import com.bigschlong.demo.models.joinTables.NbaPlayerTeam;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,7 +18,7 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     JOIN teams t on t.team_id = np.team_id
     WHERE np.nba_player_uid = :playerId
     """)
-    List<Team> getTeamByPlayerId(UUID playerId);
+    List<Team> getTeamByPlayerUid(UUID playerId);
 
     @Query(value = """
     SELECT * FROM nba_players
@@ -36,7 +36,7 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     SELECT np.* FROM nba_players np
     WHERE np.position = :position
     ORDER BY np.dollar_value DESC
-    LIMIT 25
+    LIMIT 5
     """)
     List<NbaPlayer> getTodaysNbaPlayersByPosition(String position);
 
@@ -46,6 +46,16 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     LIMIT 25
     """)
     List<NbaPlayer> getAllTodaysNbaPlayers();
+
+    @Query(value = """
+            SELECT np.name AS player_name, t.abbr AS team_name, at.abbr as against_team_name, np.*
+    FROM nba_players np
+    JOIN teams t on t.team_id = np.team_id
+    JOIN teams at on np.against_team = at.team_id
+            WHERE np.date = :date
+    ORDER BY np.dollar_value DESC
+    """)
+    List<NbaPlayerTeam> getNbaPlayersWithTeam(String date);
 
 }
 
