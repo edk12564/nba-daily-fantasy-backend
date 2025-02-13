@@ -143,6 +143,7 @@ public class InteractionsController {
 
                         // Build the updated message payload (this can still be your type 4-like content)
                         InteractionResponse updatedResponse = InteractionResponse.builder()
+                                .type(3)
                                 .data(data)  // Your InteractionResponseData built earlier
                                 .build();
 
