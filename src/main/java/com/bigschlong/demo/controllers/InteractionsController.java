@@ -143,7 +143,6 @@ public class InteractionsController {
 
                         // Build the updated message payload (this can still be your type 4-like content)
                         InteractionResponse updatedResponse = InteractionResponse.builder()
-                                .type(4) // The type here is ignored by the edit endpoint
                                 .data(data)  // Your InteractionResponseData built earlier
                                 .build();
 
