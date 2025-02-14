@@ -24,7 +24,7 @@ import java.util.List;
 @RequestMapping("api/activity")
 public class ActivitiesController {
 
-    public static int MAX_DOLLARS;
+    public static final int MAX_DOLLARS = 100;
 
     @Autowired
     NbaPlayerServices nbaPlayerServices;
@@ -57,7 +57,7 @@ public class ActivitiesController {
         if (isLockedServices.isTodayLocked().getIsLocked()) {
             return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
         }
-        var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getGuild_id());
+        var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getGuild_id(), setPlayerDTO.getPosition());
         if (currentPrice > MAX_DOLLARS) {
             return new ResponseEntity<>(STR."{\"error\": \"Too expensive: Current price is \{currentPrice}\"}", HttpStatus.BAD_REQUEST);
         }

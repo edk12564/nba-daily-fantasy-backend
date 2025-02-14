@@ -1,7 +1,6 @@
 package com.bigschlong.demo.services;
 
 import com.bigschlong.demo.models.dtos.NbaPlayer;
-import com.bigschlong.demo.models.dtos.Team;
 import com.bigschlong.demo.models.joinTables.NbaPlayerTeam;
 import com.bigschlong.demo.repositories.NbaPlayerRepository;
 import org.springframework.stereotype.Service;
@@ -9,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class NbaPlayerServices {
@@ -20,15 +18,6 @@ public class NbaPlayerServices {
         this.nbaPlayerRepository = nbaPlayerRepository;
     }
 
-    @Transactional(readOnly = true)
-    public List<Team> getTeamByPlayerUid(UUID playerUid) {
-        return nbaPlayerRepository.getTeamByPlayerUid(playerUid);
-    }
-
-    @Transactional(readOnly = true)
-    public NbaPlayer findNbaPlayerByUid(UUID uid) {
-        return nbaPlayerRepository.findNbaPlayerByUid(uid);
-    }
 
     @Transactional(readOnly = true)
     public NbaPlayer findNbaPlayerByName(String name) {
@@ -40,27 +29,6 @@ public class NbaPlayerServices {
         System.out.println(LocalDate.now());
         return nbaPlayerRepository.getNbaPlayersWithTeam(LocalDate.now().toString());
     }
-
-//
-//    @Transactional(readOnly = true)
-//    public List<NbaPlayer> findAllNbaPlayers() {
-//        return (List<NbaPlayer>) nbaPlayerRepository.findAll();
-//    }
-//
-//    @Transactional(readOnly = true)
-//    public boolean existsById(UUID playerId) {
-//        return nbaPlayerRepository.existsById(playerId);
-//    }
-//
-//    @Transactional
-//    public NbaPlayer saveNbaPlayer(NbaPlayer nbaPlayer) {
-//        return nbaPlayerRepository.save(nbaPlayer);
-//    }
-//
-//    @Transactional
-//    public void deleteNbaPlayerById(UUID playerId) {
-//        nbaPlayerRepository.deleteById(playerId);
-//    }
 
     // we'll call the db to get todays players
     //

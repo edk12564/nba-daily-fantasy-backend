@@ -41,9 +41,7 @@ public class DailyRosterServices {
     //TODO convert to activity version
     // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
     public List<DailyRosterPlayer> getLeaderboard(String guildId) {
-        List<DailyRosterPlayer> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId);
-
-        return leaderboard;
+        return dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId);
     }
 
     public List<String> getLeaderboardString(String guildId) {
@@ -63,16 +61,18 @@ public class DailyRosterServices {
         return dailyRosterRepository.getTodaysRosterByPosition(discordId, guildId, position);
     }
 
-    public Integer getTodaysRosterPrice(String discordId, String guildId) {
+    public Integer getTodaysRosterPrice(String discordId, String guildId, String position) {
         AtomicInteger result = new AtomicInteger(0);
-        dailyRosterRepository.getTodaysRosterPrice(discordId, guildId, LocalDate.now()).forEach(result::addAndGet);
+        dailyRosterRepository.getTodaysRosterPrice(discordId, guildId, position, LocalDate.now()).forEach(result::addAndGet);
         return result.get();
     }
 
 
     public Double getTodaysRosterFantasyScore(String discordId, String guildId) {
         AtomicReference<Double> result = new AtomicReference<>(0.0);
-        dailyRosterRepository.getTodaysRosterFantasyScores(discordId, guildId).forEach(score -> result.updateAndGet(v -> v + score));
+        dailyRosterRepository.getTodaysRosterFantasyScores(discordId, guildId).forEach(score -> {
+            result.updateAndGet(v -> v + score);
+        });
         return result.get();
     }
 

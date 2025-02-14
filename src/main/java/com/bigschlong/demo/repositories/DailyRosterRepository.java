@@ -62,8 +62,9 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     SELECT np.dollar_value FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
             WHERE dr.guild_id = :guildId AND dr.discord_player_id = :discordId AND dr.date = :date
+                          AND dr.position <> position::daily_roster_position
     """)
-    List<Integer> getTodaysRosterPrice(String discordId, String guildId, LocalDate date);
+    List<Integer> getTodaysRosterPrice(String discordId, String guildId, String position, LocalDate date);
 
     @Query(value = """
     SELECT np.fantasy_score FROM nba_player np
