@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -15,4 +16,5 @@ public class SetPlayerDTO {
     String guild_id;
     String nickname;
     String discord_player_id;
+    LocalDate date;
 }

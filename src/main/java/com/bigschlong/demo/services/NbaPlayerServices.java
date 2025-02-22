@@ -25,9 +25,9 @@ public class NbaPlayerServices {
     }
 
     @Transactional(readOnly = true)
-    public List<NbaPlayerTeam> getNbaPlayersWithTeam() {
-        System.out.println(LocalDate.now());
-        return nbaPlayerRepository.getNbaPlayersWithTeam(LocalDate.now().toString());
+    public List<NbaPlayerTeam> getNbaPlayersWithTeam(LocalDate localDate) {
+        List<NbaPlayerTeam> nbaPlayersWithTeam = nbaPlayerRepository.getNbaPlayersWithTeam(localDate.toString());
+        return nbaPlayersWithTeam;
     }
 
     // we'll call the db to get todays players

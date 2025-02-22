@@ -55,6 +55,7 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
             WHERE np.date = :date
     ORDER BY np.dollar_value DESC
     """)
+        // date is a string in nba players table :(
     List<NbaPlayerTeam> getNbaPlayersWithTeam(String date);
 
 }

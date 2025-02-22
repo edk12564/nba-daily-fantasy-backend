@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -28,8 +27,8 @@ public class DailyRosterServices {
     }
 
     // Entity version
-    public List<DailyRosterPlayer> getPlayerRoster(String discordId, String guildId) {
-        return dailyRosterRepository.getTodaysRosterByDiscordIdAndGuildId(discordId, guildId, LocalDate.now());
+    public List<DailyRosterPlayer> getPlayerRoster(String discordId, String guildId, LocalDate date) {
+        return dailyRosterRepository.getTodaysRosterByDiscordIdAndGuildId(discordId, guildId, date);
     }
 
     public List<String> getGuildRostersString(String guildId) {
@@ -38,14 +37,13 @@ public class DailyRosterServices {
                 .toList();
     }
 
-    //TODO convert to activity version
-    // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
-    public List<DailyRosterPlayer> getLeaderboard(String guildId) {
-        return dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId);
+    public List<DailyRosterPlayer> getLeaderboard(String guildId, LocalDate date) {
+        return dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId, date);
     }
 
+    // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
     public List<String> getLeaderboardString(String guildId) {
-        List <String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
+        List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId, LocalDate.now()).stream()
                 .map(dailyRosterPlayer -> STR."\{dailyRosterPlayer.getNickname()} chose \{dailyRosterPlayer.getName()} (\{dailyRosterPlayer.getPosition().toString()}) - \{dailyRosterPlayer.getFantasyScore().toString()}")
                 .collect(Collectors.toCollection(ArrayList::new));
         leaderboard.addFirst("Leaderboard:");
@@ -53,18 +51,14 @@ public class DailyRosterServices {
         return leaderboard;
     }
 
-    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position) {
-        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname, position);
+    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position, LocalDate date) {
+        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname, position, date);
     }
 
-    public List<DailyRosterPlayer> getTodaysPlayersOnRosterByPosition(String discordId, String guildId, String position) {
-        return dailyRosterRepository.getTodaysRosterByPosition(discordId, guildId, position);
-    }
 
-    public Integer getTodaysRosterPrice(String discordId, String guildId, String position) {
-        AtomicInteger result = new AtomicInteger(0);
-        dailyRosterRepository.getTodaysRosterPrice(discordId, guildId, position, LocalDate.now()).forEach(result::addAndGet);
-        return result.get();
+    public Integer getTodaysRosterPrice(String discordId, String guildId, String position, LocalDate date) {
+        return dailyRosterRepository.getTodaysRosterPrice(discordId, guildId, position,
+                date).stream().reduce(0, Integer::sum);
     }
 
 
