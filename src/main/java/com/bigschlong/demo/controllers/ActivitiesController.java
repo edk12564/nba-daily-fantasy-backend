@@ -1,5 +1,6 @@
 package com.bigschlong.demo.controllers;
 
+import com.bigschlong.demo.models.dtos.IsLocked;
 import com.bigschlong.demo.models.dtos.SetPlayerDTO;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import com.bigschlong.demo.models.joinTables.NbaPlayerTeam;
@@ -61,11 +62,17 @@ public class ActivitiesController {
         return dailyRosterServices.getLeaderboard(guildId, date);
     }
 
-    @PostMapping(value = "/set-player")
+
+    @GetMapping(value = "/lock-time")
+    public IsLocked getLockTime(@RequestParam Optional<LocalDate> date) {
+        return isLockedServices.isLocked(date.orElse(LocalDate.now()));
+    }
+
+    @PostMapping(value = "/my-roster")
     public ResponseEntity<String> setPlayer(@RequestBody SetPlayerDTO setPlayerDTO) {
-        if (isLockedServices.isTodayLocked().getIsLocked()) {
-            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
-        }
+//        if (isLockedServices.isTodayLocked()) {
+//            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
+//        }
         LocalDate date = setPlayerDTO.getDate() == null ? LocalDate.now() : setPlayerDTO.getDate();
         var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getGuild_id(), setPlayerDTO.getPosition(), date);
         if (currentPrice > MAX_DOLLARS) {
