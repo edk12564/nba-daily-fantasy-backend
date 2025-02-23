@@ -76,7 +76,7 @@ public class ActivitiesController {
         LocalDate date = setPlayerDTO.getDate() == null ? LocalDate.now() : setPlayerDTO.getDate();
         var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getGuild_id(), setPlayerDTO.getPosition(), date);
         if (currentPrice > MAX_DOLLARS) {
-            return new ResponseEntity<>(STR."{\"error\": \"Too expensive: Current price is \{currentPrice}\"}", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("{\"error\": \"Too expensive: Current price is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
         }
         dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(),
                 setPlayerDTO.getGuild_id(), setPlayerDTO.getNickname(), setPlayerDTO.getPosition(), date);

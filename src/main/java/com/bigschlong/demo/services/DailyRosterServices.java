@@ -33,7 +33,7 @@ public class DailyRosterServices {
 
     public List<String> getGuildRostersString(String guildId) {
         return dailyRosterRepository.getTodaysRostersByGuildId(guildId).stream()
-                .map(dailyRosterPlayer -> STR."\{dailyRosterPlayer.getNickname()} chose \{dailyRosterPlayer.getPosition().toString()} \{dailyRosterPlayer.getName()} \{dailyRosterPlayer.getDollarValue().toString()}")
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getPosition().toString() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
@@ -44,7 +44,7 @@ public class DailyRosterServices {
     // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
     public List<String> getLeaderboardString(String guildId) {
         List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId, LocalDate.now()).stream()
-                .map(dailyRosterPlayer -> STR."\{dailyRosterPlayer.getNickname()} chose \{dailyRosterPlayer.getName()} (\{dailyRosterPlayer.getPosition().toString()}) - \{dailyRosterPlayer.getFantasyScore().toString()}")
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getName() + " (" + dailyRosterPlayer.getPosition().toString() + ") - " + dailyRosterPlayer.getFantasyScore().toString())
                 .collect(Collectors.toCollection(ArrayList::new));
         leaderboard.addFirst("Leaderboard:");
 
