@@ -24,7 +24,7 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping("activity")
+@RequestMapping("api/activity")
 public class ActivitiesController {
 
     public static final int MAX_DOLLARS = 100;
