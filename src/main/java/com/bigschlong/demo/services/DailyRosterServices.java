@@ -70,6 +70,9 @@ public class DailyRosterServices {
         return result.get();
     }
 
+    public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {
+        dailyRosterRepository.deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(dailyRosterPlayer.getGuildId(), dailyRosterPlayer.getDate(), dailyRosterPlayer.getDiscordPlayerId(), dailyRosterPlayer.getName());
+    }
 }
 
 //                if (isLockedServices.isTodayLocked().getIsLocked()) {

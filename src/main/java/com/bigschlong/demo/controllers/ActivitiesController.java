@@ -117,6 +117,14 @@ public class ActivitiesController {
             return s;
         }
     }
+
+    @SneakyThrows
+    @DeleteMapping(value = "/delete-roster-player")
+    public ResponseEntity<String> deleteRosterPlayer(@RequestBody DailyRosterPlayer dailyRosterPlayer ) {
+        dailyRosterServices.deleteRosterPlayer(dailyRosterPlayer);
+        return ResponseEntity.ok("Roster player deleted successfully.");
+    }
+
 }
 
 
