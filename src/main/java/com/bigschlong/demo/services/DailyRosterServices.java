@@ -71,7 +71,7 @@ public class DailyRosterServices {
     }
 
     public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {
-        dailyRosterRepository.deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(dailyRosterPlayer.getGuildId(), dailyRosterPlayer.getDate(), dailyRosterPlayer.getDiscordPlayerId(), dailyRosterPlayer.getName());
+        dailyRosterRepository.deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(dailyRosterPlayer.getGuildId(), dailyRosterPlayer.getDate(), dailyRosterPlayer.getDiscordPlayerId(), dailyRosterPlayer.getNbaPlayerUid());
     }
 }
 

@@ -76,13 +76,10 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     WHERE dr.guild_id = :guildId
       AND dr.date = :date
       AND dr.discord_player_id = :discordId
-      AND EXISTS (
-          SELECT 1 FROM nba_players np
-          WHERE np.id = dr.nba_player_id
-            AND np.player_name = :playerName
+      AND dr.nba_player_uid = :nbaPlayerUid
       )
     """)
-    void deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(String guildId, LocalDate date, String discordId, String playerName);
+    void deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(String guildId, LocalDate date, String discordId, UUID nbaPlayerUid);
 
 
 }
