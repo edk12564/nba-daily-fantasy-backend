@@ -13,14 +13,14 @@ import java.util.UUID;
 public interface IsLockedRepository extends CrudRepository<IsLocked, UUID> {
 
     @Query(value = """
-            SELECT il.date, il.lock_time FROM is_locked il
+    SELECT il.date, il.lock_time FROM is_locked il
     WHERE il.date = CURRENT_DATE
     """)
     Optional<IsLocked> isTodayLocked();
 
     @Query(value = """
-            SELECT il.date, il.lock_time FROM is_locked il
-            WHERE il.date = :date
-            """)
+    SELECT il.date, il.lock_time FROM is_locked il
+    WHERE il.date = :date
+    """)
     IsLocked isLocked(LocalDate date);
 }
