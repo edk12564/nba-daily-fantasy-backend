@@ -3,27 +3,23 @@ package com.bigschlong.demo.controllers;
 import com.bigschlong.demo.interceptors.CheckSignature;
 import com.bigschlong.demo.models.discord.Interaction;
 import com.bigschlong.demo.models.discord.InteractionResponse;
-import com.bigschlong.demo.models.discord.components.Components;
 import com.bigschlong.demo.services.DailyRosterServices;
 import com.bigschlong.demo.services.IsLockedServices;
 import com.bigschlong.demo.services.NbaPlayerServices;
-import com.bigschlong.demo.utils.GetSimplePlayerPosition;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.time.LocalDate;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/interactions")
@@ -304,7 +300,7 @@ public class InteractionsController {
 
             // Save the choice in the roster database
             dailyRosterServices.saveRosterChoice(nbaPlayerServices.findNbaPlayerByName(selectedValue.split("-", 2)[0]).getNba_player_uid(),
-                    interaction.getMember().getUser().getId(), interaction.getGuildId(), interaction.getMember().getUser().getUsername(), "PG");
+                    interaction.getMember().getUser().getId(), interaction.getGuildId(), interaction.getMember().getUser().getUsername(), "PG", LocalDate.now());
 
             // Create a response confirming the selected option
             String content = "You have selected: " + selectedValue.split("-", 2)[0];

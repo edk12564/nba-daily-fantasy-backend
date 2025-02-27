@@ -2,7 +2,7 @@ package com.bigschlong.demo.utils;
 
 import com.bigschlong.demo.models.discord.Interaction;
 
-public class GetSimplePlayerPosition {
+public class Utils {
     public static String getSimplePlayerPosition(Interaction interaction) {
         String position = interaction.getData().getOptions()[0].getValue();
         String result = switch (position) {
@@ -13,4 +13,5 @@ public class GetSimplePlayerPosition {
         };
         return result;
     }
+
 }

@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -28,54 +27,52 @@ public class DailyRosterServices {
     }
 
     // Entity version
-    public List<DailyRosterPlayer> getPlayerRoster(String discordId, String guildId) {
-        return dailyRosterRepository.getTodaysRosterByDiscordIdAndGuildId(discordId, guildId, LocalDate.now());
+    public List<DailyRosterPlayer> getPlayerRoster(String discordId, String guildId, LocalDate date) {
+        return dailyRosterRepository.getTodaysRosterByDiscordIdAndGuildId(discordId, guildId, date);
     }
 
     public List<String> getGuildRostersString(String guildId) {
         return dailyRosterRepository.getTodaysRostersByGuildId(guildId).stream()
-                .map(dailyRosterPlayer -> STR."\{dailyRosterPlayer.getNickname()} chose \{dailyRosterPlayer.getPosition().toString()} \{dailyRosterPlayer.getName()} \{dailyRosterPlayer.getDollarValue().toString()}")
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getPosition().toString() + " " + dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
 
-    //TODO convert to activity version
-    // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
-    public List<DailyRosterPlayer> getLeaderboard(String guildId) {
-        List<DailyRosterPlayer> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId);
-
-        return leaderboard;
+    public List<DailyRosterPlayer> getLeaderboard(String guildId, LocalDate date) {
+        return dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId, date);
     }
 
+    // You need to use collect() here instead of toList() because toList() creates an immutable list and therefore you are unable to .add.
     public List<String> getLeaderboardString(String guildId) {
-        List <String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId).stream()
-                .map(dailyRosterPlayer -> STR."\{dailyRosterPlayer.getNickname()} chose \{dailyRosterPlayer.getName()} (\{dailyRosterPlayer.getPosition().toString()}) - \{dailyRosterPlayer.getFantasyScore().toString()}")
+        List<String> leaderboard = dailyRosterRepository.getTodaysRostersByGuildIdWithFantasyScore(guildId, LocalDate.now()).stream()
+                .map(dailyRosterPlayer -> dailyRosterPlayer.getNickname() + " chose " + dailyRosterPlayer.getName() + " (" + dailyRosterPlayer.getPosition().toString() + ") - " + dailyRosterPlayer.getFantasyScore().toString())
                 .collect(Collectors.toCollection(ArrayList::new));
         leaderboard.addFirst("Leaderboard:");
 
         return leaderboard;
     }
 
-    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position) {
-        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname, position);
+    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position, LocalDate date) {
+        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, guildId, nickname, position, date);
     }
 
-    public List<DailyRosterPlayer> getTodaysPlayersOnRosterByPosition(String discordId, String guildId, String position) {
-        return dailyRosterRepository.getTodaysRosterByPosition(discordId, guildId, position);
-    }
 
-    public Integer getTodaysRosterPrice(String discordId, String guildId) {
-        AtomicInteger result = new AtomicInteger(0);
-        dailyRosterRepository.getTodaysRosterPrice(discordId, guildId, LocalDate.now()).forEach(result::addAndGet);
-        return result.get();
+    public Integer getTodaysRosterPrice(String discordId, String guildId, String position, LocalDate date) {
+        return dailyRosterRepository.getTodaysRosterPrice(discordId, guildId, position,
+                date).stream().reduce(0, Integer::sum);
     }
 
 
     public Double getTodaysRosterFantasyScore(String discordId, String guildId) {
         AtomicReference<Double> result = new AtomicReference<>(0.0);
-        dailyRosterRepository.getTodaysRosterFantasyScores(discordId, guildId).forEach(score -> result.updateAndGet(v -> v + score));
+        dailyRosterRepository.getTodaysRosterFantasyScores(discordId, guildId).forEach(score -> {
+            result.updateAndGet(v -> v + score);
+        });
         return result.get();
     }
 
+    public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {
+        dailyRosterRepository.deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(dailyRosterPlayer.getGuildId(), dailyRosterPlayer.getDate(), dailyRosterPlayer.getDiscordPlayerId(), dailyRosterPlayer.getNbaPlayerUid());
+    }
 }
 
 //                if (isLockedServices.isTodayLocked().getIsLocked()) {

@@ -1,5 +1,6 @@
 package com.bigschlong.demo.controllers;
 
+import com.bigschlong.demo.models.dtos.IsLocked;
 import com.bigschlong.demo.models.dtos.SetPlayerDTO;
 import com.bigschlong.demo.models.joinTables.DailyRosterPlayer;
 import com.bigschlong.demo.models.joinTables.NbaPlayerTeam;
@@ -17,14 +18,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
 @RequestMapping("api/activity")
 public class ActivitiesController {
 
-    public static int MAX_DOLLARS;
+    public static final int MAX_DOLLARS = 100;
 
     @Autowired
     NbaPlayerServices nbaPlayerServices;
@@ -43,28 +46,43 @@ public class ActivitiesController {
     OkHttpClient client = new OkHttpClient();
 
     @GetMapping(value = "/todays-players", produces = "application/json")
-    public List<NbaPlayerTeam> getPlayers() {
-        return nbaPlayerServices.getNbaPlayersWithTeam();
+    public List<NbaPlayerTeam> getPlayers(@RequestParam Optional<LocalDate> date) {
+        return nbaPlayerServices.getNbaPlayersWithTeam(date.orElse(LocalDate.now()));
     }
 
-    @GetMapping(value = "/my-roster/{guildId}/{playerId}")
-    public List<DailyRosterPlayer> myRoster(@PathVariable String guildId, @PathVariable String playerId) {
-        return dailyRosterServices.getPlayerRoster(playerId, guildId);
+    @GetMapping(value = "/my-roster/{guildId}/{discordPlayerId}")
+    public List<DailyRosterPlayer> myRoster(@PathVariable String guildId,
+                                            @PathVariable String discordPlayerId,
+                                            @RequestParam Optional<LocalDate> date) {
+        return dailyRosterServices.getPlayerRoster(discordPlayerId, guildId, date.orElse(LocalDate.now()));
     }
 
-    @PostMapping(value = "/set-player")
+    @GetMapping(value = "/rosters/{guildId}")
+    public List<DailyRosterPlayer> guildsRosters(@PathVariable String guildId, @RequestParam LocalDate date) {
+        return dailyRosterServices.getLeaderboard(guildId, date);
+    }
+
+
+    @GetMapping(value = "/lock-time")
+    public IsLocked getLockTime(@RequestParam Optional<LocalDate> date) {
+        return isLockedServices.isLocked(date.orElse(LocalDate.now()));
+    }
+
+    @PostMapping(value = "/my-roster")
     public ResponseEntity<String> setPlayer(@RequestBody SetPlayerDTO setPlayerDTO) {
-        if (isLockedServices.isTodayLocked().getIsLocked()) {
-            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
-        }
-        var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getGuild_id());
+//        if (isLockedServices.isTodayLocked()) {
+//            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
+//        }
+        LocalDate date = setPlayerDTO.getDate() == null ? LocalDate.now() : setPlayerDTO.getDate();
+        var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getGuild_id(), setPlayerDTO.getPosition(), date);
         if (currentPrice > MAX_DOLLARS) {
-            return new ResponseEntity<>(STR."{\"error\": \"Too expensive: Current price is \{currentPrice}\"}", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("{\"error\": \"Too expensive: Current price is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
         }
         dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(),
-                setPlayerDTO.getGuild_id(), setPlayerDTO.getNickname(), setPlayerDTO.getPosition());
+                setPlayerDTO.getGuild_id(), setPlayerDTO.getNickname(), setPlayerDTO.getPosition(), date);
         return new ResponseEntity<>("Ok", HttpStatus.OK);
     }
+
 
     @PostMapping(value = "/token")
     @SneakyThrows
@@ -99,6 +117,14 @@ public class ActivitiesController {
             return s;
         }
     }
+
+    @SneakyThrows
+    @DeleteMapping(value = "/delete-roster-player")
+    public ResponseEntity<String> deleteRosterPlayer(@RequestBody DailyRosterPlayer dailyRosterPlayer ) {
+        dailyRosterServices.deleteRosterPlayer(dailyRosterPlayer);
+        return ResponseEntity.ok("Roster player deleted successfully.");
+    }
+
 }
 
 

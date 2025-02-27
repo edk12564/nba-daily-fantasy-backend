@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.relational.core.mapping.Table;
+
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -17,6 +19,6 @@ import java.time.LocalDate;
 public class IsLocked {
 
     private LocalDate date;
-    private Boolean isLocked;
+    private OffsetDateTime lockTime;
 
 }
