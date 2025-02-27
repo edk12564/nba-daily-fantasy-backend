@@ -48,10 +48,4 @@ public class DiscordPlayerServices {
     public void deleteDiscordPlayerById(UUID discordId) {
         discordPlayerRepository.deleteById(discordId);
     }
-    
-
-    
-    
-    
 }
-
