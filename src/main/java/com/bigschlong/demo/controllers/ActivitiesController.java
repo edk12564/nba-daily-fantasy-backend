@@ -57,6 +57,17 @@ public class ActivitiesController {
         return dailyRosterServices.getPlayerRoster(discordPlayerId, guildId, date.orElse(LocalDate.now()));
     }
 
+    @GetMapping(value = "/rosters/global")
+    public List<DailyRosterPlayer> globalRoster(@RequestParam LocalDate date) {
+        return dailyRosterServices.getGlobalLeaderboard(date);
+    }
+
+    @GetMapping(value = "/rosters/{guildId}/weekly")
+    public List<DailyRosterPlayer> guildsRostersWeekly(@PathVariable String guildId, @RequestParam LocalDate date) {
+        return dailyRosterServices.getWeeklyLeaderboard(guildId, date);
+    }
+
+
     @GetMapping(value = "/rosters/{guildId}")
     public List<DailyRosterPlayer> guildsRosters(@PathVariable String guildId, @RequestParam LocalDate date) {
         return dailyRosterServices.getLeaderboard(guildId, date);
@@ -119,8 +130,8 @@ public class ActivitiesController {
     }
 
     @SneakyThrows
-    @DeleteMapping(value = "/delete-roster-player")
-    public ResponseEntity<String> deleteRosterPlayer(@RequestBody DailyRosterPlayer dailyRosterPlayer ) {
+    @DeleteMapping(value = "/my-roster")
+    public ResponseEntity<String> deleteRosterPlayer(@RequestBody DailyRosterPlayer dailyRosterPlayer) {
         dailyRosterServices.deleteRosterPlayer(dailyRosterPlayer);
         return ResponseEntity.ok("Roster player deleted successfully.");
     }
