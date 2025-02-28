@@ -52,45 +52,41 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
 
     @Query(value = """
             WITH roster_totals AS (
-                       SELECT
-                         dr.discord_player_id,
-                         dr.guild_id,
-                         SUM(np.fantasy_score) AS total_score
-                       FROM daily_roster dr
-                       JOIN nba_players np
-                         ON np.nba_player_uid = dr.nba_player_uid
-                       WHERE dr.date = :date
-                       GROUP BY dr.discord_player_id, dr.guild_id
-                     ),
-                     ranked_rosters AS (
-                       SELECT
-                         discord_player_id,
-                         guild_id,
-                         total_score,
-                         ROW_NUMBER() OVER (PARTITION BY discord_player_id ORDER BY total_score DESC) AS rn
-                       FROM roster_totals
-                     )
-                     SELECT
-                       dr.discord_player_id,
-                       np.nba_player_id,
-                       dr.nba_player_uid,
-                       dr.guild_id,
-                       dr.date,
-                       dr.nickname,
-                       dr.position AS position,
-                       np.name,
-                       np.dollar_value,
-                       np.fantasy_score,
-                     FROM daily_roster dr
-                     JOIN nba_players np
-                       ON np.nba_player_uid = dr.nba_player_uid
-                     JOIN ranked_rosters rr
-                       ON dr.discord_player_id = rr.discord_player_id
-                       AND dr.guild_id = rr.guild_id
-                     WHERE dr.date = :date
-                       AND rr.rn = 1
-                     ORDER BY rr.total_score DESC, np.fantasy_score DESC
-                     LIMIT 100;
+                                   SELECT
+                                     dr.discord_player_id,
+                                     dr.guild_id,
+                                     SUM(np.fantasy_score) AS total_score
+                                   FROM daily_roster dr
+                                   JOIN nba_players np ON np.nba_player_uid = dr.nba_player_uid
+                                   WHERE dr.date = :date
+                                   GROUP BY dr.discord_player_id, dr.guild_id
+                                 ),
+                                 ranked_rosters AS (
+                                   SELECT
+                                     discord_player_id,
+                                     guild_id,
+                                     total_score,
+                                     ROW_NUMBER() OVER (PARTITION BY discord_player_id ORDER BY total_score DESC) AS rn
+                                   FROM roster_totals
+                                 )
+                                 SELECT
+                                   dr.discord_player_id,
+                                   np.nba_player_id,
+                                   dr.nba_player_uid,
+                                   dr.guild_id,
+                                   dr.date,
+                                   dr.nickname,
+                                   dr.position AS position,
+                                   np.name,
+                                   np.dollar_value,
+                                   np.fantasy_score
+                                 FROM daily_roster dr
+                                 JOIN nba_players np ON np.nba_player_uid = dr.nba_player_uid
+                                 JOIN ranked_rosters rr ON dr.discord_player_id = rr.discord_player_id AND dr.guild_id = rr.guild_id
+                                 WHERE dr.date = :date
+                                   AND rr.rn = 1
+                                 ORDER BY rr.total_score DESC, np.fantasy_score DESC
+                                 LIMIT 100;
             """)
     List<DailyRosterPlayer> getTodaysGlobalRosters(LocalDate date);
 
