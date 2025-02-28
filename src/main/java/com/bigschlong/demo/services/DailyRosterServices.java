@@ -5,7 +5,9 @@ import com.bigschlong.demo.repositories.DailyRosterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -72,6 +74,16 @@ public class DailyRosterServices {
 
     public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {
         dailyRosterRepository.deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(dailyRosterPlayer.getGuildId(), dailyRosterPlayer.getDate(), dailyRosterPlayer.getDiscordPlayerId(), dailyRosterPlayer.getNbaPlayerUid());
+    }
+
+    public List<DailyRosterPlayer> getWeeklyLeaderboard(String guildId, LocalDate date) {
+        LocalDate previousMonday = date.with(TemporalAdjusters.previous(DayOfWeek.MONDAY));
+        return dailyRosterRepository.getWeeksLeaderboard(previousMonday, date, guildId);
+
+    }
+
+    public List<DailyRosterPlayer> getGlobalLeaderboard(LocalDate date) {
+        return dailyRosterRepository.getTodaysGlobalRosters(date);
     }
 }
 

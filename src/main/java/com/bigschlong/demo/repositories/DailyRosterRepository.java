@@ -45,16 +45,31 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
             WHERE dr.guild_id = :guildId AND dr.date = :date
-    ORDER BY dr.nickname
+    ORDER BY np.fantasy_score DESC
+    LIMIT 100
     """)
     List<DailyRosterPlayer> getTodaysRostersByGuildIdWithFantasyScore(String guildId, LocalDate date);
 
     @Query(value = """
-    SELECT dr.*, np.name, np.dollar_value FROM daily_roster dr
+            SELECT dr.discord_player_id, np.nba_player_id, dr.nba_player_uid, dr.guild_id, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value, np.fantasy_score 
+    FROM daily_roster dr
     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-    WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId AND dr.date = CURRENT_DATE AND np.position = :position
+            WHERE dr.date = :date
+    ORDER BY np.fantasy_score DESC
+    LIMIT 100
     """)
-    List<DailyRosterPlayer> getTodaysRosterByPosition(String discordId, String guildId, String position);
+    List<DailyRosterPlayer> getTodaysGlobalRosters(LocalDate date);
+
+    @Query(value = """
+    SELECT dr.discord_player_id, dr.nickname, sum(np.fantasy_score) as fantasy_score
+    FROM daily_roster dr
+    JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+    WHERE dr.guild_id = :guildId AND dr.date < :endDay AND dr.date > :startDay
+    GROUP BY dr.discord_player_id, dr.nickname
+    ORDER BY fantasy_score DESC
+    LIMIT 100
+    """)
+    List<DailyRosterPlayer> getWeeksLeaderboard(LocalDate startDay, LocalDate endDay, String guildId);
 
     @Query(value = """
     SELECT np.dollar_value FROM daily_roster dr
@@ -70,6 +85,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     WHERE dr.guild_id = :guildId AND dr.discord_player_id = :discordId AND dr.date = CURRENT_DATE
     """)
     List<Double> getTodaysRosterFantasyScores(String discordId, String guildId);
+
 
     @Query(value= """
     DELETE FROM daily_roster dr
