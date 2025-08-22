@@ -1,0 +1,206 @@
+{
+  "app_permissions": "562949953863680",
+  "application_id": "1290520169185280062",
+  "authorizing_integration_owners": {
+    "0": "890677956681281566"
+  },
+  "channel": {
+    "flags": 0,
+    "guild_id": "890677956681281566",
+    "icon_emoji": {
+      "id": null,
+      "name": "?"
+    },
+    "id": "1067136734338494595",
+    "last_message_id": "1336131377053040720",
+    "name": "bot",
+    "nsfw": false,
+    "parent_id": "890677956681281567",
+    "permissions": "2248473465835073",
+    "position": 6,
+    "rate_limit_per_user": 0,
+    "theme_color": null,
+    "topic": null,
+    "type": 0
+  },
+  "channel_id": "1067136734338494595",
+  "context": 0,
+  "data": {
+    "component_type": 3,
+    "custom_id": "set G",
+    "values": [
+      "James Harden-38"
+    ]
+  },
+  "entitlement_sku_ids": [],
+  "entitlements": [],
+  "guild": {
+    "features": [
+      "SOUNDBOARD",
+      "CHANNEL_ICON_EMOJIS_GENERATED",
+      "ANIMATED_ICON",
+      "TEXT_IN_VOICE_ENABLED",
+      "THREE_DAY_THREAD_ARCHIVE",
+      "INVITE_SPLASH"
+    ],
+    "id": "890677956681281566",
+    "locale": "en-US"
+  },
+  "guild_id": "890677956681281566",
+  "guild_locale": "en-US",
+  "id": "1336131386188497018",
+  "locale": "en-US",
+  "member": {
+    "avatar": null,
+    "banner": null,
+    "communication_disabled_until": null,
+    "deaf": false,
+    "flags": 0,
+    "joined_at": "2021-09-23T21:06:00.351000+00:00",
+    "mute": false,
+    "nick": null,
+    "pending": false,
+    "permissions": "2248473465835073",
+    "premium_since": null,
+    "roles": [
+      "990657538569695242",
+      "950651796949450782"
+    ],
+    "unusual_dm_activity_until": null,
+    "user": {
+      "avatar": null,
+      "avatar_decoration_data": null,
+      "clan": null,
+      "discriminator": "0",
+      "global_name": "quack quack",
+      "id": "151820340715192320",
+      "primary_guild": null,
+      "public_flags": 0,
+      "username": "anaveragequacker"
+    }
+  },
+  "message": {
+    "application_id": "1290520169185280062",
+    "attachments": [],
+    "author": {
+      "avatar": null,
+      "avatar_decoration_data": null,
+      "bot": true,
+      "clan": null,
+      "discriminator": "1456",
+      "global_name": null,
+      "id": "1290520169185280062",
+      "primary_guild": null,
+      "public_flags": 524288,
+      "username": "NBA Daily Fantasy"
+    },
+    "channel_id": "1067136734338494595",
+    "components": [
+      {
+        "components": [
+          {
+            "custom_id": "set G",
+            "id": 2,
+            "max_values": 1,
+            "min_values": 1,
+            "options": [
+              {
+                "label": "James Harden-38",
+                "value": "James Harden-38"
+              },
+              {
+                "label": "Terry Rozier-34",
+                "value": "Terry Rozier-34"
+              },
+              {
+                "label": "Tyler Herro-33",
+                "value": "Tyler Herro-33"
+              },
+              {
+                "label": "Russell Westbrook-27",
+                "value": "Russell Westbrook-27"
+              },
+              {
+                "label": "Josh Richardson-18",
+                "value": "Josh Richardson-18"
+              },
+              {
+                "label": "Delon Wright-15",
+                "value": "Delon Wright-15"
+              },
+              {
+                "label": "Patty Mills-8",
+                "value": "Patty Mills-8"
+              },
+              {
+                "label": "Jaime Jaquez Jr.-0",
+                "value": "Jaime Jaquez Jr.-0"
+              },
+              {
+                "label": "Alondes Williams-0",
+                "value": "Alondes Williams-0"
+              }
+            ],
+            "placeholder": "Pick a player",
+            "type": 3
+          }
+        ],
+        "id": 1,
+        "type": 1
+      }
+    ],
+    "content": "Choose a player for the G position",
+    "edited_timestamp": null,
+    "embeds": [],
+    "flags": 0,
+    "id": "1336131377053040720",
+    "interaction": {
+      "id": "1336131374913949737",
+      "name": "setroster",
+      "type": 2,
+      "user": {
+        "avatar": null,
+        "avatar_decoration_data": null,
+        "clan": null,
+        "discriminator": "0",
+        "global_name": "quack quack",
+        "id": "151820340715192320",
+        "primary_guild": null,
+        "public_flags": 0,
+        "username": "anaveragequacker"
+      }
+    },
+    "interaction_metadata": {
+      "authorizing_integration_owners": {
+        "0": "890677956681281566"
+      },
+      "command_type": 1,
+      "id": "1336131374913949737",
+      "name": "setroster",
+      "type": 2,
+      "user": {
+        "avatar": null,
+        "avatar_decoration_data": null,
+        "clan": null,
+        "discriminator": "0",
+        "global_name": "quack quack",
+        "id": "151820340715192320",
+        "primary_guild": null,
+        "public_flags": 0,
+        "username": "anaveragequacker"
+      }
+    },
+    "mention_everyone": false,
+    "mention_roles": [],
+    "mentions": [],
+    "pinned": false,
+    "position": 0,
+    "timestamp": "2025-02-04T00:29:04.410000+00:00",
+    "tts": false,
+    "type": 20,
+    "webhook_id": "1290520169185280062"
+  },
+  "token": "aW50ZXJhY3Rpb246MTMzNjEzMTM4NjE4ODQ5NzAxODplV1A0UU1sbllJcktzM2RzckpPS08xdUVqZDc3T1Y5b2dKakRpQjF5cXpBaDBUaXlUU0R4TTBobU1CSWxaU2s0VDNlaG1IRlNDWDg1ZkpJR3FtaUNOQlBxYjBmUTdXaWZIejJIY2ZxcDhMUmNTZHNiY3BVaXZoa1RaMVZHenkxTQ",
+  "type": 3,
+  "version": 1
+}
