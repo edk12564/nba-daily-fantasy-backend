@@ -13,8 +13,8 @@ import java.util.Collections;
 import static jakarta.xml.bind.DatatypeConverter.parseHexBinary;
 
 public class CheckSignature {
-
-    private static final String PUBLIC_KEY = "455238ff8387a5d4731f3907d06331456ed3be385552a44c82e8f9efb23eb3e0";
+    @Value("${DISCORD_API_PUBLIC_KEY}")
+    private String PUBLIC_KEY;
 
     public static String checkSignature(HttpServletRequest request) throws Exception {
         try {
