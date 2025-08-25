@@ -27,13 +27,20 @@ This is the backend for a Discord activity that runs NBA daily fantasy sports co
 # Architecture
 
 src/main/java/com/bigschlong/demo/ <br><br>
-   controllers/     # REST endpoints <br>
-   services/        # Business logic<br>
-   repositories/    # Database access<br>
-   models/          # Data Transfer Objects<br>
-   interceptors/    # Interceptors for Security and Authentication<br>
-   utils/           # Helper functions<br>
-
+   
+   REST endpoints <br>
+   controllers/ <br>
+   Business logic<br>
+   services/      <br>
+   Database access<br>
+   repositories/    <br>
+   Data Transfer Objects<br>
+   models/         <br>
+   Interceptors for Security and Authentication<br>
+   interceptors/  
+   Helper functions<br>
+   utils/           
+   
 # Getting Started
 
 # Prerequisites
