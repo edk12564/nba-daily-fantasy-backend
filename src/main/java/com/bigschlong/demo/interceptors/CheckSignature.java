@@ -10,11 +10,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
+import org.springframework.beans.factory.annotation.Value;
 import static jakarta.xml.bind.DatatypeConverter.parseHexBinary;
 
 public class CheckSignature {
     @Value("${DISCORD_API_PUBLIC_KEY}")
-    private String PUBLIC_KEY;
+    private static String PUBLIC_KEY;
 
     public static String checkSignature(HttpServletRequest request) throws Exception {
         try {
