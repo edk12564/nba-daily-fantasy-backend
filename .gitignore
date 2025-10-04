@@ -54,3 +54,4 @@ interactiontest.json
 terraform/demo-0.0.1-SNAPSHOT.jar
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
+terraform/.terraform/
