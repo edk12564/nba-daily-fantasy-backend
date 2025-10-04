@@ -1,1 +1,2 @@
 scripts/venv/* linguist-vendored
+scripts/.venv/* linguist-vendored
