@@ -49,3 +49,8 @@ build/
 resources/test.json
 test.http
 interactiontest.json
+
+### Terraform ###
+terraform/demo-0.0.1-SNAPSHOT.jar
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
