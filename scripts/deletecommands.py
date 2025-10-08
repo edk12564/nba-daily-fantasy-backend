@@ -9,7 +9,7 @@ BOT_ACCESS_KEY = os.getenv("BOT_ACCESS_KEY")
 
 url = f"https://discord.com/api/v10/applications/{VITE_DISCORD_CLIENT_ID}/commands"
 headers = {
-    "Authorization": "Bot BOT_ACCESS_KEY"
+    f"Authorization": "Bot {BOT_ACCESS_KEY}"
 }
 
 
