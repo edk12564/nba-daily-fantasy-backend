@@ -118,5 +118,7 @@ output "application_url" {
   value = "http://${aws_instance.backend_server_1.public_ip}:8080"
 }
 
+# ip, route 53 connection, check if route 53 is free
+
 
 
