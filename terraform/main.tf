@@ -1,3 +1,4 @@
+
 terraform {
   required_providers {
     aws = {
@@ -15,9 +16,16 @@ provider "aws" {
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
+
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    # FIX: Use a more standard Amazon Linux 2023 AMI name pattern
+    values = ["al2023-ami-2023.*-x86_64"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 }
 
@@ -55,58 +63,41 @@ resource "aws_key_pair" "deployer_key" {
 }
 
 resource "aws_instance" "backend_server_1" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.deployer_key.key_name
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t2.micro"
+  key_name               = aws_key_pair.deployer_key.key_name
   vpc_security_group_ids = [aws_security_group.app_server_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.name
 
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y java-21-amazon-corretto-devel
+    # --- FIX: Added an explicit dependency to prevent an IAM race condition ---
+  depends_on = [aws_iam_role_policy_attachment.attach_ssm_policy]
 
-              # Create a directory for our application
-              mkdir -p /opt/nba-daily-fantasy-backend
-
-              # Move the uploaded JAR file to its final destination
-              mv /tmp/demo-0.0.1-SNAPSHOT.jar /opt/nba-daily-fantasy-backend/app.jar
-
-              # Create a systemd service file to manage the application
-              cat <<EOT > /etc/systemd/system/myapp.service
-              [Unit]
-              Description=NBA Daily Fantasy Backend
-              After=network.target
-
-              [Service]
-              User=ec2-user
-              # FIXED: Corrected path to the JAR file
-              ExecStart=/usr/bin/java -jar /opt/nba-daily-fantasy-backend/app.jar
-              Restart=on-failure
-              RestartSec=10
-
-              [Install]
-              WantedBy=multi-user.target
-              EOT
-
-              # Reload, enable, and start the application service
-              systemctl daemon-reload
-              systemctl enable myapp.service
-              systemctl start myapp.service
-              EOF
-
-  # REQUIRED: Connection block for the file provisioner
+  # Connection block is required for provisioners
   connection {
     type        = "ssh"
     user        = "ec2-user"
-    # FIXED: Added pathexpand to correctly find your private key
     private_key = file(pathexpand("~/.ssh/id_rsa"))
     host        = self.public_ip
   }
 
-  # REQUIRED: Provisioner to upload your JAR file
+  # Provisioner to upload your JAR file (runs first)
   provisioner "file" {
-    source      = "demo-0.0.1-SNAPSHOT.jar"
+    source      = "../target/demo-0.0.1-SNAPSHOT.jar"
     destination = "/tmp/demo-0.0.1-SNAPSHOT.jar"
+  }
+
+   # Provisioner to upload the setup script
+  provisioner "file" {
+    source      = "setup.sh"
+    destination = "/tmp/setup.sh"
+  }
+
+  # Provisioner to execute your setup script (runs second)
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/setup.sh",
+      "sudo /tmp/setup.sh"
+    ]
   }
 
   tags = {
@@ -118,7 +109,52 @@ output "application_url" {
   value = "http://${aws_instance.backend_server_1.public_ip}:8080"
 }
 
-# ip, route 53 connection, check if route 53 is free
+resource "aws_iam_role" "ec2_role" {
+  name = "ec2-parameter-store-role"
 
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
 
+resource "aws_iam_policy" "parameter_store_read" {
+  name        = "parameter-store-read-policy"
+  description = "Allow EC2 instances to read from SSM Parameter Store"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_ssm_policy" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.parameter_store_read.arn
+}
+
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "ec2-parameter-store-profile"
+  role = aws_iam_role.ec2_role.name
+}
+
+# run everything in the script and run in the console
 
