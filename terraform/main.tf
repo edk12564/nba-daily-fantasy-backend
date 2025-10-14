@@ -32,10 +32,10 @@ data "aws_ami" "amazon_linux" {
 # REQUIRED: A security group to open ports for your app and for SSH
 resource "aws_security_group" "app_server_sg" {
   name = "nba-app-sg"
-  # Allow inbound traffic on port 8080 for your Spring Boot app
+  # Allow inbound traffic on port 80 for your Spring Boot app
   ingress {
-    from_port   = 8080
-    to_port     = 8080
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
