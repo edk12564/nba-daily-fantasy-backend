@@ -40,13 +40,13 @@ done
 echo "nonsense"
 
 # create tls cert and move to project directory and give it permissions
-#sudo python3 -m venv /opt/certbot/
-#sudo /opt/certbot/bin/pip install --upgrade pip
-#sudo /opt/certbot/bin/pip install certbot
-#sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
-#sudo certbot certonly --test-cert --standalone --non-interactive --preferred-challenges http --agree-tos -m alderwoodsolutionsllc@gmail.com -d picknrolls.click
-#sudo cp /etc/letsencrypt/live/picknrolls.click/fullchain.pem /opt/nba-daily-fantasy-backend/fullchain.pem
-#sudo cp /etc/letsencrypt/live/picknrolls.click/privkey.pem /opt/nba-daily-fantasy-backend/privkey.pem
+sudo python3 -m venv /opt/certbot/
+sudo /opt/certbot/bin/pip install --upgrade pip
+sudo /opt/certbot/bin/pip install certbot
+sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
+sudo certbot certonly --standalone --non-interactive --preferred-challenges http --agree-tos -m alderwoodsolutionsllc@gmail.com -d picknrolls.click
+sudo cp /etc/letsencrypt/live/picknrolls.click/fullchain.pem /opt/nba-daily-fantasy-backend/fullchain.pem
+sudo cp /etc/letsencrypt/live/picknrolls.click/privkey.pem /opt/nba-daily-fantasy-backend/privkey.pem
 cd /opt/nba-daily-fantasy-backend
 sudo chown -R ec2-user:ec2-user /opt/nba-daily-fantasy-backend
 sudo chmod 644 /opt/nba-daily-fantasy-backend/*.pem
