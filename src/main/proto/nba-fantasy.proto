@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package com.picknroll.demo.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.picknroll.demo.grpc";
+
+// Service definition for NBA Daily Fantasy operations
+service NbaFantasyService {
+  // Get today's available players
+  rpc GetTodaysPlayers(GetPlayersRequest) returns (GetPlayersResponse);
+  
+  // Get a player's roster
+  rpc GetPlayerRoster(GetRosterRequest) returns (GetRosterResponse);
+  
+  // Set a player in roster
+  rpc SetRosterPlayer(SetRosterRequest) returns (SetRosterResponse);
+  
+  // Get server leaderboard
+  rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
+  
+  // Get global leaderboard
+  rpc GetGlobalLeaderboard(GetGlobalLeaderboardRequest) returns (GetGlobalLeaderboardResponse);
+  
+  // Check if rosters are locked
+  rpc IsLocked(IsLockedRequest) returns (IsLockedResponse);
+  
+  // Get Discord user info (for OAuth integration)
+  rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse);
+}
+
+// Request/Response messages for getting players
+message GetPlayersRequest {
+  optional string date = 1; // ISO date string (YYYY-MM-DD)
+}
+
+message GetPlayersResponse {
+  repeated NbaPlayer players = 1;
+}
+
+// NBA Player representation
+message NbaPlayer {
+  string nba_player_uid = 1;
+  int32 nba_player_id = 2;
+  string name = 3;
+  string date = 4;
+  string position = 5;
+  int32 against_team = 6;
+  int32 dollar_value = 7;
+  double fantasy_score = 8;
+  int32 team_id = 9;
+  string team_name = 10;
+  string against_team_name = 11;
+}
+
+// Request/Response messages for roster operations
+message GetRosterRequest {
+  string guild_id = 1;
+  string discord_player_id = 2;
+  optional string date = 3; // ISO date string (YYYY-MM-DD)
+}
+
+message GetRosterResponse {
+  repeated RosterPlayer players = 1;
+}
+
+message RosterPlayer {
+  string discord_player_id = 1;
+  string nba_player_uid = 2;
+  string guild_id = 3;
+  string date = 4;
+  string nickname = 5;
+  string position = 6;
+  string name = 7;
+  int32 dollar_value = 8;
+  double fantasy_score = 9;
+}
+
+message SetRosterRequest {
+  string nba_player_uid = 1;
+  string position = 2;
+  string guild_id = 3;
+  string nickname = 4;
+  string discord_player_id = 5;
+  string date = 6;
+}
+
+message SetRosterResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Request/Response messages for leaderboards
+message GetLeaderboardRequest {
+  string guild_id = 1;
+  string date = 2; // ISO date string (YYYY-MM-DD)
+}
+
+message GetLeaderboardResponse {
+  repeated LeaderboardEntry entries = 1;
+}
+
+message GetGlobalLeaderboardRequest {
+  string date = 1; // ISO date string (YYYY-MM-DD)
+}
+
+message GetGlobalLeaderboardResponse {
+  repeated LeaderboardEntry entries = 1;
+}
+
+message LeaderboardEntry {
+  string discord_player_id = 1;
+  string guild_id = 2;
+  string nickname = 3;
+  double total_fantasy_score = 4;
+  repeated RosterPlayer players = 5;
+}
+
+// Request/Response messages for lock status
+message IsLockedRequest {
+  optional string date = 1; // ISO date string (YYYY-MM-DD)
+}
+
+message IsLockedResponse {
+  bool is_locked = 1;
+  string date = 2;
+  optional string lock_time = 3; // ISO datetime string
+}
+
+// Request/Response messages for user info
+message GetUserInfoRequest {
+  string access_token = 1;
+}
+
+message GetUserInfoResponse {
+  bool success = 1;
+  string user_info = 2; // JSON string containing Discord user info
+  string message = 3;
+}
