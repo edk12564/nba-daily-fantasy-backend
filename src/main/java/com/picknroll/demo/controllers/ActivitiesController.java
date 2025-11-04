@@ -1,5 +1,6 @@
 package com.picknroll.demo.controllers;
 
+import com.picknroll.demo.httpclient.NbaAPIClient;
 import com.picknroll.demo.models.dtos.IsLocked;
 import com.picknroll.demo.models.dtos.SetPlayerDTO;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
@@ -35,6 +36,8 @@ public class ActivitiesController {
     DailyRosterServices dailyRosterServices;
     @Autowired
     IsLockedServices isLockedServices;
+    @Autowired
+    NbaAPIClient nbaAPIClient;
 
 
     @Value("${discord.client.id}")
@@ -48,6 +51,11 @@ public class ActivitiesController {
     @GetMapping(value = "/todays-players", produces = "application/json")
     public List<NbaPlayerTeam> getPlayers(@RequestParam Optional<LocalDate> date) {
         return nbaPlayerServices.getNbaPlayersWithTeam(date.orElse(LocalDate.now()));
+    }
+
+    @GetMapping(value = "/livedata/{gameId}")
+    public String getLiveGameData(@PathVariable String gameId) {
+        return nbaAPIClient.getGamesData(gameId);
     }
 
     @GetMapping(value = "/my-roster/{guildId}/{discordPlayerId}")
