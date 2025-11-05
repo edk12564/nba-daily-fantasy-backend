@@ -13,6 +13,7 @@ sudo yum install -y java-21-amazon-corretto-headless
 sudo alternatives --set java /usr/lib/jvm/java-21-amazon-corretto.*/bin/java
 
 # Create a directory for the application
+sudo rm -rf /opt/nba-daily-fantasy-backend
 sudo mkdir -p /opt/nba-daily-fantasy-backend
 sudo mv /tmp/demo-0.0.1-SNAPSHOT.jar /opt/nba-daily-fantasy-backend/app.jar
 
@@ -52,7 +53,29 @@ sudo chown -R ec2-user:ec2-user /opt/nba-daily-fantasy-backend
 sudo chmod 644 /opt/nba-daily-fantasy-backend/*.pem
 
 # auto renew cert
-echo "0 0,12 * * * root /opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
+#echo "0 0,12 * * * root /opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
+
+#certbot-renew.service
+#[Unit]
+#Description=Renew Let's Encrypt certificates
+#
+#[Service]
+#Type=oneshot
+#ExecStart=sudo certbot renew -q
+#[11:40 PM]randomicons
+#: certbot-renew.timer
+#[Unit]
+#Description=Run certbot twice daily
+#
+#[Timer]
+#OnCalendar=--* 00,12:00:00
+#RandomizedDelaySec=3600
+#Persistent=true
+#
+#[Install]
+#WantedBy=timers.target
+#sudo systemctl daemon-reload
+#sudo systemctl enable certbot-renew.timer
 
 # Create a systemd service file
 cat <<EOT > /etc/systemd/system/myapp.service

@@ -3,6 +3,8 @@ package com.picknroll.demo.controllers;
 import com.picknroll.demo.models.dtos.DiscordPlayer;
 import com.picknroll.demo.models.dtos.Server;
 import com.picknroll.demo.services.ServerServices;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,11 +25,14 @@ public class ServerController {
         this.serverServices = serverServices;
     }
 
+    @Cacheable(cacheNames = "livePlayerData", key = "#id")
     @GetMapping(value = "/{id}", produces = "application/json")
-    public Optional<Server> getServer(@PathVariable String id)
+//    public Optional<Server> getServer(@PathVariable String id)
+    public Double getServer(@PathVariable String id)
     {
         
-        return serverServices.findServerById(UUID.fromString(id));
+//        return serverServices.findServerById(UUID.fromString(id));
+        return Math.random();
     
     }
     
