@@ -49,21 +49,20 @@ resource "aws_route53domains_registered_domain" "registration" {
 }
 
 # Find the latest Amazon Linux AMI automatically
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    # FIX: Use a more standard Amazon Linux 2023 AMI name pattern
-    values = ["al2023-ami-2023.*-x86_64"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-}
+# data "aws_ami" "amazon_linux" {
+#   owners      = ["amazon"]
+#
+#   filter {
+#     name   = "name"
+#     # FIX: Use a more standard Amazon Linux 2023 AMI name pattern
+#     values = ["al2023-ami-2023.*-x86_64"]
+#   }
+#
+#   filter {
+#     name   = "architecture"
+#     values = ["x86_64"]
+#   }
+# }
 
 # REQUIRED: A security group to open ports for your app and for SSH
 resource "aws_security_group" "app_server_sg" {
@@ -105,7 +104,8 @@ resource "aws_key_pair" "deployer_key" {
 }
 
 resource "aws_instance" "backend_server_1" {
-  ami                    = data.aws_ami.amazon_linux.id
+  # ami                    = data.aws_ami.amazon_linux.id
+  ami = "ami-080c353f4798a202f"
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.deployer_key.key_name
   vpc_security_group_ids = [aws_security_group.app_server_sg.id]

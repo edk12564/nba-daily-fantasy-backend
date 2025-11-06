@@ -25,14 +25,13 @@ public class ServerController {
         this.serverServices = serverServices;
     }
 
-    @Cacheable(cacheNames = "livePlayerData", key = "#id")
+//    @Cacheable(cacheNames = "livePlayerData", key = "#id")
     @GetMapping(value = "/{id}", produces = "application/json")
-//    public Optional<Server> getServer(@PathVariable String id)
-    public Double getServer(@PathVariable String id)
+    public Optional<Server> getServer(@PathVariable String id)
+//    public Double getServer(@PathVariable String id)
     {
         
-//        return serverServices.findServerById(UUID.fromString(id));
-        return Math.random();
+        return serverServices.findServerById(UUID.fromString(id));
     
     }
     

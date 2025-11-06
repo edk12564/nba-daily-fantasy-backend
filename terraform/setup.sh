@@ -44,11 +44,17 @@ echo "nonsense"
 sudo python3 -m venv /opt/certbot/
 sudo /opt/certbot/bin/pip install --upgrade pip
 sudo /opt/certbot/bin/pip install certbot
-sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
-sudo certbot certonly --standalone --non-interactive --preferred-challenges http --agree-tos -m alderwoodsolutionsllc@gmail.com -d picknrolls.click
+
+FILE="/etc/letsencrypt/live/picknrolls.click/fullchain.pem"
+
+if [ ! -f "$FILE" ]; then
+  sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
+  sudo certbot certonly --standalone --non-interactive --preferred-challenges http --agree-tos -m alderwoodsolutionsllc@gmail.com -d picknrolls.click
+  cd /opt/nba-daily-fantasy-backend
+fi
+
 sudo cp /etc/letsencrypt/live/picknrolls.click/fullchain.pem /opt/nba-daily-fantasy-backend/fullchain.pem
 sudo cp /etc/letsencrypt/live/picknrolls.click/privkey.pem /opt/nba-daily-fantasy-backend/privkey.pem
-cd /opt/nba-daily-fantasy-backend
 sudo chown -R ec2-user:ec2-user /opt/nba-daily-fantasy-backend
 sudo chmod 644 /opt/nba-daily-fantasy-backend/*.pem
 
@@ -78,7 +84,7 @@ sudo chmod 644 /opt/nba-daily-fantasy-backend/*.pem
 #sudo systemctl enable certbot-renew.timer
 
 # Create a systemd service file
-cat <<EOT > /etc/systemd/system/myapp.service
+cat <<EOT > /etc/systemd/system/nba.service
 [Unit]
 Description=NBA Daily Fantasy Backend
 After=network.target
@@ -99,7 +105,7 @@ EOT
 
 # Reload, enable, and start the application service
 sudo systemctl daemon-reload
-sudo systemctl enable myapp.service
-sudo systemctl start myapp.service
+sudo systemctl enable nba.service
+sudo systemctl start nba.service
 
 echo "Application setup complete and service started."
