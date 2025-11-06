@@ -147,7 +147,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     @Query(value = """
             SELECT dr.guild_id 
             FROM daily_roster dr
-            WHERE dr.discordId = :discordId
+            WHERE dr.discord_player_id = :discordPlayerId
             """)
     List<String> getGuildsByDiscordPlayerId(String discordPlayerId);
 

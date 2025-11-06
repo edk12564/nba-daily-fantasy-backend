@@ -103,12 +103,10 @@ public class ActivitiesController {
         return dailyRosterServices.getWeeklyLeaderboard(guildId, date);
     }
 
-
     @GetMapping(value = "/rosters/{guildId}")
     public List<DailyRosterPlayer> guildsRosters(@PathVariable String guildId, @RequestParam LocalDate date) {
         return dailyRosterServices.getLeaderboard(guildId, date);
     }
-
 
     @GetMapping(value = "/lock-time")
     public IsLocked getLockTime(@RequestParam Optional<LocalDate> date) {
