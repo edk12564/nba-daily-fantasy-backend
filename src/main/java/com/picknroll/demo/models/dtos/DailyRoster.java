@@ -19,7 +19,6 @@ import java.util.UUID;
 public class DailyRoster {
     @Id
     private DailyRosterId id;
-
     private String nickname;
     private UUID nbaPlayerUid;
 

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -84,6 +85,11 @@ public class DailyRosterServices {
 
     public List<DailyRosterPlayer> getGlobalLeaderboard(LocalDate date) {
         return dailyRosterRepository.getTodaysGlobalRosters(date);
+    }
+
+    public Optional<DailyRosterPlayer> checkExistingRosterPlayersByPosition(String discordId, LocalDate date, String position) {
+        Optional<DailyRosterPlayer> playerAtPosition = dailyRosterRepository.getTodaysRostersByDiscordIdAndByPosition(discordId, date, position);
+        return playerAtPosition;
     }
 }
 
