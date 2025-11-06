@@ -31,6 +31,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                     WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId AND dr.date = :date
             """)
     List<DailyRosterPlayer> getTodaysRosterByDiscordIdAndGuildId(String discordId, String guildId, LocalDate date);
+
     @Query(value = """
             SELECT dr.discord_player_id, dr.nba_player_uid, dr.guild_id, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value
             FROM daily_roster dr
@@ -39,6 +40,25 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             ORDER BY dr.nickname
             """)
     List<DailyRosterPlayer> getTodaysRostersByGuildId(String guildId);
+
+    @Query(value = """
+        SELECT dr.discord_player_id, 
+               np.nba_player_id, 
+               dr.nba_player_uid, 
+               dr.guild_id, 
+               dr.date, 
+               dr.nickname, 
+               dr.position AS position, 
+               np.name, 
+               np.dollar_value, 
+               np.fantasy_score 
+        FROM daily_roster dr
+        JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+        WHERE dr.discord_id = :discordId AND dr.date = :date AND np.position = :position
+        LIMIT 1
+        """)
+    Optional<DailyRosterPlayer> getTodaysRostersByDiscordIdAndByPosition(String discordId, LocalDate date, String position);
+
     @Query(value = """
                     SELECT dr.discord_player_id, np.nba_player_id, dr.nba_player_uid, dr.guild_id, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value, np.fantasy_score 
             FROM daily_roster dr
@@ -47,25 +67,8 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             ORDER BY np.fantasy_score DESC
             LIMIT 100
             """)
-    Optional<DailyRosterPlayer> getTodaysRostersByDiscordIdAndByPosition(String discordId, LocalDate date, String position);
-    @Query(value = """
-            SELECT dr.discord_player_id, 
-                   np.nba_player_id, 
-                   dr.nba_player_uid, 
-                   dr.guild_id, 
-                   dr.date, 
-                   dr.nickname, 
-                   dr.position AS position, 
-                   np.name, 
-                   np.dollar_value, 
-                   np.fantasy_score 
-            FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-            WHERE dr.discord_id = :discordId AND dr.date = :date AND np.position = :position
-            LIMIT 1
-            """)
-
     List<DailyRosterPlayer> getTodaysRostersByGuildIdWithFantasyScore(String guildId, LocalDate date);
+
     @Query(value = """
             WITH roster_totals AS (
                                    SELECT
@@ -132,7 +135,6 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     List<Double> getTodaysRosterFantasyScores(String discordId, String guildId);
 
-
     @Query(value = """
             DELETE FROM daily_roster dr
             WHERE dr.guild_id = :guildId
@@ -142,6 +144,13 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
               )
             """)
     void deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(String guildId, LocalDate date, String discordId, UUID nbaPlayerUid);
+
+    @Query(value = """
+            SELECT dr.guild_id 
+            FROM daily_roster dr
+            WHERE dr.discordId = :discordId
+            """)
+    List<String> getGuildsByDiscordPlayerId(String discordPlayerId);
 
 
 }

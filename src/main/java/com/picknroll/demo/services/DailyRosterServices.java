@@ -91,6 +91,11 @@ public class DailyRosterServices {
         Optional<DailyRosterPlayer> playerAtPosition = dailyRosterRepository.getTodaysRostersByDiscordIdAndByPosition(discordId, date, position);
         return playerAtPosition;
     }
+
+    public List<String> getGuildsByDiscordPlayerId(String discordPlayerId) {
+        return dailyRosterRepository.getGuildsByDiscordPlayerId(discordPlayerId);
+    }
+
 }
 
 //                if (isLockedServices.isTodayLocked().getIsLocked()) {

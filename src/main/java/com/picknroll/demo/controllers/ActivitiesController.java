@@ -59,18 +59,22 @@ public class ActivitiesController {
     }
 
 //  This is where you look at your roster for the first time. So this is the entrypoint. Here, I should fill in the players before displaying player roster.
+//  This is mainly for people starting it up in a new server. You also have to do for people changing their guild roster to also change every guild roster. this is done below is setplayer.
+//  If you do the above, every player for a position should be the same across all guilds. So
     @GetMapping(value = "/my-roster/{guildId}/{discordPlayerId}")
     public List<DailyRosterPlayer> myRoster(@PathVariable String guildId,
                                             @PathVariable String discordPlayerId,
                                             @RequestParam Optional<LocalDate> date) {
 
+//      Need to set this at the beginning. If you keep LocalDate.now(), you might get a half filled roster on the next day if the day passes.
+        LocalDate dateNow = LocalDate.now();
 
 //        Get the players that have been chosen. if they exist, fill them in before returning the roster.
-        Optional<DailyRosterPlayer> optionalPF = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(LocalDate.now()), "PF");
-        Optional<DailyRosterPlayer> optionalC = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(LocalDate.now()), "C");
-        Optional<DailyRosterPlayer> optionalSG = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(LocalDate.now()), "SG");
-        Optional<DailyRosterPlayer> optionalPG = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(LocalDate.now()), "PG");
-        Optional<DailyRosterPlayer> optionalSF = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(LocalDate.now()), "SF");
+        Optional<DailyRosterPlayer> optionalPF = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "PF");
+        Optional<DailyRosterPlayer> optionalC = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "C");
+        Optional<DailyRosterPlayer> optionalSG = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "SG");
+        Optional<DailyRosterPlayer> optionalPG = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "PG");
+        Optional<DailyRosterPlayer> optionalSF = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "SF");
 
         List<Optional<DailyRosterPlayer>> playersList = List.of(optionalPF, optionalC, optionalSG, optionalPG, optionalSF);
 
@@ -78,7 +82,7 @@ public class ActivitiesController {
             if (optionalPlayer.isPresent()) {
                 DailyRosterPlayer player = optionalPlayer.get();
                 dailyRosterServices.saveRosterChoice(player.getNbaPlayerUid(), discordPlayerId,
-                    guildId, player.getNickname(), String.valueOf(player.getPosition()), date.orElse(LocalDate.now()));
+                    guildId, player.getNickname(), String.valueOf(player.getPosition()), date.orElse(dateNow));
             }
         }
 
@@ -115,36 +119,31 @@ public class ActivitiesController {
 //        }
 
         LocalDate date = setPlayerDTO.getDate() == null ? LocalDate.now() : setPlayerDTO.getDate();
+
         var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getGuild_id(), setPlayerDTO.getPosition(), date);
         if (currentPrice > MAX_DOLLARS) {
             return new ResponseEntity<>("{\"error\": \"Too expensive: Current price is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
         }
-        dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(),
-                setPlayerDTO.getGuild_id(), setPlayerDTO.getNickname(), setPlayerDTO.getPosition(), date);
+
+        // Set needs to set for every guild. this is because we want a global roster. if player gets changed in one guild, it needs to change everywhere.
+        // Get a list of every guild the discord player is part of. Update like below but for every single guild.
+        // Finally, you update the current guild if it is not in the list of guilds from your query.
+        List<String> guilds = dailyRosterServices.getGuildsByDiscordPlayerId(setPlayerDTO.getDiscord_player_id());
+
+        if (!guilds.isEmpty()) {
+            for  (String guild : guilds) {
+                dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(),
+                    guild, setPlayerDTO.getNickname(), setPlayerDTO.getPosition(), date);
+            }
+        }
+
+        if (guilds.contains(setPlayerDTO.getGuild_id())) {
+            dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(),
+                    setPlayerDTO.getGuild_id(), setPlayerDTO.getNickname(), setPlayerDTO.getPosition(), date);
+        }
+
         return new ResponseEntity<>("Ok", HttpStatus.OK);
     }
-
-//            Optional<DailyRosterPlayer> optionalPlayer = dailyRosterServices.checkExistingRosterPlayersByPosition(setPlayerDTO.getDiscord_player_id(), date, setPlayerDTO.getPosition())
-//
-////        Here I will implement checking to see if the player at that position for the discord player has already been chosen. if so, just fill it in with that. if not, do all the logic below.
-////        Actually, this should go in at the beginning of the application, not when you set the player.
-//        if (optionalPlayer.isEmpty()) {
-//            var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getGuild_id(), setPlayerDTO.getPosition(), date);
-//            if (currentPrice > MAX_DOLLARS) {
-//                return new ResponseEntity<>("{\"error\": \"Too expensive: Current price is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
-//            }
-//            dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(),
-//                    setPlayerDTO.getGuild_id(), setPlayerDTO.getNickname(), setPlayerDTO.getPosition(), date);
-//            return new ResponseEntity<>("Ok", HttpStatus.OK);
-//        }
-//
-//        else {
-//            dailyRosterServices.saveRosterChoice(optionalPlayer.map(player -> player.getNbaPlayerUid()), player.getDiscord_player_id(),
-//                    player.getGuild_id(), player.getNickname(), player.getPosition(), date);
-//        }
-//
-//        return new ResponseEntity<>("Ok", HttpStatus.OK);
-
 
     @PostMapping(value = "/token")
     @SneakyThrows
