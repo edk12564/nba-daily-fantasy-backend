@@ -48,16 +48,15 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                dr.guild_id, 
                dr.date, 
                dr.nickname, 
-               dr.position AS position, 
+               dr.position,
                np.name, 
-               np.dollar_value, 
-               np.fantasy_score 
+               np.dollar_value
         FROM daily_roster dr
         JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-        WHERE dr.discord_id = :discordId AND dr.date = :date AND np.position = :position
+        WHERE dr.discord_player_id = :discordId AND dr.date = :date AND CAST(dr.position AS TEXT) = :position
         LIMIT 1
         """)
-    Optional<DailyRosterPlayer> getTodaysRostersByDiscordIdAndByPosition(String discordId, LocalDate date, String position);
+    Optional<DailyRosterPlayer> getRosterPlayerByDiscordIdAndPosition(String discordId, LocalDate date, String position);
 
     @Query(value = """
                     SELECT dr.discord_player_id, np.nba_player_id, dr.nba_player_uid, dr.guild_id, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value, np.fantasy_score 

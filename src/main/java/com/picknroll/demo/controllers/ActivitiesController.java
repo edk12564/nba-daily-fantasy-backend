@@ -70,23 +70,26 @@ public class ActivitiesController {
         LocalDate dateNow = LocalDate.now();
 
 //        Get the players that have been chosen. if they exist, fill them in before returning the roster.
-        Optional<DailyRosterPlayer> optionalPF = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "PF");
-        Optional<DailyRosterPlayer> optionalC = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "C");
-        Optional<DailyRosterPlayer> optionalSG = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "SG");
-        Optional<DailyRosterPlayer> optionalPG = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "PG");
-        Optional<DailyRosterPlayer> optionalSF = dailyRosterServices.checkExistingRosterPlayersByPosition(discordPlayerId, date.orElse(dateNow), "SF");
+        Optional<DailyRosterPlayer> optionalPF = dailyRosterServices.getRosterPlayersByDiscordIdAndPosition(discordPlayerId, date.orElse(dateNow), "PF");
+        Optional<DailyRosterPlayer> optionalC = dailyRosterServices.getRosterPlayersByDiscordIdAndPosition(discordPlayerId, date.orElse(dateNow), "C");
+        Optional<DailyRosterPlayer> optionalSG = dailyRosterServices.getRosterPlayersByDiscordIdAndPosition(discordPlayerId, date.orElse(dateNow), "SG");
+        Optional<DailyRosterPlayer> optionalPG = dailyRosterServices.getRosterPlayersByDiscordIdAndPosition(discordPlayerId, date.orElse(dateNow), "PG");
+        Optional<DailyRosterPlayer> optionalSF = dailyRosterServices.getRosterPlayersByDiscordIdAndPosition(discordPlayerId, date.orElse(dateNow), "SF");
 
+        System.out.println("2");
         List<Optional<DailyRosterPlayer>> playersList = List.of(optionalPF, optionalC, optionalSG, optionalPG, optionalSF);
 
+        // There was a bug here. We are using DailyRosterPlayer instead of SetPlayerDTO. There is no Player Nickname in the database. It is just a Name.
         for (Optional<DailyRosterPlayer> optionalPlayer : playersList) {
             if (optionalPlayer.isPresent()) {
                 DailyRosterPlayer player = optionalPlayer.get();
                 dailyRosterServices.saveRosterChoice(player.getNbaPlayerUid(), discordPlayerId,
-                    guildId, player.getNickname(), String.valueOf(player.getPosition()), date.orElse(dateNow));
+                    guildId, player.getName(), String.valueOf(player.getPosition()), date.orElse(dateNow));
+                System.out.println("3-infinity");
             }
         }
 
-        return dailyRosterServices.getPlayerRoster(discordPlayerId, guildId, date.orElse(LocalDate.now()));
+        return dailyRosterServices.getPlayerRoster(discordPlayerId, guildId, date.orElse(dateNow));
     }
 
     // Change this to globalLeaderboard

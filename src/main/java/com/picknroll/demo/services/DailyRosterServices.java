@@ -87,8 +87,8 @@ public class DailyRosterServices {
         return dailyRosterRepository.getTodaysGlobalRosters(date);
     }
 
-    public Optional<DailyRosterPlayer> checkExistingRosterPlayersByPosition(String discordId, LocalDate date, String position) {
-        Optional<DailyRosterPlayer> playerAtPosition = dailyRosterRepository.getTodaysRostersByDiscordIdAndByPosition(discordId, date, position);
+    public Optional<DailyRosterPlayer> getRosterPlayersByDiscordIdAndPosition(String discordId, LocalDate date, String position) {
+        Optional<DailyRosterPlayer> playerAtPosition = dailyRosterRepository.getRosterPlayerByDiscordIdAndPosition(discordId, date, position);
         return playerAtPosition;
     }
 
