@@ -106,6 +106,6 @@ EOT
 # Reload, enable, and start the application service
 sudo systemctl daemon-reload
 sudo systemctl enable nba.service
-sudo systemctl start nba.service
+sudo systemctl restart nba.service
 
 echo "Application setup complete and service started."
