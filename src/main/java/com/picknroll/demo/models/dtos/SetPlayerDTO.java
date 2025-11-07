@@ -11,6 +11,7 @@ import java.util.UUID;
 @Jacksonized
 @Builder
 public class SetPlayerDTO {
+
     UUID nba_player_uid;
     String position;
     String guild_id;

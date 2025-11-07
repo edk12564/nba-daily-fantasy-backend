@@ -2,16 +2,18 @@ package com.picknroll.demo.models.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @Setter
-@Table(name = "teams")
-public class Team {
+@Jacksonized
+@Table(name = "discord_player_guilds")
+public class DiscordPlayerGuild {
 
     @Id
-    private Integer team_id;
-    private String name;
+    private String discordPlayerId;
+    private String guildId;
 
 }

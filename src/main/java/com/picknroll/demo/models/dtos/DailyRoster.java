@@ -17,6 +17,7 @@ import java.util.UUID;
 @Jacksonized
 @Table(name = "daily_roster")
 public class DailyRoster {
+
     @Id
     private DailyRosterId id;
     private String nickname;

@@ -1,10 +1,7 @@
 package com.picknroll.demo.controllers;
 
-import com.picknroll.demo.models.dtos.DiscordPlayer;
-import com.picknroll.demo.models.dtos.Server;
-import com.picknroll.demo.services.ServerServices;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
+import com.picknroll.demo.models.dtos.DiscordPlayerGuild;
+import com.picknroll.demo.services.DiscordPlayerGuildServices;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,27 +16,27 @@ import java.util.UUID;
 public class ServerController {
     
     private final
-    ServerServices serverServices;
+    DiscordPlayerGuildServices discordPlayerGuildServices;
 
-    public ServerController(ServerServices serverServices) {
-        this.serverServices = serverServices;
+    public ServerController(DiscordPlayerGuildServices discordPlayerGuildServices) {
+        this.discordPlayerGuildServices = discordPlayerGuildServices;
     }
 
 //    @Cacheable(cacheNames = "livePlayerData", key = "#id")
     @GetMapping(value = "/{id}", produces = "application/json")
-    public Optional<Server> getServer(@PathVariable String id)
+    public Optional<DiscordPlayerGuild> getServer(@PathVariable String id)
 //    public Double getServer(@PathVariable String id)
     {
         
-        return serverServices.findServerById(UUID.fromString(id));
+        return discordPlayerGuildServices.findServerById(UUID.fromString(id));
     
     }
     
     @GetMapping(value = "/{id}/players", produces = "application/json")
-    public List<DiscordPlayer> getDiscordPlayersByServerId(@PathVariable String id)
+    public List<String> getDiscordPlayersByServerId(@PathVariable String id)
     {
        
-       return serverServices.getDiscordPlayersByServerId(UUID.fromString(id));
+       return discordPlayerGuildServices.getDiscordPlayersByServerId(id);
        
     }
 }

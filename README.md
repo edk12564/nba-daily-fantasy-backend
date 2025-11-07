@@ -4,7 +4,7 @@ Because someone needs to manage all those "LeBron is washed" debates with actual
 
 # What does this program do?
 
-This is the backend for a Discord activity that runs NBA daily fantasy sports competitions. Think of it as the brain behind your Discord server's basketball obsession, tracking players, manages rosters, calculates scores, and probably judging your terrible draft picks.
+This is the backend for a Discord activity that runs NBA daily fantasy sports competitions. Think of it as the brain behind your Discord discordPlayerGuild's basketball obsession, tracking players, manages rosters, calculates scores, and probably judging your terrible draft picks.
 
 # Features
 
