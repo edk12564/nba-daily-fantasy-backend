@@ -2,7 +2,6 @@ package com.picknroll.demo.controllers;
 
 import com.picknroll.demo.httpclient.NbaAPIClient;
 import com.picknroll.demo.models.dtos.IsLocked;
-import com.picknroll.demo.models.dtos.SetPlayerDTO;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.models.joinTables.NbaPlayerTeam;
 import com.picknroll.demo.services.DailyRosterServices;
@@ -16,7 +15,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,7 +75,7 @@ public class ActivitiesController {
         return dailyRosterServices.getGlobalLeaderboard(date);
     }
 
-    @GetMapping(value = "/rosters/weekly")
+    @GetMapping(value = "/rosters/weekly/{guildId}")
     public List<DailyRosterPlayer> guildsWeeklyLeaderboard(@PathVariable String guildId, @RequestParam LocalDate date) {
         return dailyRosterServices.getWeeklyGuildLeaderboard(guildId, date);
     }
