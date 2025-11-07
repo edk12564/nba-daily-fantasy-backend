@@ -38,7 +38,7 @@ public class DailyRosterServices {
                 date).stream().reduce(0, Integer::sum);
     }
 
-    /* CRUD Player */
+    /* CRUD DailyRosterPlayer */
     public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date) {
         dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date);
     }
@@ -47,11 +47,11 @@ public class DailyRosterServices {
         dailyRosterRepository.deleteRosterPlayerByDateAndDiscordIdAndPlayerName(dailyRosterPlayer.getDate(), dailyRosterPlayer.getDiscordPlayerId(), dailyRosterPlayer.getNbaPlayerUid());
     }
 
+    /* Leaderboards */
     public List<DailyRosterPlayer> getGuildLeaderboard(String guildId, LocalDate date) {
         return dailyRosterRepository.getTodaysLeaderboardByGuildId(guildId, date);
     }
 
-    /* Leaderboards */
     public List<DailyRosterPlayer> getWeeklyGuildLeaderboard(String guildId, LocalDate date) {
         LocalDate previousMonday = date.with(TemporalAdjusters.previous(DayOfWeek.MONDAY));
         return dailyRosterRepository.getWeeksLeaderboardByGuildId(guildId, previousMonday, date);

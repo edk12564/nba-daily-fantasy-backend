@@ -25,9 +25,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date);
 
-    // Race condition logic here?
-
-
+    /* Get Roster */
     @Query(value = """
                     SELECT dr.*, np.nba_player_uid, np.nba_player_id, np.name, np.dollar_value FROM daily_roster dr
                     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
@@ -35,7 +33,19 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     List<DailyRosterPlayer> getTodaysRosterByDiscordId(String discordId, LocalDate date);
 
+    /* Delete */
+    @Query(value = """
+            DELETE FROM daily_roster dr
+            WHERE dr.date = :date
+              AND dr.discord_player_id = :discordId
+              AND dr.nba_player_uid = :nbaPlayerUid
+            """)
+    void deleteRosterPlayerByDateAndDiscordIdAndPlayerName(LocalDate date, String discordId, UUID nbaPlayerUid);
 
+    // Race condition logic here?
+
+    /* Leaderboard */
+//    This might need modification. this is getting the global leaderboard. but that will already be in the dailyrosters table now. this is now the default, meaning this long sql query probably isn't needed.
     @Query(value = """
             WITH roster_totals AS (
                                    SELECT
@@ -92,7 +102,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     List<DailyRosterPlayer> getTodaysLeaderboardByGuildId(String guildId, LocalDate date);
 
-    /*  */
+    /* Get Price */
     @Query(value = """
             SELECT np.dollar_value FROM daily_roster dr
             JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
@@ -100,17 +110,5 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                                           AND dr.position <> :position::daily_roster_position
             """)
     List<Integer> getTodaysRosterPrice(String discordId, String position, LocalDate date);
-
-    @Query(value = """
-            DELETE FROM daily_roster dr
-            WHERE dr.date = :date
-              AND dr.discord_player_id = :discordId
-              AND dr.nba_player_uid = :nbaPlayerUid
-              )
-            """)
-    void deleteRosterPlayerByDateAndDiscordIdAndPlayerName(LocalDate date, String discordId, UUID nbaPlayerUid);
-
-
-
 
 }

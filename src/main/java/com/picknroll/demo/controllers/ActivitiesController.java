@@ -40,10 +40,8 @@ public class ActivitiesController {
     @Autowired
     DiscordPlayerGuildServices discordPlayerGuildServices;
 
-
     @Value("${discord.client.id}")
     private String clientId;
-
     @Value("${discord.client.secret}")
     private String discordClientSecret;
 
