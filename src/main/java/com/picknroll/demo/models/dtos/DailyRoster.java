@@ -23,13 +23,10 @@ public class DailyRoster {
     private String nickname;
     private UUID nbaPlayerUid;
 
-
-    // Spring Boot knows to add these to the SQL table
     @Data
     @Jacksonized
     @Builder
     public static class DailyRosterId {
-         private String guildId;
          private String discordPlayerId;
          private Position position;
          private LocalDate date;

@@ -48,14 +48,13 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     List<NbaPlayer> getAllTodaysNbaPlayers();
 
     @Query(value = """
-            SELECT np.name AS player_name, t.abbr AS team_name, at.abbr as against_team_name, np.*
+    SELECT np.name AS player_name, t.abbr AS team_name, at.abbr as against_team_name, np.*
     FROM nba_players np
     JOIN teams t on t.team_id = np.team_id
     JOIN teams at on np.against_team = at.team_id
-            WHERE np.date = :date
+    WHERE np.date = :date
     ORDER BY np.dollar_value DESC
     """)
-        // date is a string in nba players table :(
     List<NbaPlayerTeam> getNbaPlayersWithTeam(String date);
 
 }

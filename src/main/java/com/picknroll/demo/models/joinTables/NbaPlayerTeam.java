@@ -3,6 +3,7 @@ package com.picknroll.demo.models.joinTables;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter

@@ -16,73 +16,41 @@ import java.util.UUID;
 @Repository
 public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID> {
 
+    /* Save Roster */
     @Modifying
     @Query(value = """
-            INSERT INTO daily_roster (discord_player_id, nba_player_uid, guild_id, date, nickname, position)
-                            VALUES (:discordPlayerId, :nbaPlayerUid, :guildId, :date, :nickname, :position::daily_roster_position)
-                            ON CONFLICT(discord_player_id, guild_id, date, position) DO UPDATE
+            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position)
+                            VALUES (:discordPlayerId, :nbaPlayerUid, :date, :nickname, :position::daily_roster_position)
+                            ON CONFLICT(discord_player_id, date, position) DO UPDATE
                             SET nba_player_uid = :nbaPlayerUid, position = :position::daily_roster_position
             """)
-    void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String guildId, String nickname, String position, LocalDate date);
+    void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date);
+
+    // Race condition logic here?
+
 
     @Query(value = """
                     SELECT dr.*, np.nba_player_uid, np.nba_player_id, np.name, np.dollar_value FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-                    WHERE dr.discord_player_id = :discordId AND dr.guild_id = :guildId AND dr.date = :date
+                    JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+                    WHERE dr.discord_player_id = :discordId AND dr.date = :date
             """)
-    List<DailyRosterPlayer> getTodaysRosterByDiscordIdAndGuildId(String discordId, String guildId, LocalDate date);
+    List<DailyRosterPlayer> getTodaysRosterByDiscordId(String discordId, LocalDate date);
 
-    @Query(value = """
-            SELECT dr.discord_player_id, dr.nba_player_uid, dr.guild_id, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value
-            FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-            WHERE dr.guild_id = :guildId AND dr.date = CURRENT_DATE
-            ORDER BY dr.nickname
-            """)
-    List<DailyRosterPlayer> getTodaysRostersByGuildId(String guildId);
-
-    @Query(value = """
-        SELECT dr.discord_player_id, 
-               np.nba_player_id, 
-               dr.nba_player_uid, 
-               dr.guild_id, 
-               dr.date, 
-               dr.nickname, 
-               dr.position,
-               np.name, 
-               np.dollar_value
-        FROM daily_roster dr
-        JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-        WHERE dr.discord_player_id = :discordId AND dr.date = :date AND CAST(dr.position AS TEXT) = :position
-        LIMIT 1
-        """)
-    Optional<DailyRosterPlayer> getRosterPlayerByDiscordIdAndPosition(String discordId, LocalDate date, String position);
-
-    @Query(value = """
-                    SELECT dr.discord_player_id, np.nba_player_id, dr.nba_player_uid, dr.guild_id, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value, np.fantasy_score 
-            FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-                    WHERE dr.guild_id = :guildId AND dr.date = :date
-            ORDER BY np.fantasy_score DESC
-            LIMIT 100
-            """)
-    List<DailyRosterPlayer> getTodaysRostersByGuildIdWithFantasyScore(String guildId, LocalDate date);
-
+    /* Leaderboard */
+//    This might need modification. this is getting the global leaderboard. but that will already be in the dailyrosters table now. this is now the default, meaning this long sql query probably isn't needed.
     @Query(value = """
             WITH roster_totals AS (
                                    SELECT
                                      dr.discord_player_id,
-                                     dr.guild_id,
                                      SUM(np.fantasy_score) AS total_score
                                    FROM daily_roster dr
                                    JOIN nba_players np ON np.nba_player_uid = dr.nba_player_uid
                                    WHERE dr.date = :date
-                                   GROUP BY dr.discord_player_id, dr.guild_id
+                                   GROUP BY dr.discord_player_id
                                  ),
                                  ranked_rosters AS (
                                    SELECT
                                      discord_player_id,
-                                     guild_id,
                                      total_score,
                                      ROW_NUMBER() OVER (PARTITION BY discord_player_id ORDER BY total_score DESC) AS rn
                                    FROM roster_totals
@@ -91,7 +59,6 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                                    dr.discord_player_id,
                                    np.nba_player_id,
                                    dr.nba_player_uid,
-                                   dr.guild_id,
                                    dr.date,
                                    dr.nickname,
                                    dr.position AS position,
@@ -100,56 +67,57 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                                    np.fantasy_score
                                  FROM daily_roster dr
                                  JOIN nba_players np ON np.nba_player_uid = dr.nba_player_uid
-                                 JOIN ranked_rosters rr ON dr.discord_player_id = rr.discord_player_id AND dr.guild_id = rr.guild_id
+                                 JOIN ranked_rosters rr ON dr.discord_player_id = rr.discord_player_id
                                  WHERE dr.date = :date
                                    AND rr.rn = 1
                                  ORDER BY rr.total_score DESC, np.fantasy_score DESC
                                  LIMIT 100;
             """)
-    List<DailyRosterPlayer> getTodaysGlobalRosters(LocalDate date);
+    List<DailyRosterPlayer> getTodaysGlobalLeaderboard(LocalDate date);
 
+//    this should also go by server. like 2 queries above, we need to join and search by guild_id.
     @Query(value = """
             SELECT dr.discord_player_id, dr.nickname, sum(np.fantasy_score) as fantasy_score
             FROM daily_roster dr
             JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-            WHERE dr.guild_id = :guildId AND dr.date < :endDay AND dr.date > :startDay
+            WHERE dr.date < :endDay AND dr.date > :startDay
             GROUP BY dr.discord_player_id, dr.nickname
             ORDER BY fantasy_score DESC
             LIMIT 100
             """)
-    List<DailyRosterPlayer> getWeeksLeaderboard(LocalDate startDay, LocalDate endDay, String guildId);
+    List<DailyRosterPlayer> getWeeksLeaderboardByGuildId(String guildId, LocalDate startDay, LocalDate endDay);
 
+    //    This has to be modified to use joins to check by the discord player id. this is because this is the guild specific leaderboard.
+    @Query(value = """
+            SELECT dr.discord_player_id, np.nba_player_id, dr.nba_player_uid, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value, np.fantasy_score 
+            FROM daily_roster dr
+            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+            JOIN discord_player_guilds dpg on dpg.nba_player_id = dr.nba_player_id
+            WHERE dr.date = :date and dpg.guild_id = :guildId
+            ORDER BY np.fantasy_score DESC
+            LIMIT 1000
+            """)
+    List<DailyRosterPlayer> getTodaysLeaderboardByGuildId(String guildId, LocalDate date);
+
+    /*  */
     @Query(value = """
             SELECT np.dollar_value FROM daily_roster dr
             JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-                    WHERE dr.guild_id = :guildId AND dr.discord_player_id = :discordId AND dr.date = :date
+                    WHERE dr.discord_player_id = :discordId AND dr.date = :date
                                           AND dr.position <> :position::daily_roster_position
             """)
-    List<Integer> getTodaysRosterPrice(String discordId, String guildId, String position, LocalDate date);
-
-    @Query(value = """
-            SELECT np.fantasy_score FROM nba_player np
-            JOIN daily_roster dr on np.nba_player_uid = dr.nba_player_uid
-            WHERE dr.guild_id = :guildId AND dr.discord_player_id = :discordId AND dr.date = CURRENT_DATE
-            """)
-    List<Double> getTodaysRosterFantasyScores(String discordId, String guildId);
+    List<Integer> getTodaysRosterPrice(String discordId, String position, LocalDate date);
 
     @Query(value = """
             DELETE FROM daily_roster dr
-            WHERE dr.guild_id = :guildId
-              AND dr.date = :date
+            WHERE dr.date = :date
               AND dr.discord_player_id = :discordId
               AND dr.nba_player_uid = :nbaPlayerUid
               )
             """)
-    void deleteRosterPlayerByGuildIdAndDateAndDiscordIdAndPlayerName(String guildId, LocalDate date, String discordId, UUID nbaPlayerUid);
+    void deleteRosterPlayerByDateAndDiscordIdAndPlayerName(LocalDate date, String discordId, UUID nbaPlayerUid);
 
-    @Query(value = """
-            SELECT dr.guild_id 
-            FROM daily_roster dr
-            WHERE dr.discord_player_id = :discordPlayerId
-            """)
-    List<String> getGuildsByDiscordPlayerId(String discordPlayerId);
+
 
 
 }

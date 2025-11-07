@@ -18,26 +18,20 @@ public class NbaPlayerServices {
         this.nbaPlayerRepository = nbaPlayerRepository;
     }
 
-
+    /* Get NBA Players */
     @Transactional(readOnly = true)
     public NbaPlayer findNbaPlayerByName(String name) {
         return nbaPlayerRepository.findNbaPlayerByName(name);
     }
 
+    // With Team Today
     @Transactional(readOnly = true)
     public List<NbaPlayerTeam> getNbaPlayersWithTeam(LocalDate localDate) {
         List<NbaPlayerTeam> nbaPlayersWithTeam = nbaPlayerRepository.getNbaPlayersWithTeam(localDate.toString());
         return nbaPlayersWithTeam;
     }
 
-    // we'll call the db to get todays players
-    //
-    public List<String> getTodaysNbaPlayersByPosition(String position) {
-        return nbaPlayerRepository.getTodaysNbaPlayersByPosition(position).stream()
-                .map(player -> player.getName() + "-" + player.getDollar_value().toString())
-                .toList();
-    }
-
+    // All NBA Players Today
     public List<NbaPlayer> getAllTodaysNbaPlayers() {
         return nbaPlayerRepository.getAllTodaysNbaPlayers();
     }
