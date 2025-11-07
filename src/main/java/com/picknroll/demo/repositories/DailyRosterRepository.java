@@ -44,7 +44,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
 
     // Race condition logic here?
 
-    /* Leaderboard */
+    /* Leaderboards */
 //    This might need modification. this is getting the global leaderboard. but that will already be in the dailyrosters table now. this is now the default, meaning this long sql query probably isn't needed.
     @Query(value = """
             WITH roster_totals AS (
@@ -77,7 +77,6 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     List<DailyRosterPlayer> getTodaysGlobalLeaderboard(LocalDate date);
 
-//    this should also go by server. like 2 queries above, we need to join and search by guild_id.
     @Query(value = """
             SELECT dr.discord_player_id, dr.nickname, sum(np.fantasy_score) as fantasy_score
             FROM daily_roster dr
@@ -90,7 +89,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     List<DailyRosterPlayer> getWeeksLeaderboardByGuildId(String guildId, LocalDate startDay, LocalDate endDay);
 
-    //    This has to be modified to use joins to check by the discord player id. this is because this is the guild specific leaderboard.
+    // TODO: group by discord player id
     @Query(value = """
             SELECT dr.discord_player_id, np.nba_player_id, dr.nba_player_uid, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value, np.fantasy_score 
             FROM daily_roster dr
