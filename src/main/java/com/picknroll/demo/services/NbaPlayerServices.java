@@ -24,6 +24,7 @@ public class NbaPlayerServices {
         return nbaPlayerRepository.findNbaPlayerByName(name);
     }
 
+
     // With Team Today
     @Transactional(readOnly = true)
     public List<NbaPlayerTeam> getNbaPlayersWithTeam(LocalDate localDate) {
