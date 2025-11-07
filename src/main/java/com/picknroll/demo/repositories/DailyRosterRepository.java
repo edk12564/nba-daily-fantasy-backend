@@ -15,15 +15,24 @@ import java.util.UUID;
 @Repository
 public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID> {
 
-    /* Save Roster */
+    /* Save Player */
     @Modifying
     @Query(value = """
-            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position)
-                            VALUES (:discordPlayerId, :nbaPlayerUid, :date, :nickname, :position::daily_roster_position)
+            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position, guild_id)
+                            VALUES (:discordPlayerId, :nbaPlayerUid, :date, :nickname, :position::daily_roster_position, 'null')
                             ON CONFLICT(discord_player_id, date, position) DO UPDATE
                             SET nba_player_uid = :nbaPlayerUid, position = :position::daily_roster_position
             """)
     void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date);
+
+    /* Delete Player */
+    @Query(value = """
+            DELETE FROM daily_roster dr
+            WHERE dr.date = :date
+              AND dr.discord_player_id = :discordId
+              AND dr.nba_player_uid = :nbaPlayerUid
+            """)
+    void deleteRosterPlayerByDateAndDiscordIdAndPlayerName(LocalDate date, String discordId, UUID nbaPlayerUid);
 
     /* Get Roster */
     @Query(value = """
@@ -33,16 +42,16 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     List<DailyRosterPlayer> getTodaysRosterByDiscordId(String discordId, LocalDate date);
 
-    /* Delete */
+    /* Get Price */
     @Query(value = """
-            DELETE FROM daily_roster dr
-            WHERE dr.date = :date
-              AND dr.discord_player_id = :discordId
-              AND dr.nba_player_uid = :nbaPlayerUid
+            SELECT np.dollar_value FROM daily_roster dr
+            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+                    WHERE dr.discord_player_id = :discordId AND dr.date = :date
+                                          AND dr.position <> :position::daily_roster_position
             """)
-    void deleteRosterPlayerByDateAndDiscordIdAndPlayerName(LocalDate date, String discordId, UUID nbaPlayerUid);
+    List<Integer> getTodaysRosterPrice(String discordId, String position, LocalDate date);
 
-    // Race condition logic here?
+    // TODO: Race condition logic here? We need to combine save player and get roster in the same query.
 
     /* Leaderboards */
 //    This might need modification. this is getting the global leaderboard. but that will already be in the dailyrosters table now. this is now the default, meaning this long sql query probably isn't needed.
@@ -100,14 +109,5 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             LIMIT 1000
             """)
     List<DailyRosterPlayer> getTodaysLeaderboardByGuildId(String guildId, LocalDate date);
-
-    /* Get Price */
-    @Query(value = """
-            SELECT np.dollar_value FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-                    WHERE dr.discord_player_id = :discordId AND dr.date = :date
-                                          AND dr.position <> :position::daily_roster_position
-            """)
-    List<Integer> getTodaysRosterPrice(String discordId, String position, LocalDate date);
 
 }
