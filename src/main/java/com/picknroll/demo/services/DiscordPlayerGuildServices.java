@@ -24,18 +24,12 @@ public class DiscordPlayerGuildServices {
     }
     
     @Transactional(readOnly = true)
-    public Optional<DiscordPlayerGuild> findServerById(UUID id)
-    {
-        return discordPlayerGuildRepository.findById(id);
-    }
-    
-    @Transactional(readOnly = true)
     public List<DiscordPlayerGuild> findAllServers() {
         return (List<DiscordPlayerGuild>) discordPlayerGuildRepository.findAll();
     }
     
     @Transactional(readOnly = true)
-    public boolean existsById(UUID serverId) {
+    public boolean existsById(String serverId) {
         return discordPlayerGuildRepository.existsById(serverId);
     }
     
@@ -45,7 +39,7 @@ public class DiscordPlayerGuildServices {
     }
     
     @Transactional
-    public void deleteServerById(UUID serverId) {
+    public void deleteServerById(String serverId) {
         discordPlayerGuildRepository.deleteById(serverId);
     }
     

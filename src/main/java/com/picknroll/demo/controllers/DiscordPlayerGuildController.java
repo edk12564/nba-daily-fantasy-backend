@@ -13,30 +13,18 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("servers")
-public class ServerController {
+public class DiscordPlayerGuildController {
     
     private final
     DiscordPlayerGuildServices discordPlayerGuildServices;
 
-    public ServerController(DiscordPlayerGuildServices discordPlayerGuildServices) {
+    public DiscordPlayerGuildController(DiscordPlayerGuildServices discordPlayerGuildServices) {
         this.discordPlayerGuildServices = discordPlayerGuildServices;
-    }
-
-//    @Cacheable(cacheNames = "livePlayerData", key = "#id")
-    @GetMapping(value = "/{id}", produces = "application/json")
-    public Optional<DiscordPlayerGuild> getServer(@PathVariable String id)
-//    public Double getServer(@PathVariable String id)
-    {
-        
-        return discordPlayerGuildServices.findServerById(UUID.fromString(id));
-    
     }
     
     @GetMapping(value = "/{id}/players", produces = "application/json")
     public List<String> getDiscordPlayersByServerId(@PathVariable String id)
     {
-       
        return discordPlayerGuildServices.getDiscordPlayersByServerId(id);
-       
     }
 }
