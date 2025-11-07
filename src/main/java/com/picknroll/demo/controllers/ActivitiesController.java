@@ -59,7 +59,26 @@ public class ActivitiesController {
         return nbaAPIClient.getGamesData(gameId);
     }
 
-//  This is where you look at your roster for the first time. So this is the entrypoint. Here, I should fill in the players before displaying player roster.
+    @PostMapping(value = "/my-roster")
+    public ResponseEntity<String> setPlayer(@RequestBody SetPlayerDTO setPlayerDTO) {
+//        if (isLockedServices.isTodayLocked()) {
+//            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
+//        }
+
+        LocalDate date = setPlayerDTO.getDate() == null ? LocalDate.now() : setPlayerDTO.getDate();
+
+        var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getPosition(), date);
+        if (currentPrice > MAX_DOLLARS) {
+            return new ResponseEntity<>("{\"error\": \"Too expensive: Current price is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
+        }
+        dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getNickname(),
+                setPlayerDTO.getPosition(), date);
+
+        return new ResponseEntity<>("OK", HttpStatus.OK);
+
+    }
+
+    //  This is where you look at your roster for the first time. So this is the entrypoint. Here, I should fill in the players before displaying player roster.
 //  This is mainly for people starting it up in a new server. You also have to do for people changing their guild roster to also change every guild roster. this is done below is setplayer.
 //  If you do the above, every player for a position should be the same across all guilds. So
     @GetMapping(value = "/my-roster/{guildId}/{discordPlayerId}")
@@ -68,6 +87,7 @@ public class ActivitiesController {
         discordPlayerGuildServices.insertGuildForPlayerId(discordPlayerId, guildId);
         return dailyRosterServices.getPlayerRoster(discordPlayerId, date.orElse(date.orElse(LocalDate.now())));
     }
+
 
     // Change this to globalLeaderboard
     @GetMapping(value = "/rosters/global")
@@ -91,7 +111,7 @@ public class ActivitiesController {
         return isLockedServices.isLocked(date.orElse(LocalDate.now()));
     }
 
-//    Work on this at some point
+    //    Work on this at some point
     @PostMapping(value = "/token")
     @SneakyThrows
     public String getToken(@RequestBody String code) {
@@ -111,7 +131,7 @@ public class ActivitiesController {
         }
     }
 
-//    Work on this at some point
+    //    Work on this at some point
     @SneakyThrows
     @PostMapping(value = "/user")
     public String getUserInfo(@RequestBody String accessToken) {
