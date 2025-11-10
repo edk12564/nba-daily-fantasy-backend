@@ -5,7 +5,7 @@
     <parent>
        <groupId>org.springframework.boot</groupId>
        <artifactId>spring-boot-starter-parent</artifactId>
-       <version>3.2.7</version> <!-- Note: 3.5.7 is not a standard release, I've used a recent stable one -->
+       <version>3.5.0</version>
        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.bigschlong</groupId>
@@ -28,7 +28,7 @@
     </scm>
     <properties>
        <java.version>21</java.version>
-       <spring-cloud.version>2023.0.3</spring-cloud.version>
+       <spring-cloud.version>2024.0.0</spring-cloud.version>
     </properties>
 
     <dependencyManagement>
@@ -97,7 +97,7 @@
        <dependency>
           <groupId>org.springdoc</groupId>
           <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-          <version>2.3.0</version>
+          <version>2.6.0</version>
        </dependency>
        <dependency>
           <groupId>software.pando.crypto</groupId>
@@ -112,7 +112,7 @@
        <dependency>
           <groupId>com.squareup.okhttp3</groupId>
           <artifactId>okhttp</artifactId>
-          <!-- Version managed by parent POM -->
+          <version>4.12.0</version>
        </dependency>
 
        <!-- Test -->
