@@ -26,7 +26,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                 CAST(:nbaPlayerUid AS UUID),
                 CAST(:date AS DATE),
                 CAST(:nickname AS TEXT),
-                CAST(:position AS daily_roster_position),
+                CAST(:position AS daily_roster_position)
             FROM 
                 nba_players np
             WHERE 
