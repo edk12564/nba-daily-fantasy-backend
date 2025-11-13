@@ -1,17 +1,16 @@
 package com.picknroll.demo.repositories;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-
+import com.picknroll.demo.models.dtos.DailyRoster;
+import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.picknroll.demo.models.dtos.DailyRoster;
-import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 
 @Repository
@@ -21,7 +20,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     @Modifying
     @Transactional
     @Query(value = """
-            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position, guild_id)
+            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position, guild_id, channel_id)
             SELECT 
                 CAST(:discordPlayerId AS TEXT),
                 CAST(:nbaPlayerUid AS UUID),
@@ -38,8 +37,9 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             DO UPDATE SET
                 nba_player_uid = EXCLUDED.nba_player_uid, 
                 position = CAST(:position AS daily_roster_position)
+                nickname = CAST(:nickname AS TEXT),
             """)
-    void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date);
+    void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date, String channelId);
 
     /* Delete Player */
     @Query(value = """

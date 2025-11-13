@@ -9,9 +9,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class DailyRosterServices {
@@ -33,14 +31,14 @@ public class DailyRosterServices {
     }
 
     // Roster Price Sum
-    public Integer getTodaysRosterPrice(String discordId, String position, LocalDate date) {
-        return dailyRosterRepository.getTodaysRosterPrice(discordId, position,
-                date).stream().reduce(0, Integer::sum);
+    public Integer getTodaysRosterPriceWithPlayer(String discordId, String position, LocalDate date, UUID nbaPlayerUid) {
+        return dailyRosterRepository.getTodaysRosterPriceWithPlayer(discordId, position,
+                date, nbaPlayerUid).stream().reduce(0, Integer::sum);
     }
 
     /* CRUD DailyRosterPlayer */
-    public void saveRosterChoice(String nbaPlayerId, String discordPlayerId, String nickname, String position, LocalDate date) {
-        dailyRosterRepository.saveRosterChoice(nbaPlayerId, discordPlayerId, nickname, position, date);
+    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date, String channelId) {
+        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date, channelId);
     }
 
     public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {

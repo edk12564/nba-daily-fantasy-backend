@@ -17,4 +17,5 @@ public class SetPlayerDTO {
     String nickname;
     String discord_player_id;
     LocalDate date;
+    String channel_id;
 }
