@@ -1,15 +1,17 @@
 package com.picknroll.demo.repositories;
 
-import com.picknroll.demo.models.dtos.DailyRoster;
-import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import com.picknroll.demo.models.dtos.DailyRoster;
+import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 
 
 @Repository
@@ -17,11 +19,25 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
 
     /* Save Player */
     @Modifying
+    @Transactional
     @Query(value = """
             INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position, guild_id)
-                            VALUES (:discordPlayerId, :nbaPlayerUid, :date, :nickname, :position::daily_roster_position, 'null')
-                            ON CONFLICT(discord_player_id, date, position) DO UPDATE
-                            SET nba_player_uid = :nbaPlayerUid, position = :position::daily_roster_position
+            SELECT 
+                CAST(:discordPlayerId AS TEXT),
+                CAST(:nbaPlayerUid AS UUID),
+                CAST(:date AS DATE),
+                CAST(:nickname AS TEXT),
+                CAST(:position AS daily_roster_position),
+                'null'
+            FROM 
+                nba_players np
+            WHERE 
+                np.nba_player_uid = :nbaPlayerUid 
+                AND np.date = :date
+            ON CONFLICT(discord_player_id, date, position) 
+            DO UPDATE SET
+                nba_player_uid = EXCLUDED.nba_player_uid, 
+                position = CAST(:position AS daily_roster_position)
             """)
     void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date);
 
@@ -43,13 +59,17 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     List<DailyRosterPlayer> getTodaysRosterByDiscordId(String discordId, LocalDate date);
 
     /* Get Price */
+    // TODO: What happens if the player is already on the roster? 
     @Query(value = """
             SELECT np.dollar_value FROM daily_roster dr
             JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
                     WHERE dr.discord_player_id = :discordId AND dr.date = :date
                                           AND dr.position <> :position::daily_roster_position
+            UNION
+                SELECT np.dollar_value FROM nba_players np
+                WHERE np.nba_player_uid = :nbaPlayerUid and np.date = :date
             """)
-    List<Integer> getTodaysRosterPrice(String discordId, String position, LocalDate date);
+    List<Integer> getTodaysRosterPriceWithPlayer(String discordId, String position, LocalDate date, UUID nbaPlayerUid);
 
     // TODO: Race condition logic here? We need to combine save player and get roster in the same query.
 

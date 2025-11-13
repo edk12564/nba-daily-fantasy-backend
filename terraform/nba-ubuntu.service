@@ -5,7 +5,7 @@ After=network.target
 [Service]
 WorkingDirectory=/home/random-spectre/Projects/nba-daily-fantasy-backend/target
 EnvironmentFile=/home/random-spectre/Projects/nba-daily-fantasy-backend/.env
-ExecStart=java -jar demo-0.0.1-SNAPSHOT.jar 
+ExecStart=java -jar demo-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev 
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

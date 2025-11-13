@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,13 +72,14 @@ public class ActivitiesController {
 
     @PostMapping(value = "/my-roster")
     public ResponseEntity<String> setPlayer(@RequestBody SetPlayerDTO setPlayerDTO) {
-//        if (isLockedServices.isTodayLocked()) {
-//            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
-//        }
+        ZoneId californiaZone = ZoneId.of("America/Los_Angeles");
+        LocalDate californiaDate = LocalDate.now(californiaZone);
+        if (isLockedServices.isLocked(californiaDate)) {
+            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
+        }
+        LocalDate date = setPlayerDTO.getDate() == null ? californiaDate : setPlayerDTO.getDate();
 
-        LocalDate date = setPlayerDTO.getDate() == null ? LocalDate.now() : setPlayerDTO.getDate();
-
-        var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getPosition(), date);
+        var currentPrice = dailyRosterServices.getTodaysRosterPriceWithPlayer(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getPosition(), date, setPlayerDTO.getNba_player_id());
         if (currentPrice > MAX_DOLLARS) {
             return new ResponseEntity<>("{\"error\": \"Too expensive: Current price is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
         }

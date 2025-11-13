@@ -39,8 +39,8 @@ public class DailyRosterServices {
     }
 
     /* CRUD DailyRosterPlayer */
-    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date) {
-        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date);
+    public void saveRosterChoice(String nbaPlayerId, String discordPlayerId, String nickname, String position, LocalDate date) {
+        dailyRosterRepository.saveRosterChoice(nbaPlayerId, discordPlayerId, nickname, position, date);
     }
 
     public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {

@@ -39,12 +39,12 @@ if [ ! -f /etc/sysconfig/myapp.env ]; then
   done
 fi
 
+FILE="/etc/letsencrypt/live/picknrolls.click/fullchain.pem"
 # create tls cert and move to project directory and give it permissions
 sudo python3 -m venv /opt/certbot/
 sudo /opt/certbot/bin/pip install --upgrade pip
 sudo /opt/certbot/bin/pip install certbot
 
-FILE="/etc/letsencrypt/live/picknrolls.click/fullchain.pem"
 
 if [ ! -f "$FILE" ]; then
   sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
