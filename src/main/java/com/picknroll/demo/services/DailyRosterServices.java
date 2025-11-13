@@ -2,6 +2,8 @@ package com.picknroll.demo.services;
 
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.repositories.DailyRosterRepository;
+import com.picknroll.demo.repositories.DiscordChannelRepository;
+import com.picknroll.demo.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +18,13 @@ public class DailyRosterServices {
 
     @Autowired
     private DailyRosterRepository dailyRosterRepository;
+    @Autowired
+    private DiscordChannelRepository discordChannelRepository;
 
     /* Get Entire Rosters and Aggregates */
     // String version
     public List<String> getPlayerRostersStrings(String discordId) {
-        return dailyRosterRepository.getTodaysRosterByDiscordId(discordId, LocalDate.now()).stream()
+        return dailyRosterRepository.getTodaysRosterByDiscordId(discordId, Utils.getCaliforniaDate()).stream()
                 .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
@@ -36,9 +40,10 @@ public class DailyRosterServices {
                 date, nbaPlayerUid).stream().reduce(0, Integer::sum);
     }
 
+
     /* CRUD DailyRosterPlayer */
     public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date, String channelId) {
-        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date, channelId);
+        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date);
     }
 
     public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {

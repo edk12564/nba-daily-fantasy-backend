@@ -1,6 +1,6 @@
 ### GET request to example discordPlayerGuild
 @id = efcdf953-4cdf-4a1a-8c27-8b1d0f3cc16b
-GET http://localhost:8080/api/activity/todays-players?date=2025-11-07
+GET http://random-spectre.duckdns.org:8081/api/activity/todays-players?date=2025-11-07
 ###
 
 ### Post with auth test of interaction

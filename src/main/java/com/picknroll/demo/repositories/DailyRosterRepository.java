@@ -20,7 +20,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     @Modifying
     @Transactional
     @Query(value = """
-            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position, guild_id, channel_id)
+            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position, guild_id)
             SELECT 
                 CAST(:discordPlayerId AS TEXT),
                 CAST(:nbaPlayerUid AS UUID),
@@ -39,7 +39,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                 position = CAST(:position AS daily_roster_position)
                 nickname = CAST(:nickname AS TEXT),
             """)
-    void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date, String channelId);
+    void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date);
 
     /* Delete Player */
     @Query(value = """
