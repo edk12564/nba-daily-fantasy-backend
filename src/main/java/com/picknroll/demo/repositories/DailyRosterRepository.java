@@ -20,14 +20,13 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     @Modifying
     @Transactional
     @Query(value = """
-            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position, guild_id)
+            INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position)
             SELECT 
                 CAST(:discordPlayerId AS TEXT),
                 CAST(:nbaPlayerUid AS UUID),
                 CAST(:date AS DATE),
                 CAST(:nickname AS TEXT),
                 CAST(:position AS daily_roster_position),
-                'null'
             FROM 
                 nba_players np
             WHERE 
@@ -36,8 +35,8 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             ON CONFLICT(discord_player_id, date, position) 
             DO UPDATE SET
                 nba_player_uid = EXCLUDED.nba_player_uid, 
-                position = CAST(:position AS daily_roster_position)
-                nickname = CAST(:nickname AS TEXT),
+                position = CAST(:position AS daily_roster_position),
+                nickname = CAST(:nickname AS TEXT)
             """)
     void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date);
 
