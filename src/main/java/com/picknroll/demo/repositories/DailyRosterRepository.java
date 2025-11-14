@@ -21,18 +21,17 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     @Transactional
     @Query(value = """
             INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position)
-            SELECT 
-                CAST(:discordPlayerId AS TEXT),
-                CAST(:nbaPlayerUid AS UUID),
-                CAST(:date AS DATE),
-                CAST(:nickname AS TEXT),
-                CAST(:position AS daily_roster_position)
-            FROM 
+            SELECT
+                CAST(:discordPlayerId AS TEXT) as discord_player_id,
+                CAST(:nbaPlayerUid AS UUID) as nba_player_uid,
+                CAST(:date AS DATE) as date,
+                CAST(:nickname AS TEXT) as nickname,
+                CAST(:position AS daily_roster_position) as position
+            FROM
                 nba_players np
-            WHERE 
-                np.nba_player_uid = :nbaPlayerUid 
-                AND np.date = :date
-            ON CONFLICT(discord_player_id, date, position) 
+                WHERE
+                np.nba_player_uid = 'b9542ad3-252f-4993-90c4-69556d8dcc0c'\s
+                AND np.date = '2025-11-14'            ON CONFLICT(discord_player_id, date, position) 
             DO UPDATE SET
                 nba_player_uid = EXCLUDED.nba_player_uid, 
                 position = CAST(:position AS daily_roster_position),
