@@ -29,15 +29,16 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                 CAST(:position AS daily_roster_position) as position
             FROM
                 nba_players np
-                WHERE
-                np.nba_player_uid = 'b9542ad3-252f-4993-90c4-69556d8dcc0c'\s
-                AND np.date = '2025-11-14'            ON CONFLICT(discord_player_id, date, position) 
+            WHERE np.nba_player_uid = :nbaPlayerUid
+                  AND np.date = CAST(:date as VARCHAR)
+                  AND np.position = :position
+            ON CONFLICT(discord_player_id, date, position)
             DO UPDATE SET
-                nba_player_uid = EXCLUDED.nba_player_uid, 
+                nba_player_uid = EXCLUDED.nba_player_uid,
                 position = CAST(:position AS daily_roster_position),
                 nickname = CAST(:nickname AS TEXT)
             """)
-    void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date);
+    Integer saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, String date);
 
     /* Delete Player */
     @Query(value = """
@@ -61,13 +62,13 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     @Query(value = """
             SELECT np.dollar_value FROM daily_roster dr
             JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-                    WHERE dr.discord_player_id = :discordId AND dr.date = :date
+                    WHERE dr.discord_player_id = :discordId AND dr.date = CAST(:date as DATE)
                                           AND dr.position <> :position::daily_roster_position
-            UNION
+            UNION ALL
                 SELECT np.dollar_value FROM nba_players np
-                WHERE np.nba_player_uid = :nbaPlayerUid and np.date = :date
+                WHERE np.nba_player_uid = :nbaPlayerUid and np.date = CAST(:date as VARCHAR)
             """)
-    List<Integer> getTodaysRosterPriceWithPlayer(String discordId, String position, LocalDate date, UUID nbaPlayerUid);
+    List<Integer> getTodaysRosterPriceWithPlayer(String discordId, String position, String date, UUID nbaPlayerUid);
 
     // TODO: Race condition logic here? We need to combine save player and get roster in the same query.
 

@@ -13,9 +13,11 @@ import java.util.UUID;
 public class SetPlayerDTO {
 
     UUID nba_player_uid;
+    // TODO: get rid of position
     String position;
     String nickname;
     String discord_player_id;
+    // TODO: date is no longer used at all
     LocalDate date;
     String channel_id;
 }

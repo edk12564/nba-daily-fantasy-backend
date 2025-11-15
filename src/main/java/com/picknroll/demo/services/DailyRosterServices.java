@@ -37,13 +37,13 @@ public class DailyRosterServices {
     // Roster Price Sum
     public Integer getTodaysRosterPriceWithPlayer(String discordId, String position, LocalDate date, UUID nbaPlayerUid) {
         return dailyRosterRepository.getTodaysRosterPriceWithPlayer(discordId, position,
-                date, nbaPlayerUid).stream().reduce(0, Integer::sum);
+                date.toString(), nbaPlayerUid).stream().reduce(0, Integer::sum);
     }
 
 
     /* CRUD DailyRosterPlayer */
-    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date, String channelId) {
-        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date);
+    public Integer saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date) {
+        return dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date.toString());
     }
 
     public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {

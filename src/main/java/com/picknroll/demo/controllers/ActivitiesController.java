@@ -79,16 +79,18 @@ public class ActivitiesController {
         if (isLockedServices.isLocked(californiaDate).getLockTime().isBefore(OffsetDateTime.now())) {
             return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
         }
-        LocalDate date = setPlayerDTO.getDate() == null ? californiaDate : setPlayerDTO.getDate();
 
-        var currentPrice = dailyRosterServices.getTodaysRosterPriceWithPlayer(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getPosition(), date, setPlayerDTO.getNba_player_uid());
+        var currentPrice = dailyRosterServices.getTodaysRosterPriceWithPlayer(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getPosition(), californiaDate, setPlayerDTO.getNba_player_uid());
         if (currentPrice > MAX_DOLLARS) {
-            return new ResponseEntity<>("{\"error\": \"Too expensive: Current price is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("{\"error\": \"Too expensive: total is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
         }
-        dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getNickname(),
-                setPlayerDTO.getPosition(), date, setPlayerDTO.getChannel_id());
-
-        return new ResponseEntity<>("OK", HttpStatus.OK);
+        var changedRows = dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getNickname(),
+                setPlayerDTO.getPosition(), californiaDate);
+        if (changedRows == 1) {
+            return new ResponseEntity<>("OK", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("BAD request", HttpStatus.BAD_REQUEST);
+        }
 
     }
 
