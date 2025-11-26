@@ -102,7 +102,7 @@ public class ActivitiesController {
     @GetMapping(value = "/rosters/{guildId}")
     public List<DailyRosterPlayer> guildsDailyLeaderboard(@PathVariable String guildId, @RequestParam LocalDate date) {
         return dailyRosterServices.getGuildLeaderboard(guildId, date);
-    }
+        }
 
     /* Lock Stuff */
     @GetMapping(value = "/lock-time")
