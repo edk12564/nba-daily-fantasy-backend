@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DiscordPlayerGuildServices {
-    
+
     private final DiscordPlayerGuildRepository discordPlayerGuildRepository;
 
     public DiscordPlayerGuildServices(DiscordPlayerGuildRepository discordPlayerGuildRepository) {
