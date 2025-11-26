@@ -9,6 +9,7 @@ import com.picknroll.demo.services.DailyRosterServices;
 import com.picknroll.demo.services.DiscordPlayerGuildServices;
 import com.picknroll.demo.services.IsLockedServices;
 import com.picknroll.demo.services.NbaPlayerServices;
+import com.picknroll.demo.utils.Utils;
 import lombok.SneakyThrows;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +53,7 @@ public class ActivitiesController {
 
     @GetMapping(value = "/todays-players", produces = "application/json")
     public List<NbaPlayerTeam> getPlayers(@RequestParam Optional<LocalDate> date) {
-        return nbaPlayerServices.getNbaPlayersWithTeam(date.orElse(LocalDate.now()));
+        return nbaPlayerServices.getNbaPlayersWithTeam(date.orElse(Utils.getCaliforniaDate()));
     }
 
     @GetMapping(value = "/livedata/{gameId}")
@@ -59,32 +61,36 @@ public class ActivitiesController {
         return nbaAPIClient.getGamesData(gameId);
     }
 
-//  This is where you look at your roster for the first time. So this is the entrypoint. Here, I should fill in the players before displaying player roster.
+    //  This is where you look at your roster for the first time. So this is the entrypoint. Here, I should fill in the players before displaying player roster.
 //  This is mainly for people starting it up in a new server. You also have to do for people changing their guild roster to also change every guild roster. this is done below is setplayer.
 //  If you do the above, every player for a position should be the same across all guilds. So
-    @GetMapping(value = "/my-roster/{guildId}/{discordPlayerId}")
+    @GetMapping(value = "/my-roster/{guildId}/{channelId}/{discordPlayerId}")
     public List<DailyRosterPlayer> myRoster(@PathVariable String guildId, @PathVariable String discordPlayerId,
+                                            @PathVariable String channelId,
                                             @RequestParam Optional<LocalDate> date) {
         discordPlayerGuildServices.insertGuildForPlayerId(discordPlayerId, guildId);
-        return dailyRosterServices.getPlayerRoster(discordPlayerId, date.orElse(date.orElse(LocalDate.now())));
+        discordPlayerGuildServices.insertChannelForDate(channelId, guildId);
+        return dailyRosterServices.getPlayerRoster(discordPlayerId, date.orElse(date.orElse(Utils.getCaliforniaDate())));
     }
 
     @PostMapping(value = "/my-roster")
     public ResponseEntity<String> setPlayer(@RequestBody SetPlayerDTO setPlayerDTO) {
-//        if (isLockedServices.isTodayLocked()) {
-//            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
-//        }
-
-        LocalDate date = setPlayerDTO.getDate() == null ? LocalDate.now() : setPlayerDTO.getDate();
-
-        var currentPrice = dailyRosterServices.getTodaysRosterPrice(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getPosition(), date);
-        if (currentPrice > MAX_DOLLARS) {
-            return new ResponseEntity<>("{\"error\": \"Too expensive: Current price is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
+        LocalDate californiaDate = Utils.getCaliforniaDate();
+        if (isLockedServices.isLocked(californiaDate).getLockTime().isBefore(OffsetDateTime.now())) {
+            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
         }
-        dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getNickname(),
-                setPlayerDTO.getPosition(), date);
 
-        return new ResponseEntity<>("OK", HttpStatus.OK);
+        var currentPrice = dailyRosterServices.getTodaysRosterPriceWithPlayer(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getPosition(), californiaDate, setPlayerDTO.getNba_player_uid());
+        if (currentPrice > MAX_DOLLARS) {
+            return new ResponseEntity<>("{\"error\": \"Too expensive: total is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
+        }
+        var changedRows = dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getNickname(),
+                setPlayerDTO.getPosition(), californiaDate);
+        if (changedRows == 1) {
+            return new ResponseEntity<>("OK", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("BAD request", HttpStatus.BAD_REQUEST);
+        }
 
     }
 
@@ -107,10 +113,10 @@ public class ActivitiesController {
     /* Lock Stuff */
     @GetMapping(value = "/lock-time")
     public IsLocked getLockTime(@RequestParam Optional<LocalDate> date) {
-        return isLockedServices.isLocked(date.orElse(LocalDate.now()));
+        return isLockedServices.isLocked(date.orElse(Utils.getCaliforniaDate()));
     }
 
-//    Work on this at some point
+    //    Work on this at some point
     @PostMapping(value = "/token")
     @SneakyThrows
     public String getToken(@RequestBody String code) {
@@ -130,7 +136,7 @@ public class ActivitiesController {
         }
     }
 
-//    Work on this at some point
+    //    Work on this at some point
     @SneakyThrows
     @PostMapping(value = "/user")
     public String getUserInfo(@RequestBody String accessToken) {

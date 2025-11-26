@@ -17,35 +17,34 @@ sudo rm -rf /opt/nba-daily-fantasy-backend
 sudo mkdir -p /opt/nba-daily-fantasy-backend
 sudo mv /tmp/demo-0.0.1-SNAPSHOT.jar /opt/nba-daily-fantasy-backend/app.jar
 
-# Create a secure environment file for the systemd service
-sudo touch /etc/sysconfig/myapp.env
-sudo chmod 600 /etc/sysconfig/myapp.env
+if [ ! -f /etc/sysconfig/myapp.env ]; then
+  sudo touch /etc/sysconfig/myapp.env
+  sudo chmod 600 /etc/sysconfig/myapp.env
 
-# List of all parameters to fetch
-PARAMS=(
-    "DATABASE_USER"
-    "DATABASE_URL"
-    "DISCORD_API_PUBLIC_KEY"
-    "DISCORD_CLIENT_SECRET"
-    "VITE_DISCORD_CLIENT_ID"
-    "BOT_ACCESS_KEY"
-    "DB_PASSWORD"
-)
+  # List of all parameters to fetch
+  PARAMS=(
+      "DATABASE_USER"
+      "DATABASE_URL"
+      "DISCORD_API_PUBLIC_KEY"
+      "DISCORD_CLIENT_SECRET"
+      "VITE_DISCORD_CLIENT_ID"
+      "BOT_ACCESS_KEY"
+      "DB_PASSWORD"
+  )
 
-# Loop through and write each parameter to the environment file
-for PARAM in "${PARAMS[@]}"; do
-    VALUE=$(aws ssm get-parameter --name "$PARAM" --with-decryption --query "Parameter.Value" --output text --region us-east-1)
-    sudo echo "$PARAM=$VALUE" >> /etc/sysconfig/myapp.env
-done
+  # Loop through and write each parameter to the environment file
+  for PARAM in "${PARAMS[@]}"; do
+      VALUE=$(aws ssm get-parameter --name "$PARAM" --with-decryption --query "Parameter.Value" --output text --region us-east-1)
+      sudo echo "$PARAM=$VALUE" >> /etc/sysconfig/myapp.env
+  done
+fi
 
-echo "nonsense"
-
+FILE="/etc/letsencrypt/live/picknrolls.click/fullchain.pem"
 # create tls cert and move to project directory and give it permissions
 sudo python3 -m venv /opt/certbot/
 sudo /opt/certbot/bin/pip install --upgrade pip
 sudo /opt/certbot/bin/pip install certbot
 
-FILE="/etc/letsencrypt/live/picknrolls.click/fullchain.pem"
 
 if [ ! -f "$FILE" ]; then
   sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot

@@ -2,6 +2,8 @@ package com.picknroll.demo.services;
 
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.repositories.DailyRosterRepository;
+import com.picknroll.demo.repositories.DiscordChannelRepository;
+import com.picknroll.demo.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,20 +11,20 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class DailyRosterServices {
 
     @Autowired
     private DailyRosterRepository dailyRosterRepository;
+    @Autowired
+    private DiscordChannelRepository discordChannelRepository;
 
     /* Get Entire Rosters and Aggregates */
     // String version
     public List<String> getPlayerRostersStrings(String discordId) {
-        return dailyRosterRepository.getTodaysRosterByDiscordId(discordId, LocalDate.now()).stream()
+        return dailyRosterRepository.getTodaysRosterByDiscordId(discordId, Utils.getCaliforniaDate()).stream()
                 .map(dailyRosterPlayer -> dailyRosterPlayer.getName() + " " + dailyRosterPlayer.getDollarValue().toString())
                 .toList();
     }
@@ -33,14 +35,15 @@ public class DailyRosterServices {
     }
 
     // Roster Price Sum
-    public Integer getTodaysRosterPrice(String discordId, String position, LocalDate date) {
-        return dailyRosterRepository.getTodaysRosterPrice(discordId, position,
-                date).stream().reduce(0, Integer::sum);
+    public Integer getTodaysRosterPriceWithPlayer(String discordId, String position, LocalDate date, UUID nbaPlayerUid) {
+        return dailyRosterRepository.getTodaysRosterPriceWithPlayer(discordId, position,
+                date.toString(), nbaPlayerUid).stream().reduce(0, Integer::sum);
     }
 
+
     /* CRUD DailyRosterPlayer */
-    public void saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date) {
-        dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date);
+    public Integer saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, LocalDate date) {
+        return dailyRosterRepository.saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date.toString());
     }
 
     public void deleteRosterPlayer(DailyRosterPlayer dailyRosterPlayer) {
