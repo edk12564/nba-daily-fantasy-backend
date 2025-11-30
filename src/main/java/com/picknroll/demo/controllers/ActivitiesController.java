@@ -116,7 +116,9 @@ public class ActivitiesController {
         return isLockedServices.isLocked(date.orElse(Utils.getCaliforniaDate()));
     }
 
-    //    Work on this at some point
+    // We need to add functionality to check this before we run any of our endpoints.
+    // Once they have been properly authenticated, we can add them to a table of authenticated users.
+    // Now we check that table every single time we run an endpoint.
     @PostMapping(value = "/token")
     @SneakyThrows
     public String getToken(@RequestBody String code) {
@@ -124,6 +126,7 @@ public class ActivitiesController {
                 .add("code", code)
                 .add("client_secret", discordClientSecret)
                 .add("client_id", clientId)
+                .add("redirect_uri", "https://picknrolls.click")
                 .add("grant_type", "authorization_code").build();
 
         Request request = new Request.Builder()
