@@ -1,24 +1,23 @@
 package com.picknroll.demo.repositories;
 
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractIntegrationTest {
 
-    // Singleton container - shared across all tests for speed
-    protected static final PostgreSQLContainer<?> postgres;
-
-    static {
-        postgres = new PostgreSQLContainer<>("postgres:16-alpine")
-                .withDatabaseName("testdb")
-                .withUsername("test")
-                .withPassword("test")
-                .withInitScript("schema.sql");
-        postgres.start();
-    }
+    // Fresh container per test class - provides isolation, prevents data bleeding
+    @Container
+    protected static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test")
+            .withInitScript("schema.sql");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
