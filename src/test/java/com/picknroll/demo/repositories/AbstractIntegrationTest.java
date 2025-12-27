@@ -1,4 +1,4 @@
-package com.picknroll.demo.config;
+package com.picknroll.demo.repositories;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;

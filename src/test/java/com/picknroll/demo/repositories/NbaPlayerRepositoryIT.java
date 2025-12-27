@@ -1,6 +1,5 @@
 package com.picknroll.demo.repositories;
 
-import com.picknroll.demo.config.AbstractIntegrationTest;
 import com.picknroll.demo.models.dtos.NbaPlayer;
 import com.picknroll.demo.models.dtos.Team;
 import com.picknroll.demo.models.joinTables.NbaPlayerTeam;

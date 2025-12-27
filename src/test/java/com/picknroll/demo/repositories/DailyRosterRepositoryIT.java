@@ -1,6 +1,5 @@
 package com.picknroll.demo.repositories;
 
-import com.picknroll.demo.config.AbstractIntegrationTest;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

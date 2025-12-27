@@ -1,6 +1,5 @@
 package com.picknroll.demo.repositories;
 
-import com.picknroll.demo.config.AbstractIntegrationTest;
 import com.picknroll.demo.models.dtos.IsLocked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
