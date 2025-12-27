@@ -41,6 +41,8 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
     Integer saveRosterChoice(UUID nbaPlayerUid, String discordPlayerId, String nickname, String position, String date);
 
     /* Delete Player */
+    @Modifying
+    @Transactional
     @Query(value = """
             DELETE FROM daily_roster dr
             WHERE dr.date = :date
