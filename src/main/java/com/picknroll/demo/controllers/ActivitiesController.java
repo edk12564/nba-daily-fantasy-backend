@@ -116,9 +116,10 @@ public class ActivitiesController {
         return isLockedServices.isLocked(date.orElse(Utils.getCaliforniaDate()));
     }
 
-    // We need to add functionality to check this before we run any of our endpoints.
-    // Once they have been properly authenticated, we can add them to a table of authenticated users.
-    // Now we check that table every single time we run an endpoint.
+    // We need to use the authentication code to get an access token from Discord.
+    // We can send this back to Discord to verify.
+    // After we have done this, we can send a session token to the frontend. This will stay in their cookies. When a request has a verified cookie, it will give access.
+    // We can write an interceptor that checks for this cookie before every endpoint except the token endpoint.
     @PostMapping(value = "/token")
     @SneakyThrows
     public String getToken(@RequestBody String code) {
