@@ -4,10 +4,10 @@ import com.picknroll.demo.httpclient.NbaAPIClient;
 import com.picknroll.demo.models.dtos.IsLocked;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.models.joinTables.NbaPlayerTeam;
-import com.picknroll.demo.services.DailyRosterServices;
-import com.picknroll.demo.services.DiscordPlayerGuildServices;
-import com.picknroll.demo.services.IsLockedServices;
-import com.picknroll.demo.services.NbaPlayerServices;
+import com.picknroll.demo.services.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.impl.DefaultClaims;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -19,13 +19,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import com.picknroll.demo.config.SecurityConfig;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
@@ -43,9 +46,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
         "discord.client.id=test-client-id",
-        "discord.client.secret=test-secret"
+        "discord.client.secret=test-secret",
+        "jwt.secret=test-secret-key-for-jwt-signing-minimum-32-characters"
 })
 class ActivitiesControllerTest {
+
+    private static final String TEST_TOKEN = "test-jwt-token";
+    private static final String AUTH_HEADER = "Bearer " + TEST_TOKEN;
 
     @EnableAutoConfiguration(exclude = {
         DataSourceAutoConfiguration.class,
@@ -53,9 +60,10 @@ class ActivitiesControllerTest {
         DataSourceTransactionManagerAutoConfiguration.class
     })
     @ComponentScan(
-        basePackages = "com.picknroll.demo.controllers",
+        basePackages = {"com.picknroll.demo.controllers", "com.picknroll.demo.interceptors"},
         excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Repository.*")
     )
+    @Import(SecurityConfig.class)
     static class TestConfig {
     }
 
@@ -72,8 +80,18 @@ class ActivitiesControllerTest {
     private NbaAPIClient nbaAPIClient;
     @MockBean
     private DiscordPlayerGuildServices discordPlayerGuildServices;
+    @MockBean
+    private JwtService jwtService;
 
     private static final LocalDate TEST_DATE = LocalDate.parse("2025-12-25");
+
+    @BeforeEach
+    void setUp() {
+        // Configure JwtService mock to validate test tokens
+        given(jwtService.isTokenValid(TEST_TOKEN)).willReturn(true);
+        Claims claims = new DefaultClaims(Map.of("id", "test-user-id", "username", "test-user"));
+        given(jwtService.parseToken(TEST_TOKEN)).willReturn(claims);
+    }
 
     @Test
     void todaysPlayers_returnsJoinedRows() throws Exception {
@@ -84,7 +102,9 @@ class ActivitiesControllerTest {
         row.setDate("2025-12-25");
         given(nbaPlayerServices.getNbaPlayersWithTeam(TEST_DATE)).willReturn(List.of(row));
 
-        mockMvc.perform(get("/api/activity/todays-players").param("date", "2025-12-25"))
+        mockMvc.perform(get("/api/activity/todays-players")
+                        .header("Authorization", AUTH_HEADER)
+                        .param("date", "2025-12-25"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].player_name", is("LeBron James")))
                 .andExpect(jsonPath("$[0].team_name", is("LAL")));
@@ -93,7 +113,8 @@ class ActivitiesControllerTest {
     @Test
     void liveData_returnsString() throws Exception {
         given(nbaAPIClient.getGamesData("123")).willReturn("OK");
-        mockMvc.perform(get("/api/activity/livedata/123"))
+        mockMvc.perform(get("/api/activity/livedata/123")
+                        .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
                 .andExpect(content().string("OK"));
     }
@@ -105,6 +126,7 @@ class ActivitiesControllerTest {
         given(dailyRosterServices.getPlayerRoster("player-1", TEST_DATE)).willReturn(List.of(p));
 
         mockMvc.perform(get("/api/activity/my-roster/{guildId}/{channelId}/{discordPlayerId}", "guild-1", "chan-1", "player-1")
+                        .header("Authorization", AUTH_HEADER)
                         .param("date", "2025-12-25"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name", is("LeBron James")));
@@ -130,6 +152,7 @@ class ActivitiesControllerTest {
                 """;
 
         mockMvc.perform(post("/api/activity/my-roster")
+                        .header("Authorization", AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isBadRequest())
@@ -155,6 +178,7 @@ class ActivitiesControllerTest {
                 """;
 
         mockMvc.perform(post("/api/activity/my-roster")
+                        .header("Authorization", AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isOk())
@@ -169,19 +193,27 @@ class ActivitiesControllerTest {
         given(dailyRosterServices.getGuildLeaderboard("g1", TEST_DATE)).willReturn(List.of(p));
         given(isLockedServices.isLocked(TEST_DATE)).willReturn(IsLocked.builder().date(TEST_DATE).lockTime(OffsetDateTime.now().plusHours(1)).build());
 
-        mockMvc.perform(get("/api/activity/rosters/global").param("date", "2025-12-25"))
+        mockMvc.perform(get("/api/activity/rosters/global")
+                        .header("Authorization", AUTH_HEADER)
+                        .param("date", "2025-12-25"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name", is("LeBron James")));
 
-        mockMvc.perform(get("/api/activity/rosters/weekly/{guildId}", "g1").param("date", "2025-12-25"))
+        mockMvc.perform(get("/api/activity/rosters/weekly/{guildId}", "g1")
+                        .header("Authorization", AUTH_HEADER)
+                        .param("date", "2025-12-25"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name", is("LeBron James")));
 
-        mockMvc.perform(get("/api/activity/rosters/{guildId}", "g1").param("date", "2025-12-25"))
+        mockMvc.perform(get("/api/activity/rosters/{guildId}", "g1")
+                        .header("Authorization", AUTH_HEADER)
+                        .param("date", "2025-12-25"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name", is("LeBron James")));
 
-        mockMvc.perform(get("/api/activity/lock-time").param("date", "2025-12-25"))
+        mockMvc.perform(get("/api/activity/lock-time")
+                        .header("Authorization", AUTH_HEADER)
+                        .param("date", "2025-12-25"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.date", is("2025-12-25")));
     }
@@ -197,6 +229,7 @@ class ActivitiesControllerTest {
                 """;
 
         mockMvc.perform(delete("/api/activity/my-roster")
+                        .header("Authorization", AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isOk())

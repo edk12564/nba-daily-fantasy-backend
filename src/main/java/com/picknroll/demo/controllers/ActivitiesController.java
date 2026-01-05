@@ -1,5 +1,7 @@
 package com.picknroll.demo.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picknroll.demo.httpclient.NbaAPIClient;
 import com.picknroll.demo.models.dtos.IsLocked;
 import com.picknroll.demo.models.dtos.SetPlayerDTO;
@@ -8,6 +10,7 @@ import com.picknroll.demo.models.joinTables.NbaPlayerTeam;
 import com.picknroll.demo.services.DailyRosterServices;
 import com.picknroll.demo.services.DiscordPlayerGuildServices;
 import com.picknroll.demo.services.IsLockedServices;
+import com.picknroll.demo.services.JwtService;
 import com.picknroll.demo.services.NbaPlayerServices;
 import com.picknroll.demo.utils.Utils;
 import lombok.SneakyThrows;
@@ -24,11 +27,13 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
 @RestController
 @RequestMapping("api/activity")
+//@CrossOrigin(origins = “INSERT_FRONTEND_DNS”)
 public class ActivitiesController {
 
     public static final int MAX_DOLLARS = 100;
@@ -43,6 +48,8 @@ public class ActivitiesController {
     NbaAPIClient nbaAPIClient;
     @Autowired
     DiscordPlayerGuildServices discordPlayerGuildServices;
+    @Autowired
+    JwtService jwtService;
 
     @Value("${discord.client.id}")
     private String clientId;
@@ -116,45 +123,77 @@ public class ActivitiesController {
         return isLockedServices.isLocked(date.orElse(Utils.getCaliforniaDate()));
     }
 
-    // We need to use the authentication code to get an access token from Discord.
-    // We can send this back to Discord to verify.
-    // After we have done this, we can send a session token to the frontend. This will stay in their cookies. When a request has a verified cookie, it will give access.
-    // We can write an interceptor that checks for this cookie before every endpoint except the token endpoint.
+    // Exchange Discord auth code for access token, fetch user data, and return a JWT
     @PostMapping(value = "/token")
     @SneakyThrows
-    public String getToken(@RequestBody String code) {
-        var body = new FormBody.Builder()
+    public ResponseEntity<String> getToken(@RequestBody String code) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // Get the access token from Discord
+        var formBody = new FormBody.Builder()
                 .add("code", code)
                 .add("client_secret", discordClientSecret)
                 .add("client_id", clientId)
                 .add("redirect_uri", "https://picknrolls.click")
                 .add("grant_type", "authorization_code").build();
 
-        Request request = new Request.Builder()
+        Request tokenRequest = new Request.Builder()
                 .url("https://discord.com/api/oauth2/token")
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .post(body)
+                .post(formBody)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            return response.body() != null ? response.body().string() : response.message();
-        }
-    }
 
-    //    Work on this at some point
-    @SneakyThrows
-    @PostMapping(value = "/user")
-    public String getUserInfo(@RequestBody String accessToken) {
-        var request = new Request.Builder()
+        String accessToken;
+        try (Response response = client.newCall(tokenRequest).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                return new ResponseEntity<>("{\"error\": \"Failed to get access token from Discord\"}", HttpStatus.UNAUTHORIZED);
+            }
+            String tokenResponse = response.body().string();
+            Map<String, Object> tokenData = objectMapper.readValue(tokenResponse, new TypeReference<>() {});
+            accessToken = (String) tokenData.get("access_token");
+            if (accessToken == null) {
+                return new ResponseEntity<>("{\"error\": \"No access token in Discord response\"}", HttpStatus.UNAUTHORIZED);
+            }
+        }
+
+        // Fetch user data from Discord
+        Request userRequest = new Request.Builder()
                 .url("https://discord.com/api/users/@me")
                 .header("Authorization", "Bearer " + accessToken)
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            String s = response.body() != null ? response.body().string() : response.message();
-            System.out.println(s);
-            return s;
+        try (Response response = client.newCall(userRequest).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                return new ResponseEntity<>("{\"error\": \"Failed to get user data from Discord\"}", HttpStatus.UNAUTHORIZED);
+            }
+            String userDataJson = response.body().string();
+            Map<String, Object> userData = objectMapper.readValue(userDataJson, new TypeReference<>() {});
+
+            // Generate JWT from user data
+            String jwt = jwtService.generateToken(userData);
+            return new ResponseEntity<>("{\"token\": \"" + jwt + "\"}", HttpStatus.OK);
         }
+
     }
+
+
+    // Use the token to get user information
+    // We might have to change this. unsure how long the discord access token lasts. Google says 7 days.
+    // Better to use a JWT though.
+//    @SneakyThrows
+//    @PostMapping(value = "/user")
+//    public String getUserInfo(@RequestBody String accessToken) {
+//        var request = new Request.Builder()
+//                .url("https://discord.com/api/users/@me")
+//                .header("Authorization", "Bearer " + accessToken)
+//                .build();
+//
+//        try (Response response = client.newCall(request).execute()) {
+//            String s = response.body() != null ? response.body().string() : response.message();
+//            System.out.println(s);
+//            return s;
+//        }
+//    }
 
     @SneakyThrows
     @DeleteMapping(value = "/my-roster")
