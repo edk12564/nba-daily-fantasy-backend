@@ -13,6 +13,7 @@ import java.util.Collections;
 import org.springframework.beans.factory.annotation.Value;
 import static jakarta.xml.bind.DatatypeConverter.parseHexBinary;
 
+// For InteractionsController
 public class CheckSignature {
     @Value("${DISCORD_API_PUBLIC_KEY}")
     private static String PUBLIC_KEY;
