@@ -33,7 +33,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/activity")
-//@CrossOrigin(origins = “INSERT_FRONTEND_DNS”)
+@CrossOrigin(origins = "https://1290520169185280062.discordsays.com")
 public class ActivitiesController {
 
     public static final int MAX_DOLLARS = 100;
