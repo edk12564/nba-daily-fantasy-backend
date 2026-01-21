@@ -171,7 +171,7 @@ public class ActivitiesController {
 
             // Generate JWT from user data
             String jwt = jwtService.generateToken(userData);
-            return new ResponseEntity<>("{\"token\": \"" + jwt + "\"}", HttpStatus.OK);
+            return new ResponseEntity<>("{\"token\": \"" + jwt + "\", \"access_token\": \"" + accessToken + "\"}", HttpStatus.OK);
         }
 
     }
