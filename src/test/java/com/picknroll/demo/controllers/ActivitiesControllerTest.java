@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import com.picknroll.demo.config.SecurityConfig;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -63,7 +62,6 @@ class ActivitiesControllerTest {
         basePackages = {"com.picknroll.demo.controllers", "com.picknroll.demo.interceptors"},
         excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Repository.*")
     )
-    @Import(SecurityConfig.class)
     static class TestConfig {
     }
 

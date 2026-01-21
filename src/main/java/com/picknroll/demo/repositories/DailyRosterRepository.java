@@ -51,15 +51,6 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     void deleteRosterPlayerByDateAndDiscordIdAndPlayerName(LocalDate date, String discordId, UUID nbaPlayerUid);
 
-    /* Delete Player */
-    @Query(value = """
-            DELETE FROM daily_roster dr
-            WHERE dr.date = :date
-              AND dr.discord_player_id = :discordId
-              AND dr.nba_player_uid = :nbaPlayerUid
-            """)
-    void deleteRosterPlayerByDateAndDiscordIdAndPlayerName(LocalDate date, String discordId, UUID nbaPlayerUid);
-
     /* Get Roster */
     @Query(value = """
                     SELECT dr.*, np.nba_player_uid, np.nba_player_id, np.name, np.dollar_value, np.fantasy_score
