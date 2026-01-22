@@ -85,6 +85,9 @@ The bot includes several prebuilt slash commands:
 - `/leaderboard` - See who's winning (and losing)
 - `/viewplayers` - Browse available players by position
 
+# Deploy
+`terraform apply -replace null_resource.setup_instance # to just deploy new change no terraform changes `
+
 # Scripts
 
 The `scripts/` folder contains Python utilities for setting your Discord slash commands. Feel free to add your own!

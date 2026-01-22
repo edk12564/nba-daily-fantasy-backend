@@ -29,7 +29,8 @@ if [ ! -f /etc/sysconfig/myapp.env ]; then
       "DISCORD_CLIENT_SECRET"
       "VITE_DISCORD_CLIENT_ID"
       "BOT_ACCESS_KEY"
-      "DB_PASSWORD"
+      "DB_PASSWORD",
+      "JWT_SECRET"
   )
 
   # Loop through and write each parameter to the environment file
