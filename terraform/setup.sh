@@ -58,29 +58,8 @@ sudo chown -R ec2-user:ec2-user /opt/nba-daily-fantasy-backend
 sudo chmod 644 /opt/nba-daily-fantasy-backend/*.pem
 
 # auto renew cert
-#echo "0 0,12 * * * root /opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
+echo "0 0,12 * * * root /opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q --deploy-hook 'cp /etc/letsencrypt/live/picknrolls.click/fullchain.pem /opt/nba-daily-fantasy-backend/fullchain.pem && cp /etc/letsencrypt/live/picknrolls.click/privkey.pem /opt/nba-daily-fantasy-backend/privkey.pem && chown -R ec2-user:ec2-user /opt/nba-daily-fantasy-backend && chmod 644 /opt/nba-daily-fantasy-backend/*.pem && systemctl restart nba.service'" | sudo tee -a /etc/crontab > /dev/null
 
-#certbot-renew.service
-#[Unit]
-#Description=Renew Let's Encrypt certificates
-#
-#[Service]
-#Type=oneshot
-#ExecStart=sudo certbot renew -q
-#[11:40 PM]randomicons
-#: certbot-renew.timer
-#[Unit]
-#Description=Run certbot twice daily
-#
-#[Timer]
-#OnCalendar=--* 00,12:00:00
-#RandomizedDelaySec=3600
-#Persistent=true
-#
-#[Install]
-#WantedBy=timers.target
-#sudo systemctl daemon-reload
-#sudo systemctl enable certbot-renew.timer
 
 # Create a systemd service file
 cat <<EOT > /etc/systemd/system/nba.service
