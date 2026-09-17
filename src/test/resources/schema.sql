@@ -19,16 +19,29 @@ CREATE TABLE teams (
 
 CREATE TABLE nba_players (
     nba_player_uid UUID PRIMARY KEY,
-    nba_player_id INT,
+    nba_player_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
-    date VARCHAR(32),
+    date VARCHAR(32) NOT NULL,
     position VARCHAR(8),
     against_team INT,
     dollar_value INT,
     fantasy_score DOUBLE PRECISION,
+    pts INT,
+    reb INT,
+    ast INT,
+    blk INT,
+    tov INT,
+    stl INT,
+    avg_pts DOUBLE PRECISION,
+    avg_reb DOUBLE PRECISION,
+    avg_ast DOUBLE PRECISION,
+    avg_blk DOUBLE PRECISION,
+    avg_tov DOUBLE PRECISION,
+    avg_stl DOUBLE PRECISION,
     team_id INT,
     status VARCHAR(32),
     jersey_num VARCHAR(8),
+    CONSTRAINT uq_nba_players_player_date UNIQUE (nba_player_id, date),
     CONSTRAINT fk_team FOREIGN KEY (team_id) REFERENCES teams(team_id)
 );
 

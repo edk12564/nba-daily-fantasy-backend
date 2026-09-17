@@ -95,7 +95,8 @@
        <dependency>
           <groupId>org.projectlombok</groupId>
           <artifactId>lombok</artifactId>
-          <scope>provided</scope> <!-- Version managed by parent POM -->
+          <version>1.18.42</version>
+          <scope>provided</scope>
        </dependency>
        <dependency>
           <groupId>org.postgresql</groupId>
@@ -185,7 +186,7 @@
              <configuration>
                 <source>21</source>
                 <target>21</target>
-                <compilerArgs>--enable-preview</compilerArgs>
+                <proc>full</proc>
              </configuration>
           </plugin>
           <plugin>
