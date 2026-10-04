@@ -22,5 +22,5 @@ public interface IsLockedRepository extends CrudRepository<IsLocked, UUID> {
     SELECT il.date, il.lock_time FROM is_locked il
     WHERE il.date = :date
     """)
-    IsLocked isLocked(LocalDate date);
+    Optional<IsLocked> isLocked(LocalDate date);
 }

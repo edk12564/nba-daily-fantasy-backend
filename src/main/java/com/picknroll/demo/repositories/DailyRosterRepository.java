@@ -115,7 +115,7 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             FROM daily_roster dr
             JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
             JOIN discord_player_guilds dpg on dpg.discord_player_id = dr.discord_player_id
-            WHERE dpg.guild_id = :guildId and dr.date < :endDay AND dr.date > :startDay
+            WHERE dpg.guild_id = :guildId and dr.date <= :endDay AND dr.date >= :startDay
             GROUP BY dr.discord_player_id, dr.nickname
             ORDER BY fantasy_score DESC
             LIMIT 100

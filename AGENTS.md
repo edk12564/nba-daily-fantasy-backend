@@ -45,18 +45,19 @@ All routes except `/token` require a backend bearer JWT. `/token` exchanges a Di
 
 - Default product date is `America/Los_Angeles` via `Utils.getCaliforniaDate()`.
 - Users select one `PG`, `SG`, `SF`, `PF`, and `C`.
-- The server-side roster cap is `ActivitiesController.MAX_DOLLARS = 100`.
+- The server-side roster cap is `ActivitiesController.MAX_DOLLARS = 100`. A total of 100 is allowed; 101 is rejected.
 - Lock time is the first scheduled game tipoff for that product day.
-- Daily leaderboards are guild and global; weekly leaderboards are guild-scoped.
+- A missing `is_locked` row, or a row whose `lock_time` is null, is a no-games day. `GET /lock-time` returns `404` with `{"error":"No games scheduled"}`. `POST /my-roster` and `DELETE /my-roster` return that same response and also return `400` once `lock_time` is before now.
+- Salary validation and the roster upsert run in one transaction. `pg_advisory_xact_lock` serializes writes for one Discord player and product day so concurrent requests cannot both pass the cap.
+- Daily leaderboards are guild and global. The guild weekly leaderboard is Monday through the requested Pacific date, inclusive: `previousOrSame(MONDAY)` and `date >= start AND date <= end`. The Python bot's completed-week query is a separate inclusive range and was left unchanged.
 - Prior-season rows are historical data. Never truncate them for the 2026-27 rollover.
 - Test dates such as `2025-12-25` are fixtures, not production season settings.
 
 ## Authentication and authorization requirements
 
 - Treat JWT claims as the authenticated identity.
-- Do not trust `discordPlayerId`, `discord_player_id`, guild IDs, or nicknames supplied only by path/body parameters.
-- Validate that roster reads/writes and guild/channel registration are authorized for the JWT user and current Discord context.
-- Fail closed when the lock row is absent or malformed.
+- `POST /my-roster` and `DELETE /my-roster` compare the body Discord player id with the JWT `id` claim and return `403` on a mismatch.
+- Roster reads, leaderboard guild ids, and the guild/channel writes performed by `GET /my-roster` still accept ids supplied only by the path. Do not treat those as authorized for the JWT user.
 - Keep CORS origins and Discord OAuth redirect configurable and consistent with the production Discord application.
 - Never log Discord access tokens, backend JWTs, client secrets, public-key signatures, or database credentials.
 
@@ -74,13 +75,14 @@ Use `DATABASE.md` to verify the production contract. Use additive, versioned mig
 
 ## Required 2026-27 work
 
+Done in this repository: no-games lock responses, transactional cap enforcement, inclusive Monday-through-requested-day weekly bounds, and JWT checks on roster create and delete.
+
+Still required before launch:
+
 1. Verify the corrected datasource URL and UTC database session timezone in the deployment environment.
-2. Define an explicit response for no-games days and missing lock rows. Avoid returning `null`; roster writes must remain closed.
-3. Make lock checking, salary validation, and roster upsert one transaction to prevent concurrent requests from exceeding the cap.
-4. Validate 2026-27 lock rows, daily players, live NBA box scores, persisted scoring, and guild/global leaderboard isolation.
-5. Fix and test weekly boundaries. The repository SQL uses exclusive dates while the Python bot uses inclusive dates.
-6. Decide whether slash commands are retired. If so, delete stale registrations/docs; if restored, implement Discord signature verification and the complete secured interaction flow.
-7. Keep `DATABASE.md` synchronized with production and the loader SQL.
+2. Load and validate 2026-27 lock rows, daily players, live NBA box scores, persisted scoring, and guild/global leaderboard isolation. Opening night, October 20, 2026, stays closed until the loaders have written that date's `is_locked` and `nba_players` rows.
+3. Leave slash commands retired unless the complete signed interaction flow is restored. `InteractionsController.java` is commented out and signature verification is a stub.
+4. Keep `DATABASE.md` synchronized with production and the loader SQL.
 
 ## Deployment
 
@@ -111,7 +113,10 @@ Environment names include `DATABASE_USER`, `DATABASE_URL`, `DB_PASSWORD`, `VITE_
 
 ## Verification
 
-- Run `./mvnw test` and `./mvnw package`.
-- Add tests for absent lock rows, no-game days, DST/date boundaries, JWT identity mismatches, malformed Discord responses, cap races, complete/incomplete rosters, inclusive weekly bounds, and production-schema constraints.
+- Run `./mvnw test` and `./mvnw package`. Surefire's default includes run `*Test.java` only.
+- `DailyRosterRepositoryIT` and `IsLockedRepositoryIT` hold the database checks for the cap race, inclusive weekly scores, and a missing lock row. Run them explicitly; `./mvnw test` does not pick up `*IT.java`.
+- This workspace's current JDK is 25, while the project targets 21. JaCoCo 0.8.11 and the bundled Byte Buddy need `-Djacoco.skip=true` and `-Dnet.bytebuddy.experimental=true` on that JDK. Colima needs `DOCKER_HOST` pointed at its socket and `TESTCONTAINERS_RYUK_DISABLED=true`.
+- Unit coverage now includes absent and malformed lock rows, JWT player-id mismatches on writes, the 100/101 cap boundary, and Monday-only plus Monday-through-Sunday weekly windows.
+- Still add tests for DST boundaries, malformed Discord token responses, and complete/incomplete rosters.
 - Smoke-test OAuth and all Activity endpoints through Discord's proxy in a test guild.
 - Confirm production starts with the `prod` profile and that secrets/logs are not exposed.

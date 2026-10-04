@@ -3,7 +3,7 @@ package com.picknroll.demo.controllers;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.picknroll.demo.httpclient.NbaAPIClient;
-import com.picknroll.demo.models.dtos.IsLocked;
+import com.picknroll.demo.interceptors.JwtInterceptor;
 import com.picknroll.demo.models.dtos.SetPlayerDTO;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.models.joinTables.NbaPlayerTeam;
@@ -12,7 +12,10 @@ import com.picknroll.demo.services.DiscordPlayerGuildServices;
 import com.picknroll.demo.services.IsLockedServices;
 import com.picknroll.demo.services.JwtService;
 import com.picknroll.demo.services.NbaPlayerServices;
+import com.picknroll.demo.services.RosterWriteOutcome;
 import com.picknroll.demo.utils.Utils;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -25,7 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +39,9 @@ import java.util.Optional;
 public class ActivitiesController {
 
     public static final int MAX_DOLLARS = 100;
+    static final String NO_GAMES_BODY = "{\"error\":\"No games scheduled\"}";
+    static final String LOCKED_BODY = "{\"error\": \"Its past the lock time\"}";
+    static final String FORBIDDEN_BODY = "{\"error\":\"Forbidden\"}";
 
     @Autowired
     NbaPlayerServices nbaPlayerServices;
@@ -81,24 +86,19 @@ public class ActivitiesController {
     }
 
     @PostMapping(value = "/my-roster")
-    public ResponseEntity<String> setPlayer(@RequestBody SetPlayerDTO setPlayerDTO) {
-        LocalDate californiaDate = Utils.getCaliforniaDate();
-        if (isLockedServices.isLocked(californiaDate).getLockTime().isBefore(OffsetDateTime.now())) {
-            return new ResponseEntity<>("{\"error\": \"Its past the lock time\"}", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> setPlayer(@RequestBody SetPlayerDTO setPlayerDTO, HttpServletRequest request) {
+        ResponseEntity<String> forbidden = requireCurrentUser(request, setPlayerDTO.getDiscord_player_id());
+        if (forbidden != null) {
+            return forbidden;
         }
-
-        var currentPrice = dailyRosterServices.getTodaysRosterPriceWithPlayer(setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getPosition(), californiaDate, setPlayerDTO.getNba_player_uid());
-        if (currentPrice > MAX_DOLLARS) {
-            return new ResponseEntity<>("{\"error\": \"Too expensive: total is " + currentPrice + "\"}", HttpStatus.BAD_REQUEST);
-        }
-        var changedRows = dailyRosterServices.saveRosterChoice(setPlayerDTO.getNba_player_uid(), setPlayerDTO.getDiscord_player_id(), setPlayerDTO.getNickname(),
-                setPlayerDTO.getPosition(), californiaDate);
-        if (changedRows == 1) {
-            return new ResponseEntity<>("OK", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("BAD request", HttpStatus.BAD_REQUEST);
-        }
-
+        RosterWriteOutcome outcome = dailyRosterServices.saveRosterChoiceWithinCap(
+                setPlayerDTO.getNba_player_uid(),
+                setPlayerDTO.getDiscord_player_id(),
+                setPlayerDTO.getNickname(),
+                setPlayerDTO.getPosition(),
+                Utils.getCaliforniaDate(),
+                MAX_DOLLARS);
+        return mutationResponse(outcome, "OK");
     }
 
     // Change this to globalLeaderboard
@@ -119,8 +119,10 @@ public class ActivitiesController {
 
     /* Lock Stuff */
     @GetMapping(value = "/lock-time")
-    public IsLocked getLockTime(@RequestParam Optional<LocalDate> date) {
-        return isLockedServices.isLocked(date.orElse(Utils.getCaliforniaDate()));
+    public ResponseEntity<?> getLockTime(@RequestParam Optional<LocalDate> date) {
+        return isLockedServices.findLock(date.orElse(Utils.getCaliforniaDate()))
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> new ResponseEntity<>(NO_GAMES_BODY, HttpStatus.NOT_FOUND));
     }
 
     // Exchange Discord auth code for access token, fetch user data, and return a JWT
@@ -197,9 +199,37 @@ public class ActivitiesController {
 
     @SneakyThrows
     @DeleteMapping(value = "/my-roster")
-    public ResponseEntity<String> deleteRosterPlayer(@RequestBody DailyRosterPlayer dailyRosterPlayer) {
-        dailyRosterServices.deleteRosterPlayer(dailyRosterPlayer);
-        return ResponseEntity.ok("Roster player deleted successfully.");
+    public ResponseEntity<String> deleteRosterPlayer(@RequestBody DailyRosterPlayer dailyRosterPlayer,
+                                                     HttpServletRequest request) {
+        ResponseEntity<String> forbidden = requireCurrentUser(request, dailyRosterPlayer.getDiscordPlayerId());
+        if (forbidden != null) {
+            return forbidden;
+        }
+        RosterWriteOutcome outcome = dailyRosterServices.deleteRosterPlayerIfOpen(dailyRosterPlayer);
+        return mutationResponse(outcome, "Roster player deleted successfully.");
+    }
+
+    private ResponseEntity<String> requireCurrentUser(HttpServletRequest request, String discordPlayerId) {
+        Object attribute = request.getAttribute(JwtInterceptor.USER_DATA_ATTRIBUTE);
+        if (!(attribute instanceof Claims claims)) {
+            return new ResponseEntity<>(FORBIDDEN_BODY, HttpStatus.FORBIDDEN);
+        }
+        Object authenticatedId = claims.get("id");
+        if (authenticatedId == null || discordPlayerId == null || !discordPlayerId.equals(authenticatedId.toString())) {
+            return new ResponseEntity<>(FORBIDDEN_BODY, HttpStatus.FORBIDDEN);
+        }
+        return null;
+    }
+
+    private ResponseEntity<String> mutationResponse(RosterWriteOutcome outcome, String successBody) {
+        return switch (outcome.status()) {
+            case SAVED, DELETED -> new ResponseEntity<>(successBody, HttpStatus.OK);
+            case OVER_CAP -> new ResponseEntity<>(
+                    "{\"error\": \"Too expensive: total is " + outcome.totalPrice() + "\"}", HttpStatus.BAD_REQUEST);
+            case LOCKED -> new ResponseEntity<>(LOCKED_BODY, HttpStatus.BAD_REQUEST);
+            case NO_GAMES -> new ResponseEntity<>(NO_GAMES_BODY, HttpStatus.NOT_FOUND);
+            case NOT_CHANGED -> new ResponseEntity<>("BAD request", HttpStatus.BAD_REQUEST);
+        };
     }
 
 }

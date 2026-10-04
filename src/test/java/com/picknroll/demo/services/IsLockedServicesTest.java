@@ -45,11 +45,23 @@ class IsLockedServicesTest {
     }
 
     @Test
-    @DisplayName("isLocked delegates to repository for a specific date")
-    void isLocked_specificDate() {
+    @DisplayName("findLock returns the row when lock time is present")
+    void findLock_specificDate() {
         LocalDate d = LocalDate.parse("2025-12-25");
         IsLocked row = IsLocked.builder().date(d).lockTime(OffsetDateTime.now()).build();
-        given(isLockedRepository.isLocked(d)).willReturn(row);
-        assertEquals(d, services.isLocked(d).getDate());
+        given(isLockedRepository.isLocked(d)).willReturn(Optional.of(row));
+        assertEquals(d, services.findLock(d).orElseThrow().getDate());
+    }
+
+    @Test
+    @DisplayName("findLock is empty when the row is missing or lock time is null")
+    void findLock_missingOrMalformed() {
+        LocalDate d = LocalDate.parse("2026-10-20");
+        given(isLockedRepository.isLocked(d)).willReturn(Optional.empty());
+        assertTrue(services.findLock(d).isEmpty());
+
+        IsLocked malformed = IsLocked.builder().date(d).lockTime(null).build();
+        given(isLockedRepository.isLocked(d)).willReturn(Optional.of(malformed));
+        assertTrue(services.findLock(d).isEmpty());
     }
 }

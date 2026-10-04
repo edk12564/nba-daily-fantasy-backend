@@ -42,8 +42,13 @@ class IsLockedRepositoryIT extends AbstractIntegrationTest {
     @Test
     void isLocked_specificDate() {
         LocalDate date = LocalDate.parse("2025-12-25");
-        IsLocked locked = isLockedRepository.isLocked(date);
-        assertNotNull(locked);
-        assertEquals(date, locked.getDate());
+        Optional<IsLocked> locked = isLockedRepository.isLocked(date);
+        assertTrue(locked.isPresent());
+        assertEquals(date, locked.get().getDate());
+    }
+
+    @Test
+    void isLocked_missingDate_isEmpty() {
+        assertTrue(isLockedRepository.isLocked(LocalDate.parse("2026-08-01")).isEmpty());
     }
 }

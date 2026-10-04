@@ -5,6 +5,7 @@ import com.picknroll.demo.models.dtos.IsLocked;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.models.joinTables.NbaPlayerTeam;
 import com.picknroll.demo.services.*;
+import com.picknroll.demo.services.RosterWriteOutcome.Status;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,12 +29,13 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -82,6 +84,7 @@ class ActivitiesControllerTest {
     private JwtService jwtService;
 
     private static final LocalDate TEST_DATE = LocalDate.parse("2025-12-25");
+    private static final String AUTHENTICATED_USER = "test-user-id";
 
     @BeforeEach
     void setUp() {
@@ -136,49 +139,51 @@ class ActivitiesControllerTest {
 
     @Test
     void setPlayer_returnsBadRequest_ifPastLockTime() throws Exception {
-        // lock time before now
-        IsLocked past = IsLocked.builder().date(TEST_DATE).lockTime(OffsetDateTime.now().minusMinutes(5)).build();
-        given(isLockedServices.isLocked(any(LocalDate.class))).willReturn(past);
-
-        String payload = """
-                {
-                  "nba_player_uid": "11111111-1111-1111-1111-111111111111",
-                  "discord_player_id": "p1",
-                  "nickname": "King",
-                  "position": "SF"
-                }
-                """;
+        given(dailyRosterServices.saveRosterChoiceWithinCap(any(), any(), any(), any(), any(), eq(ActivitiesController.MAX_DOLLARS)))
+                .willReturn(RosterWriteOutcome.of(Status.LOCKED));
 
         mockMvc.perform(post("/api/activity/my-roster")
                         .header("Authorization", AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
+                        .content(rosterPayload(AUTHENTICATED_USER)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("past the lock time")));
     }
 
     @Test
-    void setPlayer_success_whenAffordable_andBeforeLock() throws Exception {
-        IsLocked future = IsLocked.builder().date(TEST_DATE).lockTime(OffsetDateTime.now().plusMinutes(10)).build();
-        given(isLockedServices.isLocked(any(LocalDate.class))).willReturn(future);
-        given(dailyRosterServices.getTodaysRosterPriceWithPlayer(anyString(), anyString(), any(LocalDate.class), any(UUID.class)))
-                .willReturn(100);
-        given(dailyRosterServices.saveRosterChoice(any(UUID.class), anyString(), anyString(), anyString(), any(LocalDate.class)))
-                .willReturn(1);
-
-        String payload = """
-                {
-                  "nba_player_uid": "11111111-1111-1111-1111-111111111111",
-                  "discord_player_id": "p1",
-                  "nickname": "King",
-                  "position": "SF"
-                }
-                """;
+    void setPlayer_returnsNotFound_whenNoGamesAreScheduled() throws Exception {
+        given(dailyRosterServices.saveRosterChoiceWithinCap(any(), any(), any(), any(), any(), eq(ActivitiesController.MAX_DOLLARS)))
+                .willReturn(RosterWriteOutcome.of(Status.NO_GAMES));
 
         mockMvc.perform(post("/api/activity/my-roster")
                         .header("Authorization", AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
+                        .content(rosterPayload(AUTHENTICATED_USER)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("No games scheduled")));
+    }
+
+    @Test
+    void setPlayer_returnsForbidden_whenPlayerIdDoesNotMatchJwt() throws Exception {
+        mockMvc.perform(post("/api/activity/my-roster")
+                        .header("Authorization", AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(rosterPayload("someone-else")))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(containsString("Forbidden")));
+
+        verify(dailyRosterServices, never()).saveRosterChoiceWithinCap(any(), any(), any(), any(), any(), anyInt());
+    }
+
+    @Test
+    void setPlayer_success_whenAffordable_andBeforeLock() throws Exception {
+        given(dailyRosterServices.saveRosterChoiceWithinCap(any(), eq(AUTHENTICATED_USER), any(), any(), any(), eq(ActivitiesController.MAX_DOLLARS)))
+                .willReturn(RosterWriteOutcome.of(Status.SAVED));
+
+        mockMvc.perform(post("/api/activity/my-roster")
+                        .header("Authorization", AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(rosterPayload(AUTHENTICATED_USER)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("OK"));
     }
@@ -189,7 +194,8 @@ class ActivitiesControllerTest {
         given(dailyRosterServices.getGlobalLeaderboard(TEST_DATE)).willReturn(List.of(p));
         given(dailyRosterServices.getWeeklyGuildLeaderboard("g1", TEST_DATE)).willReturn(List.of(p));
         given(dailyRosterServices.getGuildLeaderboard("g1", TEST_DATE)).willReturn(List.of(p));
-        given(isLockedServices.isLocked(TEST_DATE)).willReturn(IsLocked.builder().date(TEST_DATE).lockTime(OffsetDateTime.now().plusHours(1)).build());
+        given(isLockedServices.findLock(TEST_DATE)).willReturn(Optional.of(
+                IsLocked.builder().date(TEST_DATE).lockTime(OffsetDateTime.now().plusHours(1)).build()));
 
         mockMvc.perform(get("/api/activity/rosters/global")
                         .header("Authorization", AUTH_HEADER)
@@ -217,20 +223,82 @@ class ActivitiesControllerTest {
     }
 
     @Test
+    void lockTime_returnsNotFound_whenNoGamesAreScheduled() throws Exception {
+        given(isLockedServices.findLock(TEST_DATE)).willReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/activity/lock-time")
+                        .header("Authorization", AUTH_HEADER)
+                        .param("date", "2025-12-25"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("No games scheduled")));
+    }
+
+    @Test
     void deleteRosterPlayer_callsService_andReturnsOk() throws Exception {
-        String payload = """
-                {
-                  "nbaPlayerUid": "11111111-1111-1111-1111-111111111111",
-                  "discordPlayerId": "p1",
-                  "date": "2025-12-25"
-                }
-                """;
+        given(dailyRosterServices.deleteRosterPlayerIfOpen(any())).willReturn(RosterWriteOutcome.of(Status.DELETED));
 
         mockMvc.perform(delete("/api/activity/my-roster")
                         .header("Authorization", AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
+                        .content(deletePayload(AUTHENTICATED_USER)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("deleted successfully")));
+    }
+
+    @Test
+    void deleteRosterPlayer_returnsNotFound_whenNoGamesAreScheduled() throws Exception {
+        given(dailyRosterServices.deleteRosterPlayerIfOpen(any())).willReturn(RosterWriteOutcome.of(Status.NO_GAMES));
+
+        mockMvc.perform(delete("/api/activity/my-roster")
+                        .header("Authorization", AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deletePayload(AUTHENTICATED_USER)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("No games scheduled")));
+    }
+
+    @Test
+    void deleteRosterPlayer_returnsBadRequest_whenLocked() throws Exception {
+        given(dailyRosterServices.deleteRosterPlayerIfOpen(any())).willReturn(RosterWriteOutcome.of(Status.LOCKED));
+
+        mockMvc.perform(delete("/api/activity/my-roster")
+                        .header("Authorization", AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deletePayload(AUTHENTICATED_USER)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("past the lock time")));
+    }
+
+    @Test
+    void deleteRosterPlayer_returnsForbidden_whenPlayerIdDoesNotMatchJwt() throws Exception {
+        mockMvc.perform(delete("/api/activity/my-roster")
+                        .header("Authorization", AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(deletePayload("someone-else")))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(containsString("Forbidden")));
+
+        verify(dailyRosterServices, never()).deleteRosterPlayerIfOpen(any());
+    }
+
+    private static String rosterPayload(String discordPlayerId) {
+        return """
+                {
+                  "nba_player_uid": "11111111-1111-1111-1111-111111111111",
+                  "discord_player_id": "%s",
+                  "nickname": "King",
+                  "position": "SF"
+                }
+                """.formatted(discordPlayerId);
+    }
+
+    private static String deletePayload(String discordPlayerId) {
+        return """
+                {
+                  "nbaPlayerUid": "11111111-1111-1111-1111-111111111111",
+                  "discordPlayerId": "%s",
+                  "date": "2025-12-25"
+                }
+                """.formatted(discordPlayerId);
     }
 }

@@ -22,8 +22,8 @@ public class IsLockedServices {
         return isLocked.filter(locked -> locked.getLockTime().isAfter(OffsetDateTime.now())).isPresent();
     }
 
-    public IsLocked isLocked(LocalDate date) {
-        return isLockedRepository.isLocked(date);
+    public Optional<IsLocked> findLock(LocalDate date) {
+        return isLockedRepository.isLocked(date).filter(lock -> lock.getLockTime() != null);
     }
 
 }
