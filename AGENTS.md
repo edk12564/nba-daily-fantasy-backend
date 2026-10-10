@@ -90,11 +90,102 @@ Production is modeled as:
 
 - AWS EC2 and Route 53 for `picknrolls.click`.
 - Spring `prod` profile on port 8443.
-- TLS certificate/key copied under `/opt/nba-daily-fantasy-backend`.
+- TLS certificate/key synced from Let's Encrypt into `/opt/nba-daily-fantasy-backend` (`fullchain.pem` mode 644, `privkey.pem` mode 600).
 - Secrets fetched from AWS SSM Parameter Store into `/etc/sysconfig/myapp.env`.
 - `nba.service` runs the packaged JAR.
 
-Environment names include `DATABASE_USER`, `DATABASE_URL`, `DB_PASSWORD`, `VITE_DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_API_PUBLIC_KEY`, and `JWT_SECRET`. Never commit their values.
+Environment names include `DATABASE_USER`, `DATABASE_URL`, `DB_PASSWORD`, `VITE_DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_API_PUBLIC_KEY`, and `JWT_SECRET`. Never commit their values. `setup.sh` also fetches `BOT_ACCESS_KEY`; confirm whether it is still required.
+
+`terraform/setup.sh` is idempotent: it installs Java 21 only if missing, replaces the JAR without wiping `/opt`, rewrites the SSM env file as root, issues a Certbot standalone cert for `picknrolls.click` only when the live cert is missing, syncs PEMs into the app dir, installs a single renew job at `/etc/cron.d/nba-certbot`, and restarts `nba.service`. Port 80 must stay open for HTTP-01; the app listens on 8443. AL2023 keeps system `python3` at 3.9; when Certbot is installed via pip, the script uses a **Python 3.11** venv under `/opt/certbot` (Certbot 5+ drops 3.9).
+
+### Code-only release (JAR redeploy)
+
+Use this path when infrastructure is already up and you only need to ship a new backend JAR. Terraform provisioners upload `../target/demo-0.0.1-SNAPSHOT.jar` and run `terraform/setup.sh`, which refreshes the env file from SSM, syncs TLS PEMs, and restarts `nba.service`.
+
+1. **Schema first (only if needed).** Spring starts with `ddl-auto=validate`. For additive SQL, back up PostgreSQL, apply the migration, and verify with `DATABASE.md` before restarting the app. Skip this step for pure code changes.
+
+2. **SSH private key for Terraform provisioners.** The AWS `.pem` is a PEM-encoded private key; Terraform expects it at `~/.ssh/id_rsa` (same key material, OpenSSH default name):
+
+   ```bash
+   mkdir -p ~/.ssh
+   cp /path/to/your-key.pem ~/.ssh/id_rsa
+   chmod 600 ~/.ssh/id_rsa
+   ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+   chmod 644 ~/.ssh/id_rsa.pub
+   ```
+
+   The key must match the public key already authorized on the EC2 instance (`aws_key_pair.deployer_key` / `nba-app-key`). Confirm with:
+
+   ```bash
+   ssh -i ~/.ssh/id_rsa ec2-user@<EC2_PUBLIC_IP>
+   ```
+
+   If SSH fails with `Permission denied (publickey)` even though your private key matches the current `nba-app-key` in AWS, the running instance still has the key from **launch time**. Updating `aws_key_pair` or `~/.ssh/id_rsa` later does not rewrite `/home/ec2-user/.ssh/authorized_keys` on an existing VM. Use **Recover SSH access** below.
+
+### Recover SSH access (key mismatch)
+
+When Terraform file provisioners fail with `SSH authentication failed` and local `ssh ec2-user@<EC2_PUBLIC_IP>` rejects your key, recover through the AWS Console (no local private key required):
+
+1. In **EC2 → Instances**, select the backend instance and choose **Connect**.
+2. Open **EC2 Instance Connect** (browser session) as user **`ec2-user`**.
+3. On the instance, append your **current** deploy public key (multiple lines in `authorized_keys` are fine):
+
+   ```bash
+   mkdir -p ~/.ssh
+   chmod 700 ~/.ssh
+   # Paste one line from your laptop: output of `cat ~/.ssh/id_rsa.pub`
+   echo 'ssh-rsa AAAA... your-comment' >> ~/.ssh/authorized_keys
+   chmod 600 ~/.ssh/authorized_keys
+   ```
+
+4. From your laptop, confirm SSH and then rerun Terraform:
+
+   ```bash
+   ssh -i ~/.ssh/id_rsa ec2-user@<EC2_PUBLIC_IP>
+   ```
+
+Keep the old `authorized_keys` entries unless you are sure they are obsolete; appending avoids locking out whoever still has the original key.
+
+3. **AWS credentials for Terraform.** `aws login` credentials work for the AWS CLI but are not picked up by the Terraform AWS provider. In the same shell before any `terraform` command:
+
+   ```bash
+   aws login   # if the session expired
+   eval "$(aws configure export-credentials --format env)"
+   aws sts get-caller-identity
+   ```
+
+   Re-run the `eval` after credentials expire (`AWS_CREDENTIAL_EXPIRATION`). Do not put access keys in `main.tf`.
+
+4. **Build the JAR** from this repository root:
+
+   ```bash
+   ./mvnw test
+   ./mvnw package
+   ```
+
+   Confirm `target/demo-0.0.1-SNAPSHOT.jar` exists. That path is hard-coded in `terraform/main.tf`.
+
+5. **Deploy** from `terraform/`:
+
+   ```bash
+   terraform apply -replace=null_resource.setup_instance
+   ```
+
+   A plain `terraform apply` without `-replace` will not redeploy the app unless the provisioner chain otherwise changes. Prefer `-replace=null_resource.setup_instance` for JAR-only rollouts so unrelated infra is not touched.
+
+6. **Verify on the instance** (SSH in, then inspect systemd / journal / TLS):
+
+   ```bash
+   ssh -i ~/.ssh/id_rsa ec2-user@<EC2_PUBLIC_IP>
+   sudo systemctl status nba.service
+   sudo journalctl -u nba.service -n 100 --no-pager
+   sudo certbot certificates
+   openssl x509 -in /opt/nba-daily-fantasy-backend/fullchain.pem -noout -dates
+   ls -l /opt/nba-daily-fantasy-backend/*.pem   # privkey.pem should be 600
+   cat /etc/cron.d/nba-certbot                 # exactly one renew entry
+   ```
+
+   Confirm the process is running with `--spring.profiles.active=prod` and that the journal has no SSL keystore errors. Then smoke-test through Discord / `https://picknrolls.click`: OAuth (`/api/activity/token`), one roster create/replace/delete, lock-time (including no-games `404`), cap enforcement, and guild/global leaderboards.
 
 ## Known risks
 
@@ -102,8 +193,8 @@ Environment names include `DATABASE_USER`, `DATABASE_URL`, `DB_PASSWORD`, `VITE_
 - CORS origins, OAuth redirect, database host, domain, ports, AMI, and paths are hard-coded.
 - Terraform allows SSH from `0.0.0.0/0`.
 - The EC2 role can read SSM parameters from `Resource = "*"`.
-- TLS private-key copies are set to mode `644`.
 - The provisioning script installs packages imperatively and uses Terraform provisioners for deployment.
+- Certbot standalone renew needs port 80 free; the app binds 8443, but anything else on 80 will break renew.
 - The checked-in `terraform/nba-ubuntu.service` runs the `dev` profile and does not match the service generated by `setup.sh`.
 - `BOT_ACCESS_KEY` is fetched by backend provisioning although the active backend does not run the Python bot; verify whether it is obsolete.
 - `isTodayLocked()` is named opposite to its implementation: it returns true while lock time is still in the future.
