@@ -79,6 +79,8 @@ class ActivitiesControllerTest {
     @MockBean
     private NbaAPIClient nbaAPIClient;
     @MockBean
+    private NbaScheduleService nbaScheduleService;
+    @MockBean
     private DiscordPlayerGuildServices discordPlayerGuildServices;
     @MockBean
     private JwtService jwtService;
@@ -118,6 +120,16 @@ class ActivitiesControllerTest {
                         .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
                 .andExpect(content().string("OK"));
+    }
+
+    @Test
+    void schedule_returnsGamesByDate() throws Exception {
+        given(nbaScheduleService.getGamesByDate())
+                .willReturn(Map.of("2026-10-20", List.of("0022600001")));
+        mockMvc.perform(get("/api/activity/schedule")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$['2026-10-20'][0]", is("0022600001")));
     }
 
     @Test

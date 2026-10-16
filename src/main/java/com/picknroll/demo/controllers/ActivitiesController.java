@@ -12,6 +12,7 @@ import com.picknroll.demo.services.DiscordPlayerGuildServices;
 import com.picknroll.demo.services.IsLockedServices;
 import com.picknroll.demo.services.JwtService;
 import com.picknroll.demo.services.NbaPlayerServices;
+import com.picknroll.demo.services.NbaScheduleService;
 import com.picknroll.demo.services.RosterWriteOutcome;
 import com.picknroll.demo.utils.Utils;
 import io.jsonwebtoken.Claims;
@@ -52,6 +53,8 @@ public class ActivitiesController {
     @Autowired
     NbaAPIClient nbaAPIClient;
     @Autowired
+    NbaScheduleService nbaScheduleService;
+    @Autowired
     DiscordPlayerGuildServices discordPlayerGuildServices;
     @Autowired
     JwtService jwtService;
@@ -71,6 +74,12 @@ public class ActivitiesController {
     @GetMapping(value = "/livedata/{gameId}")
     public String getLiveGameData(@PathVariable String gameId) {
         return nbaAPIClient.getGamesData(gameId);
+    }
+
+    /** Date → game IDs from the NBA static schedule (fetched server-side with CDN headers). */
+    @GetMapping(value = "/schedule", produces = "application/json")
+    public Map<String, List<String>> getSchedule() {
+        return nbaScheduleService.getGamesByDate();
     }
 
     //  This is where you look at your roster for the first time. So this is the entrypoint. Here, I should fill in the players before displaying player roster.
