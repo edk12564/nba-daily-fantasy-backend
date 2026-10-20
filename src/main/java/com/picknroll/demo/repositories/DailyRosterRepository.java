@@ -63,9 +63,33 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                         dr.position AS position,
                         np.name,
                         np.dollar_value,
-                        np.fantasy_score
+                        np.fantasy_score,
+                        equipped.rarity AS equipped_skin_rarity,
+                        equipped.art_url AS equipped_art_url,
+                        equipped.frame_key AS frame_key,
+                        CASE
+                            WHEN np.dollar_value IS NULL OR np.dollar_value <= 12 THEN 1
+                            WHEN np.dollar_value <= 18 THEN 2
+                            WHEN np.dollar_value <= 25 THEN 3
+                            WHEN np.dollar_value <= 35 THEN 4
+                            ELSE 5
+                        END AS player_star
                     FROM daily_roster dr
                     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+                    LEFT JOIN LATERAL (
+                        SELECT gs.rarity, gs.art_url, gs.frame_key
+                        FROM gacha_user_skins gus
+                        JOIN gacha_skins gs ON gs.skin_id = gus.skin_id
+                        WHERE gus.discord_player_id = dr.discord_player_id
+                          AND gs.nba_player_id = np.nba_player_id
+                        ORDER BY CASE gs.rarity
+                            WHEN 'LEGENDARY' THEN 4
+                            WHEN 'EPIC' THEN 3
+                            WHEN 'RARE' THEN 2
+                            ELSE 1
+                        END DESC
+                        LIMIT 1
+                    ) equipped ON true
                     WHERE dr.discord_player_id = :discordId AND dr.date = :date
             """)
     List<DailyRosterPlayer> getTodaysRosterByDiscordId(String discordId, LocalDate date);
@@ -109,11 +133,35 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                 dr.position AS position,
                 np.name,
                 np.dollar_value,
-                np.fantasy_score AS fantasy_score
+                np.fantasy_score AS fantasy_score,
+                equipped.rarity AS equipped_skin_rarity,
+                equipped.art_url AS equipped_art_url,
+                equipped.frame_key AS frame_key,
+                CASE
+                    WHEN np.dollar_value IS NULL OR np.dollar_value <= 12 THEN 1
+                    WHEN np.dollar_value <= 18 THEN 2
+                    WHEN np.dollar_value <= 25 THEN 3
+                    WHEN np.dollar_value <= 35 THEN 4
+                    ELSE 5
+                END AS player_star
             FROM daily_roster dr
             JOIN nba_players np ON np.nba_player_uid = dr.nba_player_uid
                 AND np.date = CAST(dr.date AS VARCHAR)
             JOIN roster_totals rr ON dr.discord_player_id = rr.discord_player_id
+            LEFT JOIN LATERAL (
+                SELECT gs.rarity, gs.art_url, gs.frame_key
+                FROM gacha_user_skins gus
+                JOIN gacha_skins gs ON gs.skin_id = gus.skin_id
+                WHERE gus.discord_player_id = dr.discord_player_id
+                  AND gs.nba_player_id = np.nba_player_id
+                ORDER BY CASE gs.rarity
+                    WHEN 'LEGENDARY' THEN 4
+                    WHEN 'EPIC' THEN 3
+                    WHEN 'RARE' THEN 2
+                    ELSE 1
+                END DESC
+                LIMIT 1
+            ) equipped ON true
             WHERE dr.date = :date
             ORDER BY rr.total_score DESC, np.fantasy_score DESC
             """)
@@ -147,11 +195,44 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                     LIMIT 100
                 )
 
-                    SELECT dr.discord_player_id, np.nba_player_id, dr.nba_player_uid, dr.date, dr.nickname, dr.position AS position, np.name, np.dollar_value, np.fantasy_score
+                    SELECT
+                        dr.discord_player_id,
+                        np.nba_player_id,
+                        dr.nba_player_uid,
+                        dr.date,
+                        dr.nickname,
+                        dr.position AS position,
+                        np.name,
+                        np.dollar_value,
+                        np.fantasy_score,
+                        equipped.rarity AS equipped_skin_rarity,
+                        equipped.art_url AS equipped_art_url,
+                        equipped.frame_key AS frame_key,
+                        CASE
+                            WHEN np.dollar_value IS NULL OR np.dollar_value <= 12 THEN 1
+                            WHEN np.dollar_value <= 18 THEN 2
+                            WHEN np.dollar_value <= 25 THEN 3
+                            WHEN np.dollar_value <= 35 THEN 4
+                            ELSE 5
+                        END AS player_star
                     FROM daily_roster dr
                     JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
                     JOIN discord_player_guilds dpg on dpg.discord_player_id = dr.discord_player_id
                     JOIN roster_totals rr ON dr.discord_player_id = rr.discord_player_id
+                    LEFT JOIN LATERAL (
+                        SELECT gs.rarity, gs.art_url, gs.frame_key
+                        FROM gacha_user_skins gus
+                        JOIN gacha_skins gs ON gs.skin_id = gus.skin_id
+                        WHERE gus.discord_player_id = dr.discord_player_id
+                          AND gs.nba_player_id = np.nba_player_id
+                        ORDER BY CASE gs.rarity
+                            WHEN 'LEGENDARY' THEN 4
+                            WHEN 'EPIC' THEN 3
+                            WHEN 'RARE' THEN 2
+                            ELSE 1
+                        END DESC
+                        LIMIT 1
+                    ) equipped ON true
                     WHERE dr.date = :date and dpg.guild_id = :guildId
                     ORDER BY rr.total_score DESC, np.fantasy_score DESC
                     """)

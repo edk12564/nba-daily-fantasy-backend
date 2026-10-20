@@ -30,6 +30,8 @@ public class DailyRosterServices {
     @Autowired
     private IsLockedServices isLockedServices;
     @Autowired
+    private GachaServices gachaServices;
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     /* Get Entire Rosters and Aggregates */
@@ -74,6 +76,10 @@ public class DailyRosterServices {
         }
         Integer changed = saveRosterChoice(nbaPlayerUid, discordPlayerId, nickname, position, date);
         if (changed != null && changed == 1) {
+            List<DailyRosterPlayer> roster = getPlayerRoster(discordPlayerId, date);
+            if (roster.size() >= 5) {
+                gachaServices.tryRosterCompleteGrant(discordPlayerId, date);
+            }
             return RosterWriteOutcome.of(Status.SAVED);
         }
         return RosterWriteOutcome.of(Status.NOT_CHANGED);

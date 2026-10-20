@@ -17,4 +17,10 @@ public interface DiscordPlayerGuildRepository extends CrudRepository<DiscordPlay
     """)
     void insertGuildForPlayerId(String discordPlayerId, String guildId);
 
+    @Query(value = """
+            SELECT guild_id FROM discord_player_guilds
+            WHERE discord_player_id = :discordPlayerId
+            """)
+    java.util.List<String> findGuildIdsByDiscordPlayerId(String discordPlayerId);
+
 }

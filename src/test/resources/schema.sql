@@ -1,5 +1,9 @@
 -- PostgreSQL schema for tests
 
+DROP TABLE IF EXISTS gacha_token_grants CASCADE;
+DROP TABLE IF EXISTS gacha_user_skins CASCADE;
+DROP TABLE IF EXISTS gacha_user_wallet CASCADE;
+DROP TABLE IF EXISTS gacha_skins CASCADE;
 DROP TABLE IF EXISTS daily_roster CASCADE;
 DROP TABLE IF EXISTS nba_players CASCADE;
 DROP TABLE IF EXISTS teams CASCADE;
@@ -73,6 +77,43 @@ CREATE TABLE discord_channels (
     PRIMARY KEY (channel_id, date)
 );
 
+CREATE TABLE gacha_skins (
+    skin_id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    nba_player_id     BIGINT NOT NULL,
+    rarity            TEXT NOT NULL CHECK (rarity IN ('COMMON','RARE','EPIC','LEGENDARY')),
+    art_url           TEXT NOT NULL,
+    frame_key         TEXT NOT NULL,
+    season_label      TEXT,
+    UNIQUE (nba_player_id, rarity)
+);
+
+CREATE TABLE gacha_user_wallet (
+    discord_player_id TEXT PRIMARY KEY,
+    rolls             INT NOT NULL DEFAULT 0 CHECK (rolls >= 0),
+    dust              INT NOT NULL DEFAULT 0 CHECK (dust >= 0),
+    pity_counter      INT NOT NULL DEFAULT 0 CHECK (pity_counter >= 0),
+    streak_days       INT NOT NULL DEFAULT 0,
+    streak_last_date  DATE,
+    updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE gacha_user_skins (
+    discord_player_id TEXT NOT NULL,
+    skin_id           UUID NOT NULL REFERENCES gacha_skins(skin_id),
+    acquired_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (discord_player_id, skin_id)
+);
+
+CREATE TABLE gacha_token_grants (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    discord_player_id TEXT NOT NULL,
+    reason            TEXT NOT NULL,
+    period_key        TEXT NOT NULL,
+    amount            INT NOT NULL,
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (discord_player_id, reason, period_key)
+);
+
 -- Insert test data
 
 -- Teams
@@ -108,3 +149,16 @@ INSERT INTO discord_channels (channel_id, date, guild_id) VALUES
 INSERT INTO daily_roster (discord_player_id, nba_player_uid, date, nickname, position) VALUES
 ('player-1', '11111111-1111-1111-1111-111111111111', '2025-12-25', 'King', 'SF'),
 ('player-1', '22222222-2222-2222-2222-222222222222', '2025-12-25', 'Chef', 'PG');
+
+-- Gacha skins (4 rarities × distinct test players)
+INSERT INTO gacha_skins (skin_id, nba_player_id, rarity, art_url, frame_key, season_label)
+SELECT gen_random_uuid(), p.nba_player_id, r.rarity,
+       'headshots/nba/latest/260x190/' || p.nba_player_id || '.png',
+       r.frame_key, '2026-27'
+FROM (SELECT DISTINCT nba_player_id FROM nba_players) p
+CROSS JOIN (VALUES
+  ('COMMON', 'frame_common'),
+  ('RARE', 'frame_rare'),
+  ('EPIC', 'frame_epic'),
+  ('LEGENDARY', 'frame_legendary')
+) AS r(rarity, frame_key);

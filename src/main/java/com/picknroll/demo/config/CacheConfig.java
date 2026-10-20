@@ -28,6 +28,12 @@ public class CacheConfig {
                         Caffeine.newBuilder()
                                 .maximumSize(2)
                                 .expireAfterWrite(24, TimeUnit.HOURS)
+                                .build()),
+                new CaffeineCache(
+                        "gachaWeightedPool",
+                        Caffeine.newBuilder()
+                                .maximumSize(2)
+                                .expireAfterWrite(30, TimeUnit.MINUTES)
                                 .build())));
         return manager;
     }

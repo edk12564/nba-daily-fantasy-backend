@@ -42,6 +42,9 @@ class DailyRosterServicesTest {
     private IsLockedServices isLockedServices;
 
     @Mock
+    private GachaServices gachaServices;
+
+    @Mock
     private JdbcTemplate jdbcTemplate;
 
     @InjectMocks
@@ -120,8 +123,10 @@ class DailyRosterServicesTest {
         given(dailyRosterRepository.getTodaysRosterPriceWithPlayer(eq("u1"), eq("PG"), eq(date.toString()), eq(uid)))
                 .willReturn(List.of(100));
         given(dailyRosterRepository.saveRosterChoice(uid, "u1", "nick", "PG", date.toString())).willReturn(1);
+        given(dailyRosterRepository.getTodaysRosterByDiscordId("u1", date)).willReturn(List.of());
 
         assertEquals(Status.SAVED, services.saveRosterChoiceWithinCap(uid, "u1", "nick", "PG", date, 100).status());
+        verify(gachaServices, never()).tryRosterCompleteGrant(any(), any());
 
         given(dailyRosterRepository.getTodaysRosterPriceWithPlayer(eq("u1"), eq("SG"), eq(date.toString()), eq(uid)))
                 .willReturn(List.of(101));
@@ -193,6 +198,26 @@ class DailyRosterServicesTest {
         given(dailyRosterRepository.getTodaysLeaderboardByGuildId("guild-1", date)).willReturn(List.of(player));
         List<DailyRosterPlayer> leaderboard = services.getGuildLeaderboard("guild-1", date);
         assertEquals(1, leaderboard.size());
+    }
+
+    @Test
+    @DisplayName("save on a full 5-man roster tries roster-complete gacha grant")
+    void saveFullRosterTriggersGachaGrant() {
+        givenOpen(date);
+        UUID uid = UUID.randomUUID();
+        given(dailyRosterRepository.getTodaysRosterPriceWithPlayer(eq("u1"), eq("C"), eq(date.toString()), eq(uid)))
+                .willReturn(List.of(80));
+        given(dailyRosterRepository.saveRosterChoice(uid, "u1", "nick", "C", date.toString())).willReturn(1);
+        given(dailyRosterRepository.getTodaysRosterByDiscordId("u1", date)).willReturn(List.of(
+                DailyRosterPlayer.builder().position(DailyRosterPlayer.Position.PG).build(),
+                DailyRosterPlayer.builder().position(DailyRosterPlayer.Position.SG).build(),
+                DailyRosterPlayer.builder().position(DailyRosterPlayer.Position.SF).build(),
+                DailyRosterPlayer.builder().position(DailyRosterPlayer.Position.PF).build(),
+                DailyRosterPlayer.builder().position(DailyRosterPlayer.Position.C).build()
+        ));
+
+        assertEquals(Status.SAVED, services.saveRosterChoiceWithinCap(uid, "u1", "nick", "C", date, 100).status());
+        verify(gachaServices).tryRosterCompleteGrant("u1", date);
     }
 
     private void givenOpen(LocalDate lockDate) {

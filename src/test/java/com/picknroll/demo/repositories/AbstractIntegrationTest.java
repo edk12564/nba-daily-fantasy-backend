@@ -28,5 +28,6 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.sql.init.mode", () -> "never");
         registry.add("discord.client.id", () -> "test-client-id");
         registry.add("discord.client.secret", () -> "test-secret");
+        registry.add("jwt.secret", () -> "test-secret-key-for-jwt-signing-minimum-32-characters");
     }
 }

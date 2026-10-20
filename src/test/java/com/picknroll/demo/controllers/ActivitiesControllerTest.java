@@ -84,6 +84,8 @@ class ActivitiesControllerTest {
     private DiscordPlayerGuildServices discordPlayerGuildServices;
     @MockBean
     private JwtService jwtService;
+    @MockBean
+    private GachaServices gachaServices;
 
     private static final LocalDate TEST_DATE = LocalDate.parse("2025-12-25");
     private static final String AUTHENTICATED_USER = "test-user-id";

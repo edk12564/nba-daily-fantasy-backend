@@ -23,4 +23,12 @@ public interface IsLockedRepository extends CrudRepository<IsLocked, UUID> {
     WHERE il.date = :date
     """)
     Optional<IsLocked> isLocked(LocalDate date);
+
+    @Query(value = """
+            SELECT il.date, il.lock_time FROM is_locked il
+            WHERE il.date < :date AND il.lock_time IS NOT NULL
+            ORDER BY il.date DESC
+            LIMIT 1
+            """)
+    Optional<IsLocked> findPreviousGameDay(LocalDate date);
 }

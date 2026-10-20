@@ -57,6 +57,16 @@ public interface NbaPlayerRepository extends CrudRepository<NbaPlayer, UUID> {
     """)
     List<NbaPlayerTeam> getNbaPlayersWithTeam(String date);
 
+    @Query(value = """
+            SELECT DISTINCT ON (np.nba_player_id) np.nba_player_id, np.dollar_value
+            FROM nba_players np
+            WHERE EXISTS (
+                SELECT 1 FROM gacha_skins gs WHERE gs.nba_player_id = np.nba_player_id
+            )
+            ORDER BY np.nba_player_id, np.date DESC
+            """)
+    List<NbaPlayer> findLatestDollarValuesForGachaPool();
+
 }
 
 

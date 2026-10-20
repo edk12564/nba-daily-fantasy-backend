@@ -25,6 +25,12 @@ public class DailyRosterPlayer {
     private Position position;
     private LocalDate date;
 
+    /** Owner's highest owned gacha rarity for this nba_player_id (null if none). */
+    private String equippedSkinRarity;
+    private String equippedArtUrl;
+    private String frameKey;
+    private Integer playerStar;
+
     // Spring Boot knows to add these to the SQL table
     public enum Position {
         PG, SG, SF, PF, C
