@@ -1,5 +1,6 @@
 package com.picknroll.demo.controllers;
 
+import com.picknroll.demo.models.gacha.GachaInventoryItem;
 import com.picknroll.demo.models.gacha.GachaPullResponse;
 import com.picknroll.demo.models.gacha.GachaRatesResponse;
 import com.picknroll.demo.models.gacha.GachaWalletResponse;
@@ -195,5 +196,57 @@ class GachaControllerTest {
         mockMvc.perform(get("/api/activity/gacha/wallet").header("Authorization", AUTH_HEADER))
                 .andExpect(status().isForbidden());
         verify(gachaServices, never()).getWallet(anyString());
+    }
+
+    @Test
+    void inventoryReturnsOwnedSkins() throws Exception {
+        given(gachaServices.getInventory(USER)).willReturn(List.of(
+                GachaInventoryItem.builder()
+                        .nbaPlayerId(1L)
+                        .rarity("EPIC")
+                        .displaySkin(true)
+                        .frameKey("frame_epic")
+                        .build()));
+
+        mockMvc.perform(get("/api/activity/gacha/inventory").header("Authorization", AUTH_HEADER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].rarity").value("EPIC"))
+                .andExpect(jsonPath("$[0].displaySkin").value(true));
+    }
+
+    @Test
+    void inventoryMutation_returnsForbidden_withoutJwtUser() throws Exception {
+        Claims claims = new DefaultClaims(Map.of("username", "no-id"));
+        given(jwtService.parseToken(TEST_TOKEN)).willReturn(claims);
+
+        mockMvc.perform(get("/api/activity/gacha/inventory").header("Authorization", AUTH_HEADER))
+                .andExpect(status().isForbidden());
+        verify(gachaServices, never()).getInventory(anyString());
+    }
+
+    @Test
+    void pullMutation_zeroCountTreatedAsInvalidCount() throws Exception {
+        given(gachaServices.pull(eq(USER), eq(0)))
+                .willReturn(GachaServices.PullOutcome.error(GachaServices.INVALID_COUNT));
+
+        mockMvc.perform(post("/api/activity/gacha/pull")
+                        .header("Authorization", AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("count must be 1 or 10")));
+    }
+
+    @Test
+    void pullMutation_unknownErrorMapsToGenericBadRequest() throws Exception {
+        given(gachaServices.pull(eq(USER), eq(1)))
+                .willReturn(GachaServices.PullOutcome.error("SOMETHING_ELSE"));
+
+        mockMvc.perform(post("/api/activity/gacha/pull")
+                        .header("Authorization", AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"count\":1}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Pull failed")));
     }
 }

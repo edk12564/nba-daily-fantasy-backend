@@ -53,4 +53,16 @@ class GachaEconomyTest {
         double sum = rates.values().stream().mapToDouble(Double::doubleValue).sum();
         assertEquals(1.0, sum, 1e-9);
     }
+
+    @Test
+    void podiumAmountsByRank() {
+        assertEquals(80, GachaEconomy.dailyPodiumAmount(1));
+        assertEquals(50, GachaEconomy.dailyPodiumAmount(2));
+        assertEquals(30, GachaEconomy.dailyPodiumAmount(3));
+        assertEquals(0, GachaEconomy.dailyPodiumAmount(4));
+        assertEquals(150, GachaEconomy.weeklyPodiumAmount(1));
+        assertEquals(100, GachaEconomy.weeklyPodiumAmount(2));
+        assertEquals(60, GachaEconomy.weeklyPodiumAmount(3));
+        assertEquals(0, GachaEconomy.weeklyPodiumAmount(0));
+    }
 }
