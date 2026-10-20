@@ -23,11 +23,11 @@ public interface GachaUserWalletRepository extends CrudRepository<GachaUserWalle
     @Modifying
     @Transactional
     @Query("""
-            INSERT INTO gacha_user_wallet (discord_player_id)
-            VALUES (:discordPlayerId)
+            INSERT INTO gacha_user_wallet (discord_player_id, rolls)
+            VALUES (:discordPlayerId, :starterRolls)
             ON CONFLICT (discord_player_id) DO NOTHING
             """)
-    void ensureWallet(String discordPlayerId);
+    void ensureWallet(String discordPlayerId, int starterRolls);
 
     @Modifying
     @Transactional

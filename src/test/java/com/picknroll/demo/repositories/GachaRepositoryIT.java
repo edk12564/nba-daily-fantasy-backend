@@ -1,5 +1,6 @@
 package com.picknroll.demo.repositories;
 
+import com.picknroll.demo.gacha.GachaEconomy;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.services.GachaServices;
 import org.junit.jupiter.api.Test;
@@ -32,12 +33,11 @@ class GachaRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void pullDebitsRollsAndOwnsOrDusts() {
-        walletRepository.ensureWallet("gacha-it-user");
-        walletRepository.addRolls("gacha-it-user", 500);
+        walletRepository.ensureWallet("gacha-it-user", GachaEconomy.STARTER_ROLLS);
 
         GachaServices.PullOutcome first = gachaServices.pull("gacha-it-user", 1);
         assertTrue(first.success(), first.error());
-        assertEquals(400, first.response().getRolls());
+        assertEquals(GachaEconomy.STARTER_ROLLS - GachaEconomy.PULL_COST, first.response().getRolls());
         assertEquals(1, first.response().getResults().size());
 
         // Force duplicate path: pull until we get a dupe or burn remaining budget with same pity path
@@ -80,9 +80,29 @@ class GachaRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void insufficientRollsFailsClosed() {
-        walletRepository.ensureWallet("broke-user");
+        walletRepository.ensureWallet("broke-user", GachaEconomy.STARTER_ROLLS);
+        jdbcTemplate.update(
+                "UPDATE gacha_user_wallet SET rolls = 0 WHERE discord_player_id = ?",
+                "broke-user");
         GachaServices.PullOutcome outcome = gachaServices.pull("broke-user", 1);
         assertFalse(outcome.success());
         assertEquals(GachaServices.INSUFFICIENT_ROLLS, outcome.error());
+    }
+
+    @Test
+    void newWalletStartsWithStarterRolls() {
+        walletRepository.ensureWallet("starter-user", GachaEconomy.STARTER_ROLLS);
+        Integer rolls = jdbcTemplate.queryForObject(
+                "SELECT rolls FROM gacha_user_wallet WHERE discord_player_id = ?",
+                Integer.class,
+                "starter-user");
+        assertEquals(GachaEconomy.STARTER_ROLLS, rolls);
+        // Idempotent — second ensure must not double-credit
+        walletRepository.ensureWallet("starter-user", GachaEconomy.STARTER_ROLLS);
+        Integer again = jdbcTemplate.queryForObject(
+                "SELECT rolls FROM gacha_user_wallet WHERE discord_player_id = ?",
+                Integer.class,
+                "starter-user");
+        assertEquals(GachaEconomy.STARTER_ROLLS, again);
     }
 }

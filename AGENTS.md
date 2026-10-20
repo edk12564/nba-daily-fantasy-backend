@@ -7,8 +7,10 @@ Read the workspace-level `../AGENTS.md` first. This file applies specifically to
 This is the Java 21/Spring Boot API used by the Discord Activity:
 
 - `src/main/java/com/picknroll/demo/controllers/ActivitiesController.java`: Activity REST endpoints and Discord OAuth exchange.
+- `controllers/GachaController.java` + `services/GachaServices.java` / `GachaPoolService.java`: Rolls wallet, inventory, rates, salary-weighted pulls, pity, grants.
+- `gacha/GachaEconomy.java`: pull cost, rates, dust-on-dupe, pity, podium amounts, ★ salary bands.
 - `services/`: roster, player, guild/channel, lock, and JWT business logic.
-- `repositories/`: Spring Data JDBC queries against PostgreSQL.
+- `repositories/`: Spring Data JDBC queries against PostgreSQL (including `gacha_*` and roster `equipped*` joins).
 - `httpclient/NbaAPIClient.java`: NBA live box-score proxy.
 - `interceptors/JwtInterceptor.java`: protects Activity routes.
 - `terraform/`: AWS EC2, Route 53, SSM access, TLS, and service provisioning.
@@ -39,8 +41,14 @@ Active routes are under `/api/activity`:
 - `GET /rosters/{guildId}`
 - `GET /lock-time`
 - `POST /token`
+- `GET /gacha/wallet` — rolls, dust, pity, streak (lazy-claims pending guild podium grants)
+- `GET /gacha/inventory` — owned skins; `displaySkin` marks max rarity per player; includes `playerName`
+- `GET /gacha/rates` — published rates / pity / dust / pull cost
+- `POST /gacha/pull` — body `{ "count": 1 | 10 }`; results include `playerName`, rarity, art, frame, outcome, dustGranted
 
 All routes except `/token` require a backend bearer JWT. `/token` exchanges a Discord authorization code, fetches `/users/@me`, and returns the backend JWT plus Discord access token.
+
+Gacha pull / wallet / inventory resolve the actor from JWT claim `id` (same idea as roster writes). There is no `/gacha/equip`. Roster and leaderboard `DailyRosterPlayer` payloads may include `equippedSkinRarity`, `equippedArtUrl`, `frameKey`, and `playerStar` (owner’s max owned rarity for that `nba_player_id`). First wallet insert credits `GachaEconomy.STARTER_ROLLS` (1000 = 10 pulls); `ON CONFLICT DO NOTHING` so existing wallets are not re-granted. Completing a 5/5 roster grants Rolls once per Pacific day; streak and guild podium grants are idempotent via `gacha_token_grants`.
 
 ## Product and date rules
 
@@ -53,6 +61,8 @@ All routes except `/token` require a backend bearer JWT. `/token` exchanges a Di
 - Daily leaderboards are guild and global. The guild weekly leaderboard is Monday through the requested Pacific date, inclusive: `previousOrSame(MONDAY)` and `date >= start AND date <= end`. The Python bot's completed-week query is a separate inclusive range and was left unchanged.
 - Prior-season rows are historical data. Never truncate them for the 2026-27 rollover.
 - Test dates such as `2025-12-25` are fixtures, not production season settings.
+- Gacha is cosmetics-only. ★ is a salary display badge, not drop weight. Current bands (tunable for FanDuel slate ~11–34): ≤14→1★, ≤19→2, ≤24→3, ≤28→4, ≥29→5. Keep `GachaEconomy.playerStar` and the three `CASE` expressions in `DailyRosterRepository` synchronized.
+- Pull player selection is salary-weighted with floor weight 8; rarity is independent of ★.
 
 ## Authentication and authorization requirements
 
@@ -64,11 +74,12 @@ All routes except `/token` require a backend bearer JWT. `/token` exchanges a Di
 
 ## Database expectations
 
-Primary tables are `teams`, `nba_players`, `daily_roster`, `is_locked`, `discord_player_guilds`, and `discord_channels`.
+Primary tables are `teams`, `nba_players`, `daily_roster`, `is_locked`, `discord_player_guilds`, and `discord_channels`, plus gacha: `gacha_skins`, `gacha_user_wallet`, `gacha_user_skins`, `gacha_token_grants`.
 
 - `daily_roster` key: `(discord_player_id, date, position)`.
 - The player loader requires a unique key on `(nba_player_id, date)`.
 - The score loader updates `fantasy_score`, `pts`, `reb`, `ast`, `blk`, `tov`, and `stl`.
+- Gacha catalog seed: `scripts/src/seed_gacha_skins.py` (also invoked from `load-todays-players.py`); see `DATABASE.md`.
 - Production already supports the loader contract, and the checked-in test schema mirrors its player constraint and score/stat columns.
 - Spring uses `ddl-auto=validate`; there is no checked-in production schema or Flyway/Liquibase migration history.
 

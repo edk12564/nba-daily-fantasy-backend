@@ -410,7 +410,7 @@ public class GachaServices {
     }
 
     private void ensureWallet(String discordPlayerId) {
-        walletRepository.ensureWallet(discordPlayerId);
+        walletRepository.ensureWallet(discordPlayerId, GachaEconomy.STARTER_ROLLS);
     }
 
     private GachaUserWallet requireWallet(String discordPlayerId) {

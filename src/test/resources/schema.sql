@@ -89,7 +89,7 @@ CREATE TABLE gacha_skins (
 
 CREATE TABLE gacha_user_wallet (
     discord_player_id TEXT PRIMARY KEY,
-    rolls             INT NOT NULL DEFAULT 0 CHECK (rolls >= 0),
+    rolls             INT NOT NULL DEFAULT 1000 CHECK (rolls >= 0),
     dust              INT NOT NULL DEFAULT 0 CHECK (dust >= 0),
     pity_counter      INT NOT NULL DEFAULT 0 CHECK (pity_counter >= 0),
     streak_days       INT NOT NULL DEFAULT 0,

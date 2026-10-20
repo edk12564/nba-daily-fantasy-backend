@@ -11,6 +11,9 @@ public final class GachaEconomy {
     public static final int HARD_PITY_AT = 80;
     public static final double SOFT_PITY_LEGENDARY_BONUS = 0.005;
 
+    /** Rolls granted once when a wallet is first created (10 pulls at PULL_COST). */
+    public static final int STARTER_ROLLS = 1000;
+
     public static final int ROSTER_COMPLETE_ROLLS = 40;
     public static final int STREAK_3_ROLLS = 20;
     public static final int STREAK_7_ROLLS = 50;

@@ -302,7 +302,7 @@ class GachaServicesTest {
         GachaInventoryItem epicItem = items.stream().filter(i -> "EPIC".equals(i.getRarity())).findFirst().orElseThrow();
         assertFalse(commonItem.isDisplaySkin());
         assertTrue(epicItem.isDisplaySkin());
-        assertEquals(4, epicItem.getPlayerStar()); // dollar_value 30 → ★4
+        assertEquals(5, epicItem.getPlayerStar()); // dollar_value 30 → ★5 (≥29)
     }
 
     @Test
@@ -330,7 +330,7 @@ class GachaServicesTest {
         assertEquals(140, wallet.getRolls());
         assertEquals(9, wallet.getDust());
         assertEquals(2, wallet.getPityCounter());
-        verify(walletRepository).ensureWallet("u1");
+        verify(walletRepository).ensureWallet("u1", GachaEconomy.STARTER_ROLLS);
     }
 
     @Test
