@@ -11,6 +11,7 @@ public class GachaPullResult {
     private String outcome; // NEW | DUPLICATE
     private String rarity;
     private Long nbaPlayerId;
+    private String playerName;
     private UUID skinId;
     private String artUrl;
     private String frameKey;

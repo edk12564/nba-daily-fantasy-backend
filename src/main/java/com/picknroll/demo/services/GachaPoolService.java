@@ -28,7 +28,11 @@ public class GachaPoolService {
                 continue;
             }
             int dollar = row.getDollar_value() == null ? 0 : row.getDollar_value();
-            pool.add(new WeightedPlayer(row.getNba_player_id(), dollar, GachaEconomy.weight(dollar)));
+            pool.add(new WeightedPlayer(
+                    row.getNba_player_id(),
+                    dollar,
+                    GachaEconomy.weight(dollar),
+                    row.getName()));
         }
         return pool;
     }

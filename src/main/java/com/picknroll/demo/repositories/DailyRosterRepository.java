@@ -68,10 +68,10 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                         equipped.art_url AS equipped_art_url,
                         equipped.frame_key AS frame_key,
                         CASE
-                            WHEN np.dollar_value IS NULL OR np.dollar_value <= 12 THEN 1
-                            WHEN np.dollar_value <= 18 THEN 2
-                            WHEN np.dollar_value <= 25 THEN 3
-                            WHEN np.dollar_value <= 35 THEN 4
+                            WHEN np.dollar_value IS NULL OR np.dollar_value <= 14 THEN 1
+                            WHEN np.dollar_value <= 19 THEN 2
+                            WHEN np.dollar_value <= 24 THEN 3
+                            WHEN np.dollar_value <= 28 THEN 4
                             ELSE 5
                         END AS player_star
                     FROM daily_roster dr
@@ -138,10 +138,10 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                 equipped.art_url AS equipped_art_url,
                 equipped.frame_key AS frame_key,
                 CASE
-                    WHEN np.dollar_value IS NULL OR np.dollar_value <= 12 THEN 1
-                    WHEN np.dollar_value <= 18 THEN 2
-                    WHEN np.dollar_value <= 25 THEN 3
-                    WHEN np.dollar_value <= 35 THEN 4
+                    WHEN np.dollar_value IS NULL OR np.dollar_value <= 14 THEN 1
+                    WHEN np.dollar_value <= 19 THEN 2
+                    WHEN np.dollar_value <= 24 THEN 3
+                    WHEN np.dollar_value <= 28 THEN 4
                     ELSE 5
                 END AS player_star
             FROM daily_roster dr
@@ -209,10 +209,10 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                         equipped.art_url AS equipped_art_url,
                         equipped.frame_key AS frame_key,
                         CASE
-                            WHEN np.dollar_value IS NULL OR np.dollar_value <= 12 THEN 1
-                            WHEN np.dollar_value <= 18 THEN 2
-                            WHEN np.dollar_value <= 25 THEN 3
-                            WHEN np.dollar_value <= 35 THEN 4
+                            WHEN np.dollar_value IS NULL OR np.dollar_value <= 14 THEN 1
+                            WHEN np.dollar_value <= 19 THEN 2
+                            WHEN np.dollar_value <= 24 THEN 3
+                            WHEN np.dollar_value <= 28 THEN 4
                             ELSE 5
                         END AS player_star
                     FROM daily_roster dr

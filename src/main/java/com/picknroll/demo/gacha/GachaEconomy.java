@@ -92,18 +92,21 @@ public final class GachaEconomy {
         return rates;
     }
 
+    /**
+     * Salary → ★ for current FanDuel-ish slate (~11–34). Top salaries (≥29) are 5★.
+     */
     public static int playerStar(Integer dollarValue) {
         int value = dollarValue == null ? 0 : dollarValue;
-        if (value <= 12) {
+        if (value <= 14) {
             return 1;
         }
-        if (value <= 18) {
+        if (value <= 19) {
             return 2;
         }
-        if (value <= 25) {
+        if (value <= 24) {
             return 3;
         }
-        if (value <= 35) {
+        if (value <= 28) {
             return 4;
         }
         return 5;

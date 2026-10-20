@@ -39,11 +39,13 @@ class GachaEconomyTest {
 
     @Test
     void playerStarBands() {
-        assertEquals(1, GachaEconomy.playerStar(12));
-        assertEquals(2, GachaEconomy.playerStar(13));
-        assertEquals(3, GachaEconomy.playerStar(25));
-        assertEquals(4, GachaEconomy.playerStar(26));
-        assertEquals(5, GachaEconomy.playerStar(36));
+        assertEquals(1, GachaEconomy.playerStar(14));
+        assertEquals(2, GachaEconomy.playerStar(15));
+        assertEquals(3, GachaEconomy.playerStar(24));
+        assertEquals(4, GachaEconomy.playerStar(25));
+        assertEquals(4, GachaEconomy.playerStar(28));
+        assertEquals(5, GachaEconomy.playerStar(29));
+        assertEquals(5, GachaEconomy.playerStar(34));
     }
 
     @Test

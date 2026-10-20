@@ -10,6 +10,7 @@ import java.util.UUID;
 public class GachaInventoryItem {
     private UUID skinId;
     private Long nbaPlayerId;
+    private String playerName;
     private String rarity;
     private String artUrl;
     private String frameKey;

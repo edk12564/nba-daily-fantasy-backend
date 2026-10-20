@@ -153,8 +153,8 @@ class GachaServicesTest {
     @Test
     void weightedDrawPrefersHeavierPlayersOverManyTrials() {
         List<WeightedPlayer> pool = List.of(
-                new WeightedPlayer(1L, 10, 10),
-                new WeightedPlayer(2L, 90, 90));
+                new WeightedPlayer(1L, 10, 10, "A"),
+                new WeightedPlayer(2L, 90, 90, "B"));
         int heavy = 0;
         for (int i = 0; i < 2000; i++) {
             if (services.weightedDraw(pool).nbaPlayerId() == 2L) {
@@ -247,7 +247,7 @@ class GachaServicesTest {
         UUID rareId = UUID.randomUUID();
         given(jdbcTemplate.execute(anyString(), any(PreparedStatementCallback.class))).willReturn(null);
         given(walletRepository.tryDebitRolls("u1", 1000)).willReturn(1);
-        given(gachaPoolService.loadWeightedPool()).willReturn(List.of(new WeightedPlayer(1L, 30, 30)));
+        given(gachaPoolService.loadWeightedPool()).willReturn(List.of(new WeightedPlayer(1L, 30, 30, "Test Player")));
         given(walletRepository.findWallet("u1")).willReturn(Optional.of(GachaUserWallet.builder()
                 .discordPlayerId("u1")
                 .rolls(0)
@@ -294,7 +294,7 @@ class GachaServicesTest {
                         .artUrl("a").frameKey("frame_common").build(),
                 GachaSkin.builder().skinId(epic).nbaPlayerId(1L).rarity("EPIC")
                         .artUrl("a").frameKey("frame_epic").build()));
-        given(gachaPoolService.loadWeightedPool()).willReturn(List.of(new WeightedPlayer(1L, 30, 30)));
+        given(gachaPoolService.loadWeightedPool()).willReturn(List.of(new WeightedPlayer(1L, 30, 30, "Test Player")));
 
         List<GachaInventoryItem> items = services.getInventory("u1");
         assertEquals(2, items.size());
@@ -457,7 +457,7 @@ class GachaServicesTest {
     private void stubOpenPull(UUID skinId, boolean alreadyOwned) {
         given(jdbcTemplate.execute(anyString(), any(PreparedStatementCallback.class))).willReturn(null);
         given(walletRepository.tryDebitRolls("u1", 100)).willReturn(1);
-        given(gachaPoolService.loadWeightedPool()).willReturn(List.of(new WeightedPlayer(1L, 30, 30)));
+        given(gachaPoolService.loadWeightedPool()).willReturn(List.of(new WeightedPlayer(1L, 30, 30, "Test Player")));
         given(walletRepository.findWallet("u1")).willReturn(Optional.of(GachaUserWallet.builder()
                 .discordPlayerId("u1")
                 .rolls(900)

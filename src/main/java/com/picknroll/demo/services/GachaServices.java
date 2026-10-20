@@ -78,19 +78,21 @@ public class GachaServices {
             GachaRarity rarity = GachaRarity.fromString(skin.getRarity());
             maxByPlayer.merge(skin.getNbaPlayerId(), rarity, (a, b) -> a.rank() >= b.rank() ? a : b);
         }
-        Map<Long, Integer> latestSalary = latestSalaries();
+        Map<Long, WeightedPlayer> latestById = latestPlayersById();
         List<GachaInventoryItem> items = new ArrayList<>();
         for (GachaSkin skin : owned) {
             GachaRarity rarity = GachaRarity.fromString(skin.getRarity());
             boolean display = rarity == maxByPlayer.get(skin.getNbaPlayerId());
+            WeightedPlayer latest = latestById.get(skin.getNbaPlayerId());
             items.add(GachaInventoryItem.builder()
                     .skinId(skin.getSkinId())
                     .nbaPlayerId(skin.getNbaPlayerId())
+                    .playerName(latest != null ? latest.playerName() : null)
                     .rarity(skin.getRarity())
                     .artUrl(skin.getArtUrl())
                     .frameKey(skin.getFrameKey())
                     .displaySkin(display)
-                    .playerStar(GachaEconomy.playerStar(latestSalary.get(skin.getNbaPlayerId())))
+                    .playerStar(GachaEconomy.playerStar(latest != null ? latest.dollarValue() : null))
                     .build());
         }
         return items;
@@ -342,6 +344,7 @@ public class GachaServices {
                     .outcome("DUPLICATE")
                     .rarity(rarity.name())
                     .nbaPlayerId(skin.getNbaPlayerId())
+                    .playerName(player.playerName())
                     .skinId(skin.getSkinId())
                     .artUrl(skin.getArtUrl())
                     .frameKey(skin.getFrameKey())
@@ -355,6 +358,7 @@ public class GachaServices {
                 .outcome("NEW")
                 .rarity(rarity.name())
                 .nbaPlayerId(skin.getNbaPlayerId())
+                .playerName(player.playerName())
                 .skinId(skin.getSkinId())
                 .artUrl(skin.getArtUrl())
                 .frameKey(skin.getFrameKey())
@@ -400,9 +404,9 @@ public class GachaServices {
         return pool.get(pool.size() - 1);
     }
 
-    private Map<Long, Integer> latestSalaries() {
+    private Map<Long, WeightedPlayer> latestPlayersById() {
         return gachaPoolService.loadWeightedPool().stream()
-                .collect(Collectors.toMap(WeightedPlayer::nbaPlayerId, WeightedPlayer::dollarValue, (a, b) -> a));
+                .collect(Collectors.toMap(WeightedPlayer::nbaPlayerId, p -> p, (a, b) -> a));
     }
 
     private void ensureWallet(String discordPlayerId) {

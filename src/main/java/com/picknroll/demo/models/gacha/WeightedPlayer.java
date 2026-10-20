@@ -1,4 +1,4 @@
 package com.picknroll.demo.models.gacha;
 
-public record WeightedPlayer(long nbaPlayerId, int dollarValue, int weight) {
+public record WeightedPlayer(long nbaPlayerId, int dollarValue, int weight, String playerName) {
 }
