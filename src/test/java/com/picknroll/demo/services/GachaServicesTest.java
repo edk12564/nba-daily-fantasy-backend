@@ -65,6 +65,14 @@ class GachaServicesTest {
                 isLockedServices,
                 gachaPoolService,
                 jdbcTemplate);
+        // Default: starter already claimed (no double-credit in grant/pull tests)
+        lenient()
+                .when(grantRepository.tryInsertGrant(
+                        anyString(),
+                        eq(GachaEconomy.REASON_STARTER),
+                        eq(GachaEconomy.PERIOD_STARTER),
+                        eq(GachaEconomy.STARTER_ROLLS)))
+                .thenReturn(0);
     }
 
     @Test
@@ -83,12 +91,19 @@ class GachaServicesTest {
         given(jdbcTemplate.execute(anyString(), any(PreparedStatementCallback.class))).willReturn(null);
         given(walletRepository.tryDebitRolls("u1", 100)).willReturn(0);
 
+        given(grantRepository.tryInsertGrant(
+                        "u1",
+                        GachaEconomy.REASON_STARTER,
+                        GachaEconomy.PERIOD_STARTER,
+                        GachaEconomy.STARTER_ROLLS))
+                .willReturn(0);
+
         GachaServices.PullOutcome outcome = services.pull("u1", 1);
         assertFalse(outcome.success());
         assertEquals(GachaServices.INSUFFICIENT_ROLLS, outcome.error());
         verify(userSkinRepository, never()).insertOwnership(any(), any());
         verify(walletRepository, never()).addDust(any(), anyInt());
-        verify(grantRepository, never()).tryInsertGrant(any(), any(), any(), anyInt());
+        verify(walletRepository, never()).addRolls(any(), anyInt());
     }
 
     @Test
@@ -166,6 +181,12 @@ class GachaServicesTest {
 
     @Test
     void rosterCompleteGrantIsIdempotent() {
+        given(grantRepository.tryInsertGrant(
+                        "u1",
+                        GachaEconomy.REASON_STARTER,
+                        GachaEconomy.PERIOD_STARTER,
+                        GachaEconomy.STARTER_ROLLS))
+                .willReturn(0);
         given(grantRepository.tryInsertGrant("u1", GachaEconomy.REASON_ROSTER_COMPLETE, "2025-12-25", 40))
                 .willReturn(0);
         assertFalse(services.tryRosterCompleteGrant("u1", LocalDate.parse("2025-12-25")));
@@ -326,11 +347,24 @@ class GachaServicesTest {
                 .build()));
         given(discordPlayerGuildRepository.findGuildIdsByDiscordPlayerId("u1")).willReturn(List.of());
 
+        given(grantRepository.tryInsertGrant(
+                        "u1",
+                        GachaEconomy.REASON_STARTER,
+                        GachaEconomy.PERIOD_STARTER,
+                        GachaEconomy.STARTER_ROLLS))
+                .willReturn(0);
+
         GachaWalletResponse wallet = services.getWallet("u1");
         assertEquals(140, wallet.getRolls());
         assertEquals(9, wallet.getDust());
         assertEquals(2, wallet.getPityCounter());
-        verify(walletRepository).ensureWallet("u1", GachaEconomy.STARTER_ROLLS);
+        verify(walletRepository).ensureWallet("u1");
+        verify(grantRepository).tryInsertGrant(
+                "u1",
+                GachaEconomy.REASON_STARTER,
+                GachaEconomy.PERIOD_STARTER,
+                GachaEconomy.STARTER_ROLLS);
+        verify(walletRepository, never()).addRolls("u1", GachaEconomy.STARTER_ROLLS);
     }
 
     @Test
@@ -436,6 +470,13 @@ class GachaServicesTest {
 
     private void assertStreakBonus(int priorStreakDays, int expectedStreak, String reason, int amount) {
         reset(grantRepository, walletRepository, isLockedRepository);
+        lenient()
+                .when(grantRepository.tryInsertGrant(
+                        anyString(),
+                        eq(GachaEconomy.REASON_STARTER),
+                        eq(GachaEconomy.PERIOD_STARTER),
+                        eq(GachaEconomy.STARTER_ROLLS)))
+                .thenReturn(0);
         LocalDate day = LocalDate.parse("2025-12-25");
         LocalDate prev = LocalDate.parse("2025-12-24");
         given(grantRepository.tryInsertGrant("u1", GachaEconomy.REASON_ROSTER_COMPLETE, day.toString(), 40))

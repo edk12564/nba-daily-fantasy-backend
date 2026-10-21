@@ -20,14 +20,19 @@ public interface GachaUserWalletRepository extends CrudRepository<GachaUserWalle
             """)
     Optional<GachaUserWallet> findWallet(String discordPlayerId);
 
+    /**
+     * Creates an empty wallet row if missing. Starter Rolls are granted separately via
+     * {@code gacha_token_grants} ({@code STARTER}/{@code once}) so legacy zero-balance
+     * wallets still get credited once.
+     */
     @Modifying
     @Transactional
     @Query("""
             INSERT INTO gacha_user_wallet (discord_player_id, rolls)
-            VALUES (:discordPlayerId, :starterRolls)
+            VALUES (:discordPlayerId, 0)
             ON CONFLICT (discord_player_id) DO NOTHING
             """)
-    void ensureWallet(String discordPlayerId, int starterRolls);
+    void ensureWallet(String discordPlayerId);
 
     @Modifying
     @Transactional

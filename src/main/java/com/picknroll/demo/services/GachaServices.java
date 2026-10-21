@@ -410,7 +410,14 @@ public class GachaServices {
     }
 
     private void ensureWallet(String discordPlayerId) {
-        walletRepository.ensureWallet(discordPlayerId, GachaEconomy.STARTER_ROLLS);
+        walletRepository.ensureWallet(discordPlayerId);
+        // Idempotent: INSERT-on-conflict wallets created before STARTER_ROLLS stayed at 0;
+        // grant once so those users (and new shells) get ten pulls.
+        tryGrant(
+                discordPlayerId,
+                GachaEconomy.REASON_STARTER,
+                GachaEconomy.PERIOD_STARTER,
+                GachaEconomy.STARTER_ROLLS);
     }
 
     private GachaUserWallet requireWallet(String discordPlayerId) {

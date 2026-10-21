@@ -48,7 +48,7 @@ Active routes are under `/api/activity`:
 
 All routes except `/token` require a backend bearer JWT. `/token` exchanges a Discord authorization code, fetches `/users/@me`, and returns the backend JWT plus Discord access token.
 
-Gacha pull / wallet / inventory resolve the actor from JWT claim `id` (same idea as roster writes). There is no `/gacha/equip`. Roster and leaderboard `DailyRosterPlayer` payloads may include `equippedSkinRarity`, `equippedArtUrl`, `frameKey`, and `playerStar` (owner’s max owned rarity for that `nba_player_id`). First wallet insert credits `GachaEconomy.STARTER_ROLLS` (1000 = 10 pulls); `ON CONFLICT DO NOTHING` so existing wallets are not re-granted. Completing a 5/5 roster grants Rolls once per Pacific day; streak and guild podium grants are idempotent via `gacha_token_grants`.
+Gacha pull / wallet / inventory resolve the actor from JWT claim `id` (same idea as roster writes). There is no `/gacha/equip`. Roster and leaderboard `DailyRosterPlayer` payloads may include `equippedSkinRarity`, `equippedArtUrl`, `frameKey`, and `playerStar` (owner’s max owned rarity for that `nba_player_id`). Starter Rolls (`GachaEconomy.STARTER_ROLLS` = 1000 = 10 pulls) are credited once via `gacha_token_grants` reason `STARTER` / period `once` on `ensureWallet` (covers wallets created earlier at 0 rolls). Completing a 5/5 roster grants Rolls once per Pacific day; streak and guild podium grants are idempotent via `gacha_token_grants`.
 
 ## Product and date rules
 

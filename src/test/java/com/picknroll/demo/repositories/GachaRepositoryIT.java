@@ -33,7 +33,7 @@ class GachaRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void pullDebitsRollsAndOwnsOrDusts() {
-        walletRepository.ensureWallet("gacha-it-user", GachaEconomy.STARTER_ROLLS);
+        walletRepository.ensureWallet("gacha-it-user");
 
         GachaServices.PullOutcome first = gachaServices.pull("gacha-it-user", 1);
         assertTrue(first.success(), first.error());
@@ -80,7 +80,9 @@ class GachaRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void insufficientRollsFailsClosed() {
-        walletRepository.ensureWallet("broke-user", GachaEconomy.STARTER_ROLLS);
+        walletRepository.ensureWallet("broke-user");
+        // Claim starter via service, then drain so pull fails closed
+        gachaServices.getWallet("broke-user");
         jdbcTemplate.update(
                 "UPDATE gacha_user_wallet SET rolls = 0 WHERE discord_player_id = ?",
                 "broke-user");
@@ -91,18 +93,20 @@ class GachaRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     void newWalletStartsWithStarterRolls() {
-        walletRepository.ensureWallet("starter-user", GachaEconomy.STARTER_ROLLS);
-        Integer rolls = jdbcTemplate.queryForObject(
-                "SELECT rolls FROM gacha_user_wallet WHERE discord_player_id = ?",
-                Integer.class,
-                "starter-user");
-        assertEquals(GachaEconomy.STARTER_ROLLS, rolls);
-        // Idempotent — second ensure must not double-credit
-        walletRepository.ensureWallet("starter-user", GachaEconomy.STARTER_ROLLS);
-        Integer again = jdbcTemplate.queryForObject(
-                "SELECT rolls FROM gacha_user_wallet WHERE discord_player_id = ?",
-                Integer.class,
-                "starter-user");
-        assertEquals(GachaEconomy.STARTER_ROLLS, again);
+        var wallet = gachaServices.getWallet("starter-user");
+        assertEquals(GachaEconomy.STARTER_ROLLS, wallet.getRolls());
+        // Idempotent — second fetch must not double-credit
+        var again = gachaServices.getWallet("starter-user");
+        assertEquals(GachaEconomy.STARTER_ROLLS, again.getRolls());
+    }
+
+    @Test
+    void legacyZeroWalletGetsStarterOnNextFetch() {
+        jdbcTemplate.update(
+                "INSERT INTO gacha_user_wallet (discord_player_id, rolls) VALUES (?, 0)",
+                "legacy-zero");
+        var wallet = gachaServices.getWallet("legacy-zero");
+        assertEquals(GachaEconomy.STARTER_ROLLS, wallet.getRolls());
+        assertEquals(GachaEconomy.STARTER_ROLLS, gachaServices.getWallet("legacy-zero").getRolls());
     }
 }

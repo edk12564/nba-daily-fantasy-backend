@@ -26,6 +26,9 @@ public final class GachaEconomy {
     public static final int GUILD_WEEKLY_2ND = 100;
     public static final int GUILD_WEEKLY_3RD = 60;
 
+    public static final String REASON_STARTER = "STARTER";
+    /** period_key for the one-time starter credit (unique with reason). */
+    public static final String PERIOD_STARTER = "once";
     public static final String REASON_ROSTER_COMPLETE = "ROSTER_COMPLETE";
     public static final String REASON_STREAK_3 = "STREAK_3";
     public static final String REASON_STREAK_7 = "STREAK_7";
