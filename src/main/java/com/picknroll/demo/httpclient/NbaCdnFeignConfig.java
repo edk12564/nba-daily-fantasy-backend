@@ -28,6 +28,9 @@ public class NbaCdnFeignConfig {
                     "sec-ch-ua",
                     "\"Brave\";v=\"153\", \"Not_A Brand\";v=\"8\", \"Chromium\";v=\"153\"");
             template.header("sec-ch-ua-mobile", "?0");
+            template.header("Sec-Fetch-Dest", "empty");
+            template.header("Sec-Fetch-Mode", "cors");
+            template.header("Sec-Fetch-Site", "cross-site");
         };
     }
 }

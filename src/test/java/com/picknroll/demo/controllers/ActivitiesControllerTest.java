@@ -6,6 +6,8 @@ import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.models.joinTables.NbaPlayerTeam;
 import com.picknroll.demo.services.*;
 import com.picknroll.demo.services.RosterWriteOutcome.Status;
+import feign.FeignException;
+import feign.Request;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,8 +27,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -122,6 +126,32 @@ class ActivitiesControllerTest {
                         .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
                 .andExpect(content().string("OK"));
+    }
+
+    @Test
+    void liveData_mapsCdnForbiddenToNotFound() throws Exception {
+        Request req = Request.create(
+                Request.HttpMethod.GET,
+                "https://cdn.nba.com/static/json/liveData/boxscore/boxscore_0022600003.json",
+                Collections.emptyMap(),
+                null,
+                StandardCharsets.UTF_8,
+                null);
+        given(nbaAPIClient.getGamesData("0022600003"))
+                .willThrow(FeignException.errorStatus(
+                        "NbaAPIClient#getGamesData(String)",
+                        feign.Response.builder()
+                                .status(403)
+                                .reason("Forbidden")
+                                .request(req)
+                                .headers(Collections.emptyMap())
+                                .body("<Error><Code>AccessDenied</Code></Error>", StandardCharsets.UTF_8)
+                                .build()));
+
+        mockMvc.perform(get("/api/activity/livedata/0022600003")
+                        .header("Authorization", AUTH_HEADER))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("Box score unavailable")));
     }
 
     @Test

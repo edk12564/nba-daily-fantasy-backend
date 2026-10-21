@@ -22,9 +22,11 @@ import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +45,7 @@ public class ActivitiesController {
     static final String NO_GAMES_BODY = "{\"error\":\"No games scheduled\"}";
     static final String LOCKED_BODY = "{\"error\": \"Its past the lock time\"}";
     static final String FORBIDDEN_BODY = "{\"error\":\"Forbidden\"}";
+    static final String BOX_UNAVAILABLE_BODY = "{\"error\":\"Box score unavailable\"}";
 
     @Autowired
     NbaPlayerServices nbaPlayerServices;
@@ -71,9 +74,22 @@ public class ActivitiesController {
         return nbaPlayerServices.getNbaPlayersWithTeam(date.orElse(Utils.getCaliforniaDate()));
     }
 
-    @GetMapping(value = "/livedata/{gameId}")
-    public String getLiveGameData(@PathVariable String gameId) {
-        return nbaAPIClient.getGamesData(gameId);
+    @GetMapping(value = "/livedata/{gameId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getLiveGameData(@PathVariable String gameId) {
+        try {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(nbaAPIClient.getGamesData(gameId));
+        } catch (FeignException e) {
+            // CDN often returns S3 AccessDenied (403) when the boxscore object is not
+            // published yet (pre-tip); treat like missing rather than bubbling a 500.
+            HttpStatus status = (e.status() == 404 || e.status() == 403)
+                    ? HttpStatus.NOT_FOUND
+                    : HttpStatus.BAD_GATEWAY;
+            return ResponseEntity.status(status)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BOX_UNAVAILABLE_BODY);
+        }
     }
 
     /** Date → game IDs from the NBA static schedule (fetched server-side with CDN headers). */
