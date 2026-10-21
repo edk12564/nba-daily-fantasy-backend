@@ -334,6 +334,10 @@ class GachaServicesTest {
         assertEquals(5, rates.getDustOnDuplicate().get("COMMON"));
         assertEquals(40, rates.getSoftPityStart());
         assertEquals(80, rates.getHardPityAt());
+        assertEquals(0, rates.getSalaryDiscountByRarity().get("COMMON"));
+        assertEquals(1, rates.getSalaryDiscountByRarity().get("RARE"));
+        assertEquals(2, rates.getSalaryDiscountByRarity().get("EPIC"));
+        assertEquals(3, rates.getSalaryDiscountByRarity().get("LEGENDARY"));
     }
 
     @Test

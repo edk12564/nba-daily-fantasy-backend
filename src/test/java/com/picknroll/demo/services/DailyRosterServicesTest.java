@@ -67,6 +67,28 @@ class DailyRosterServicesTest {
     }
 
     @Test
+    @DisplayName("roster responses include skin salary discount and billed cost")
+    void rosterEnrichesBilledSalaryFromEquippedRarity() {
+        DailyRosterPlayer legendary = DailyRosterPlayer.builder()
+                .discordPlayerId("u1")
+                .dollarValue(31)
+                .equippedSkinRarity("LEGENDARY")
+                .build();
+        DailyRosterPlayer plain = DailyRosterPlayer.builder()
+                .discordPlayerId("u1")
+                .dollarValue(20)
+                .build();
+        given(dailyRosterRepository.getTodaysRosterByDiscordId("u1", date))
+                .willReturn(List.of(legendary, plain));
+
+        List<DailyRosterPlayer> roster = services.getPlayerRoster("u1", date);
+        assertEquals(3, roster.get(0).getSalaryDiscount());
+        assertEquals(28, roster.get(0).getBilledDollarValue());
+        assertEquals(0, roster.get(1).getSalaryDiscount());
+        assertEquals(20, roster.get(1).getBilledDollarValue());
+    }
+
+    @Test
     @DisplayName("saveRosterChoice forwards to repository with string date")
     void testSaveRosterChoice() {
         UUID uid = UUID.randomUUID();

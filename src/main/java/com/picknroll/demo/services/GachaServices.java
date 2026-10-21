@@ -101,9 +101,11 @@ public class GachaServices {
     public GachaRatesResponse getRates() {
         Map<String, Double> rates = new LinkedHashMap<>();
         Map<String, Integer> dust = new LinkedHashMap<>();
+        Map<String, Integer> salaryDiscount = new LinkedHashMap<>();
         for (GachaRarity rarity : GachaRarity.values()) {
             rates.put(rarity.name(), GachaEconomy.baseRates().get(rarity));
             dust.put(rarity.name(), GachaEconomy.dustFor(rarity));
+            salaryDiscount.put(rarity.name(), GachaEconomy.salaryDiscount(rarity));
         }
         return GachaRatesResponse.builder()
                 .pullCost(GachaEconomy.PULL_COST)
@@ -113,6 +115,7 @@ public class GachaServices {
                 .softPityLegendaryBonusPerPull(GachaEconomy.SOFT_PITY_LEGENDARY_BONUS)
                 .hardPityAt(GachaEconomy.HARD_PITY_AT)
                 .weightFloor(GachaEconomy.WEIGHT_FLOOR)
+                .salaryDiscountByRarity(salaryDiscount)
                 .build();
     }
 

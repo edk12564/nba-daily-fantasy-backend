@@ -1,5 +1,6 @@
 package com.picknroll.demo.services;
 
+import com.picknroll.demo.gacha.GachaEconomy;
 import com.picknroll.demo.models.dtos.IsLocked;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.repositories.DailyRosterRepository;
@@ -44,10 +45,10 @@ public class DailyRosterServices {
 
     // Entity version
     public List<DailyRosterPlayer> getPlayerRoster(String discordId, LocalDate date) {
-        return dailyRosterRepository.getTodaysRosterByDiscordId(discordId, date);
+        return withBilledCosts(dailyRosterRepository.getTodaysRosterByDiscordId(discordId, date));
     }
 
-    // Roster Price Sum
+    // Roster Price Sum (skin-discounted billed costs)
     public Integer getTodaysRosterPriceWithPlayer(String discordId, String position, LocalDate date, UUID nbaPlayerUid) {
         return dailyRosterRepository.getTodaysRosterPriceWithPlayer(discordId, position,
                 date.toString(), nbaPlayerUid).stream().reduce(0, Integer::sum);
@@ -127,16 +128,25 @@ public class DailyRosterServices {
 
     /* Leaderboards */
     public List<DailyRosterPlayer> getGuildLeaderboard(String guildId, LocalDate date) {
-        return dailyRosterRepository.getTodaysLeaderboardByGuildId(guildId, date);
+        return withBilledCosts(dailyRosterRepository.getTodaysLeaderboardByGuildId(guildId, date));
     }
 
     public List<DailyRosterPlayer> getWeeklyGuildLeaderboard(String guildId, LocalDate date) {
         LocalDate weekStart = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        return dailyRosterRepository.getWeeksLeaderboardByGuildId(guildId, weekStart, date);
+        return withBilledCosts(dailyRosterRepository.getWeeksLeaderboardByGuildId(guildId, weekStart, date));
     }
 
     public List<DailyRosterPlayer> getGlobalLeaderboard(LocalDate date) {
-        return dailyRosterRepository.getTodaysGlobalLeaderboard(date);
+        return withBilledCosts(dailyRosterRepository.getTodaysGlobalLeaderboard(date));
+    }
+
+    static List<DailyRosterPlayer> withBilledCosts(List<DailyRosterPlayer> players) {
+        for (DailyRosterPlayer player : players) {
+            int discount = GachaEconomy.salaryDiscount(player.getEquippedSkinRarity());
+            player.setSalaryDiscount(discount);
+            player.setBilledDollarValue(GachaEconomy.billedSalary(player.getDollarValue(), discount));
+        }
+        return players;
     }
 }
 

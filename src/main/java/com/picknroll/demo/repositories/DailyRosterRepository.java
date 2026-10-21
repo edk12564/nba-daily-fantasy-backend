@@ -94,16 +94,58 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     List<DailyRosterPlayer> getTodaysRosterByDiscordId(String discordId, LocalDate date);
 
-    /* Get Price */
+    /* Get Price — billed salary (face − skin discount, floor 1). Owner = :discordId. */
     // TODO: What happens if the player is already on the roster?
     @Query(value = """
-            SELECT np.dollar_value FROM daily_roster dr
-            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
-                    WHERE dr.discord_player_id = :discordId AND dr.date = CAST(:date as DATE)
-                                          AND dr.position <> :position::daily_roster_position
+            SELECT GREATEST(1, np.dollar_value - COALESCE(disc.amount, 0))
+            FROM daily_roster dr
+            JOIN nba_players np ON np.nba_player_uid = dr.nba_player_uid
+            LEFT JOIN LATERAL (
+                SELECT CASE gs.rarity
+                    WHEN 'LEGENDARY' THEN 3
+                    WHEN 'EPIC' THEN 2
+                    WHEN 'RARE' THEN 1
+                    ELSE 0
+                END AS amount
+                FROM gacha_user_skins gus
+                JOIN gacha_skins gs ON gs.skin_id = gus.skin_id
+                WHERE gus.discord_player_id = :discordId
+                  AND gs.nba_player_id = np.nba_player_id
+                ORDER BY CASE gs.rarity
+                    WHEN 'LEGENDARY' THEN 4
+                    WHEN 'EPIC' THEN 3
+                    WHEN 'RARE' THEN 2
+                    ELSE 1
+                END DESC
+                LIMIT 1
+            ) disc ON true
+            WHERE dr.discord_player_id = :discordId
+              AND dr.date = CAST(:date AS DATE)
+              AND dr.position <> :position::daily_roster_position
             UNION ALL
-                SELECT np.dollar_value FROM nba_players np
-                WHERE np.nba_player_uid = :nbaPlayerUid and np.date = CAST(:date as VARCHAR)
+            SELECT GREATEST(1, np.dollar_value - COALESCE(disc.amount, 0))
+            FROM nba_players np
+            LEFT JOIN LATERAL (
+                SELECT CASE gs.rarity
+                    WHEN 'LEGENDARY' THEN 3
+                    WHEN 'EPIC' THEN 2
+                    WHEN 'RARE' THEN 1
+                    ELSE 0
+                END AS amount
+                FROM gacha_user_skins gus
+                JOIN gacha_skins gs ON gs.skin_id = gus.skin_id
+                WHERE gus.discord_player_id = :discordId
+                  AND gs.nba_player_id = np.nba_player_id
+                ORDER BY CASE gs.rarity
+                    WHEN 'LEGENDARY' THEN 4
+                    WHEN 'EPIC' THEN 3
+                    WHEN 'RARE' THEN 2
+                    ELSE 1
+                END DESC
+                LIMIT 1
+            ) disc ON true
+            WHERE np.nba_player_uid = :nbaPlayerUid
+              AND np.date = CAST(:date AS VARCHAR)
             """)
     List<Integer> getTodaysRosterPriceWithPlayer(String discordId, String position, String date, UUID nbaPlayerUid);
 

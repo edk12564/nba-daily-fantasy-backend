@@ -123,6 +123,46 @@ public final class GachaEconomy {
         return Math.max(value, WEIGHT_FLOOR);
     }
 
+    /** Roster salary discount from highest owned skin rarity (Common / none = 0). */
+    public static int salaryDiscount(GachaRarity rarity) {
+        if (rarity == null) {
+            return 0;
+        }
+        return switch (rarity) {
+            case RARE -> 1;
+            case EPIC -> 2;
+            case LEGENDARY -> 3;
+            case COMMON -> 0;
+        };
+    }
+
+    public static int salaryDiscount(String rarity) {
+        if (rarity == null || rarity.isBlank()) {
+            return 0;
+        }
+        try {
+            return salaryDiscount(GachaRarity.fromString(rarity.trim()));
+        } catch (IllegalArgumentException ignored) {
+            return 0;
+        }
+    }
+
+    /**
+     * Cap-billed salary: face value minus skin discount, floored at 1 when face &gt; 0.
+     */
+    public static int billedSalary(Integer faceDollarValue, int discount) {
+        int face = faceDollarValue == null ? 0 : faceDollarValue;
+        if (face <= 0) {
+            return 0;
+        }
+        int safeDiscount = Math.max(0, discount);
+        return Math.max(1, face - safeDiscount);
+    }
+
+    public static int billedSalary(Integer faceDollarValue, String rarity) {
+        return billedSalary(faceDollarValue, salaryDiscount(rarity));
+    }
+
     public static int dailyPodiumAmount(int rank) {
         return switch (rank) {
             case 1 -> GUILD_DAILY_1ST;

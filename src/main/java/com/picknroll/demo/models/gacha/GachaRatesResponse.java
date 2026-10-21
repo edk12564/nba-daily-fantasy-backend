@@ -15,4 +15,6 @@ public class GachaRatesResponse {
     private double softPityLegendaryBonusPerPull;
     private int hardPityAt;
     private int weightFloor;
+    /** Roster salary discount by rarity name (COMMON=0, RARE=1, EPIC=2, LEGENDARY=3). */
+    private Map<String, Integer> salaryDiscountByRarity;
 }

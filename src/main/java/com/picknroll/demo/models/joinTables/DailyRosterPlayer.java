@@ -30,6 +30,10 @@ public class DailyRosterPlayer {
     private String equippedArtUrl;
     private String frameKey;
     private Integer playerStar;
+    /** Rare/Epic/Legendary discount applied to face salary (0 if none). */
+    private Integer salaryDiscount;
+    /** Cap-billed cost after skin discount (max(1, dollarValue - salaryDiscount)). */
+    private Integer billedDollarValue;
 
     // Spring Boot knows to add these to the SQL table
     public enum Position {

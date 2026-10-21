@@ -67,4 +67,24 @@ class GachaEconomyTest {
         assertEquals(60, GachaEconomy.weeklyPodiumAmount(3));
         assertEquals(0, GachaEconomy.weeklyPodiumAmount(0));
     }
+
+    @Test
+    void salaryDiscountByRarity() {
+        assertEquals(0, GachaEconomy.salaryDiscount((GachaRarity) null));
+        assertEquals(0, GachaEconomy.salaryDiscount(GachaRarity.COMMON));
+        assertEquals(1, GachaEconomy.salaryDiscount(GachaRarity.RARE));
+        assertEquals(2, GachaEconomy.salaryDiscount(GachaRarity.EPIC));
+        assertEquals(3, GachaEconomy.salaryDiscount(GachaRarity.LEGENDARY));
+        assertEquals(3, GachaEconomy.salaryDiscount("LEGENDARY"));
+        assertEquals(0, GachaEconomy.salaryDiscount("nope"));
+    }
+
+    @Test
+    void billedSalaryFloorsAtOne() {
+        assertEquals(28, GachaEconomy.billedSalary(31, 3));
+        assertEquals(1, GachaEconomy.billedSalary(2, 3));
+        assertEquals(0, GachaEconomy.billedSalary(null, 3));
+        assertEquals(0, GachaEconomy.billedSalary(0, 1));
+        assertEquals(30, GachaEconomy.billedSalary(30, "COMMON"));
+    }
 }
