@@ -24,7 +24,7 @@ class GachaPoolServiceTest {
     GachaPoolService poolService;
 
     @Test
-    void loadWeightedPoolAppliesFloorAndSkipsNullIds() {
+    void loadWeightedPoolIsUniformAndSkipsNullIds() {
         NbaPlayer high = new NbaPlayer();
         high.setNba_player_id(10);
         high.setDollar_value(36);
@@ -45,8 +45,8 @@ class GachaPoolServiceTest {
 
         List<WeightedPlayer> pool = poolService.loadWeightedPool();
         assertEquals(3, pool.size());
-        assertEquals(36, pool.get(0).weight());
-        assertEquals(8, pool.get(1).weight());
-        assertEquals(8, pool.get(2).weight());
+        assertEquals(1, pool.get(0).weight());
+        assertEquals(1, pool.get(1).weight());
+        assertEquals(1, pool.get(2).weight());
     }
 }
