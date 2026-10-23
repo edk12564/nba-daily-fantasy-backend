@@ -62,7 +62,7 @@ Gacha pull / wallet / inventory resolve the actor from JWT claim `id` (same idea
 - Prior-season rows are historical data. Never truncate them for the 2026-27 rollover.
 - Test dates such as `2025-12-25` are fixtures, not production season settings.
 - Gacha: Rare/Epic/Legendary skins discount roster salary by 1/2/3 (`GachaEconomy.salaryDiscount`); cap SQL and roster enrichment use billed cost. ★ is a salary display badge, not drop weight. Current bands (tunable for FanDuel slate ~11–34): ≤14→1★, ≤19→2, ≤24→3, ≤28→4, ≥29→5. Keep `GachaEconomy.playerStar` and the three `CASE` expressions in `DailyRosterRepository` synchronized; keep discount CASE in `getTodaysRosterPriceWithPlayer` aligned with `salaryDiscount`.
-- Pull player selection is salary-weighted with floor weight 8; rarity is independent of ★.
+- Pull player selection is uniform across today's pool (weight 1 each); rarity is independent of ★.
 
 ## Authentication and authorization requirements
 

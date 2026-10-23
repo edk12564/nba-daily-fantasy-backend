@@ -6,7 +6,8 @@ import java.util.Map;
 public final class GachaEconomy {
 
     public static final int PULL_COST = 100;
-    public static final int WEIGHT_FLOOR = 8;
+    /** Uniform pull weight — every player in today's pool is equally likely. */
+    public static final int WEIGHT_FLOOR = 1;
     public static final int SOFT_PITY_START = 40;
     public static final int HARD_PITY_AT = 80;
     public static final double SOFT_PITY_LEGENDARY_BONUS = 0.005;
@@ -118,9 +119,9 @@ public final class GachaEconomy {
         return 5;
     }
 
+    /** Equal chance for every player; salary no longer biases pulls. */
     public static int weight(Integer dollarValue) {
-        int value = dollarValue == null ? 0 : dollarValue;
-        return Math.max(value, WEIGHT_FLOOR);
+        return WEIGHT_FLOOR;
     }
 
     /** Roster salary discount from highest owned skin rarity (Common / none = 0). */

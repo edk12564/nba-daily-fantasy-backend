@@ -31,10 +31,11 @@ class GachaEconomyTest {
     }
 
     @Test
-    void weightUsesFloor() {
-        assertEquals(8, GachaEconomy.weight(null));
-        assertEquals(8, GachaEconomy.weight(3));
-        assertEquals(36, GachaEconomy.weight(36));
+    void weightIsEqualForAllPlayers() {
+        assertEquals(1, GachaEconomy.weight(null));
+        assertEquals(1, GachaEconomy.weight(3));
+        assertEquals(1, GachaEconomy.weight(36));
+        assertEquals(GachaEconomy.WEIGHT_FLOOR, GachaEconomy.weight(99));
     }
 
     @Test
