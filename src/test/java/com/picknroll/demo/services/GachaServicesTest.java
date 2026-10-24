@@ -205,13 +205,14 @@ class GachaServicesTest {
                 .build()));
         given(isLockedRepository.findPreviousGameDay(day)).willReturn(Optional.of(
                 IsLocked.builder().date(LocalDate.parse("2025-12-24")).lockTime(OffsetDateTime.now()).build()));
-        given(grantRepository.tryInsertGrant("u1", GachaEconomy.REASON_STREAK_3, day.toString(), 20))
+        given(grantRepository.tryInsertGrant(
+                        "u1", GachaEconomy.REASON_STREAK_3, day.toString(), GachaEconomy.STREAK_3_ROLLS))
                 .willReturn(1);
 
         assertTrue(services.tryRosterCompleteGrant("u1", day));
         verify(walletRepository).addRolls("u1", 40);
         verify(walletRepository).updateStreak("u1", 3, day);
-        verify(walletRepository).addRolls("u1", 20);
+        verify(walletRepository).addRolls("u1", GachaEconomy.STREAK_3_ROLLS);
     }
 
     @Test

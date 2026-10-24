@@ -16,9 +16,9 @@ public final class GachaEconomy {
     public static final int STARTER_ROLLS = 1000;
 
     public static final int ROSTER_COMPLETE_ROLLS = 40;
-    public static final int STREAK_3_ROLLS = 20;
-    public static final int STREAK_7_ROLLS = 50;
-    public static final int STREAK_14_ROLLS = 100;
+    public static final int STREAK_3_ROLLS = 50;
+    public static final int STREAK_7_ROLLS = 80;
+    public static final int STREAK_14_ROLLS = 200;
 
     public static final int GUILD_DAILY_1ST = 80;
     public static final int GUILD_DAILY_2ND = 50;
