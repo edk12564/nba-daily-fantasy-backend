@@ -20,6 +20,10 @@ public final class GachaEconomy {
     public static final int STREAK_7_ROLLS = 80;
     public static final int STREAK_14_ROLLS = 200;
 
+    /**
+     * Guild podium amounts. Ranked on each guild board, but paid at most once per
+     * period using the player's best rank across guilds (no multi-guild stacking).
+     */
     public static final int GUILD_DAILY_1ST = 80;
     public static final int GUILD_DAILY_2ND = 50;
     public static final int GUILD_DAILY_3RD = 30;

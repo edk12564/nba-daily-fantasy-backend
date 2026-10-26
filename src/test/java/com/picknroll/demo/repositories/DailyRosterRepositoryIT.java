@@ -115,6 +115,28 @@ class DailyRosterRepositoryIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void bestDailyGuildPodiumRank_picksBestAcrossGuilds() {
+        String shared = "podium-user";
+        String guildA = "podium-guild-a";
+        String guildB = "podium-guild-b";
+        discordPlayerGuildRepository.insertGuildForPlayerId(shared, guildA);
+        discordPlayerGuildRepository.insertGuildForPlayerId(shared, guildB);
+        discordPlayerGuildRepository.insertGuildForPlayerId("podium-a1", guildA);
+        discordPlayerGuildRepository.insertGuildForPlayerId("podium-a2", guildA);
+        discordPlayerGuildRepository.insertGuildForPlayerId("podium-b2", guildB);
+
+        LocalDate date = LocalDate.parse("2026-01-05");
+        insertScoredRoster(shared, UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddd01"), 9501, date, 70);
+        insertScoredRoster("podium-a1", UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddd02"), 9502, date, 90);
+        insertScoredRoster("podium-a2", UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddd03"), 9503, date, 80);
+        insertScoredRoster("podium-b2", UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddd04"), 9504, date, 10);
+
+        // 3rd in guild A, 1st in guild B → best rank 1
+        assertEquals(1, dailyRosterRepository.bestDailyGuildPodiumRank(shared, date));
+        assertNull(dailyRosterRepository.bestDailyGuildPodiumRank("nobody", date));
+    }
+
+    @Test
     void weeklyLeaderboardIncludesMondayThroughRequestedDay() {
         String guildId = "guild-week-bounds";
         String user = "week-user";

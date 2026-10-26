@@ -221,6 +221,17 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
             """)
     List<DailyRosterPlayer> getWeeksLeaderboardByGuildId(String guildId, LocalDate startDay, LocalDate endDay);
 
+    @Query(value = """
+            SELECT dr.discord_player_id, dr.nickname, sum(np.fantasy_score) as fantasy_score
+            FROM daily_roster dr
+            JOIN nba_players np on np.nba_player_uid = dr.nba_player_uid
+            WHERE dr.date <= :endDay AND dr.date >= :startDay
+            GROUP BY dr.discord_player_id, dr.nickname
+            ORDER BY fantasy_score DESC
+            LIMIT 100
+            """)
+    List<DailyRosterPlayer> getWeeksGlobalLeaderboard(LocalDate startDay, LocalDate endDay);
+
     // TODO: group by discord player id
     @Query(value = """
             WITH roster_totals AS (
@@ -279,5 +290,101 @@ public interface DailyRosterRepository extends CrudRepository<DailyRoster, UUID>
                     ORDER BY rr.total_score DESC, np.fantasy_score DESC
                     """)
     List<DailyRosterPlayer> getTodaysLeaderboardByGuildId(String guildId, LocalDate date);
+
+    /**
+     * Best podium place (1–3) for this player across all guilds they belong to on {@code date}.
+     * Null when they are outside the top three everywhere, guild boards are unscored, or they
+     * have no guilds. Multi-guild membership cannot stack — only the best rank is returned.
+     */
+    @Query(value = """
+            WITH my_guilds AS (
+                SELECT guild_id
+                FROM discord_player_guilds
+                WHERE discord_player_id = :discordPlayerId
+            ),
+            guild_player_totals AS (
+                SELECT
+                    dpg.guild_id,
+                    dr.discord_player_id,
+                    SUM(COALESCE(np.fantasy_score, 0)) AS total_score,
+                    BOOL_OR(np.fantasy_score IS NOT NULL) AS any_score_loaded
+                FROM daily_roster dr
+                JOIN nba_players np ON np.nba_player_uid = dr.nba_player_uid
+                    AND np.date = CAST(dr.date AS VARCHAR)
+                JOIN discord_player_guilds dpg ON dpg.discord_player_id = dr.discord_player_id
+                JOIN my_guilds mg ON mg.guild_id = dpg.guild_id
+                WHERE dr.date = :date
+                GROUP BY dpg.guild_id, dr.discord_player_id
+            ),
+            eligible_guilds AS (
+                SELECT guild_id
+                FROM guild_player_totals
+                GROUP BY guild_id
+                HAVING BOOL_OR(any_score_loaded)
+                   AND MAX(total_score) > 0
+            ),
+            ranked AS (
+                SELECT
+                    gpt.discord_player_id,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY gpt.guild_id
+                        ORDER BY gpt.total_score DESC, gpt.discord_player_id
+                    ) AS place
+                FROM guild_player_totals gpt
+                JOIN eligible_guilds eg ON eg.guild_id = gpt.guild_id
+            )
+            SELECT MIN(place)::int
+            FROM ranked
+            WHERE discord_player_id = :discordPlayerId
+              AND place <= 3
+            """)
+    Integer bestDailyGuildPodiumRank(String discordPlayerId, LocalDate date);
+
+    /**
+     * Best weekly podium place (1–3) across the player's guilds for {@code [startDay, endDay]}.
+     * Same stacking / unscored rules as {@link #bestDailyGuildPodiumRank}.
+     */
+    @Query(value = """
+            WITH my_guilds AS (
+                SELECT guild_id
+                FROM discord_player_guilds
+                WHERE discord_player_id = :discordPlayerId
+            ),
+            guild_player_totals AS (
+                SELECT
+                    dpg.guild_id,
+                    dr.discord_player_id,
+                    SUM(COALESCE(np.fantasy_score, 0)) AS total_score,
+                    BOOL_OR(np.fantasy_score IS NOT NULL) AS any_score_loaded
+                FROM daily_roster dr
+                JOIN nba_players np ON np.nba_player_uid = dr.nba_player_uid
+                JOIN discord_player_guilds dpg ON dpg.discord_player_id = dr.discord_player_id
+                JOIN my_guilds mg ON mg.guild_id = dpg.guild_id
+                WHERE dr.date >= :startDay AND dr.date <= :endDay
+                GROUP BY dpg.guild_id, dr.discord_player_id
+            ),
+            eligible_guilds AS (
+                SELECT guild_id
+                FROM guild_player_totals
+                GROUP BY guild_id
+                HAVING BOOL_OR(any_score_loaded)
+                   AND MAX(total_score) > 0
+            ),
+            ranked AS (
+                SELECT
+                    gpt.discord_player_id,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY gpt.guild_id
+                        ORDER BY gpt.total_score DESC, gpt.discord_player_id
+                    ) AS place
+                FROM guild_player_totals gpt
+                JOIN eligible_guilds eg ON eg.guild_id = gpt.guild_id
+            )
+            SELECT MIN(place)::int
+            FROM ranked
+            WHERE discord_player_id = :discordPlayerId
+              AND place <= 3
+            """)
+    Integer bestWeeklyGuildPodiumRank(String discordPlayerId, LocalDate startDay, LocalDate endDay);
 
 }

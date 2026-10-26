@@ -6,7 +6,6 @@ import com.picknroll.demo.models.dtos.GachaSkin;
 import com.picknroll.demo.models.dtos.GachaUserWallet;
 import com.picknroll.demo.models.dtos.IsLocked;
 import com.picknroll.demo.models.gacha.*;
-import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.repositories.*;
 import com.picknroll.demo.utils.Utils;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,7 +32,6 @@ public class GachaServices {
     private final GachaSkinRepository skinRepository;
     private final GachaUserSkinRepository userSkinRepository;
     private final GachaTokenGrantRepository grantRepository;
-    private final DiscordPlayerGuildRepository discordPlayerGuildRepository;
     private final DailyRosterRepository dailyRosterRepository;
     private final IsLockedRepository isLockedRepository;
     private final IsLockedServices isLockedServices;
@@ -45,7 +43,6 @@ public class GachaServices {
             GachaSkinRepository skinRepository,
             GachaUserSkinRepository userSkinRepository,
             GachaTokenGrantRepository grantRepository,
-            DiscordPlayerGuildRepository discordPlayerGuildRepository,
             DailyRosterRepository dailyRosterRepository,
             IsLockedRepository isLockedRepository,
             IsLockedServices isLockedServices,
@@ -55,7 +52,6 @@ public class GachaServices {
         this.skinRepository = skinRepository;
         this.userSkinRepository = userSkinRepository;
         this.grantRepository = grantRepository;
-        this.discordPlayerGuildRepository = discordPlayerGuildRepository;
         this.dailyRosterRepository = dailyRosterRepository;
         this.isLockedRepository = isLockedRepository;
         this.isLockedServices = isLockedServices;
@@ -192,100 +188,69 @@ public class GachaServices {
         return true;
     }
 
+    /**
+     * Lazy-claim guild daily/weekly podium. Ranked on each guild board the user is in,
+     * but paid once per period using their best rank (period_key is the date / week start,
+     * not guildId) so multi-server membership cannot stack awards. Rank is resolved in one
+     * SQL query per period via {@link DailyRosterRepository#bestDailyGuildPodiumRank} /
+     * {@link DailyRosterRepository#bestWeeklyGuildPodiumRank}.
+     */
     void claimPendingPodiumGrants(String discordPlayerId) {
         LocalDate today = Utils.getCaliforniaDate();
         LocalDate yesterday = today.minusDays(1);
-        List<String> guildIds = discordPlayerGuildRepository.findGuildIdsByDiscordPlayerId(discordPlayerId);
-        for (String guildId : guildIds) {
-            maybeGrantDailyPodium(discordPlayerId, guildId, yesterday);
-            LocalDate priorWeekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1);
-            LocalDate priorWeekEnd = priorWeekStart.plusDays(6);
-            maybeGrantWeeklyPodium(discordPlayerId, guildId, priorWeekStart, priorWeekEnd);
-        }
+        maybeGrantBestDailyPodium(discordPlayerId, yesterday);
+        LocalDate priorWeekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1);
+        LocalDate priorWeekEnd = priorWeekStart.plusDays(6);
+        maybeGrantBestWeeklyPodium(discordPlayerId, priorWeekStart, priorWeekEnd);
     }
 
-    private void maybeGrantDailyPodium(String discordPlayerId, String guildId, LocalDate date) {
+    private void maybeGrantBestDailyPodium(String discordPlayerId, LocalDate date) {
         if (!scoresSettled(date)) {
             return;
         }
-        int rank = rankOnDailyGuildBoard(guildId, date, discordPlayerId);
-        int amount = GachaEconomy.dailyPodiumAmount(rank);
+        int amount = GachaEconomy.dailyPodiumAmount(podiumRankOrZero(
+                dailyRosterRepository.bestDailyGuildPodiumRank(discordPlayerId, date)));
         if (amount <= 0) {
             return;
         }
         tryGrant(
                 discordPlayerId,
                 GachaEconomy.REASON_GUILD_DAILY_PODIUM,
-                guildId + ":" + date,
+                date.toString(),
                 amount);
     }
 
-    private void maybeGrantWeeklyPodium(
-            String discordPlayerId, String guildId, LocalDate weekStart, LocalDate weekEnd) {
+    private void maybeGrantBestWeeklyPodium(
+            String discordPlayerId, LocalDate weekStart, LocalDate weekEnd) {
         if (!scoresSettled(weekEnd)) {
             return;
         }
-        int rank = rankOnWeeklyGuildBoard(guildId, weekStart, weekEnd, discordPlayerId);
-        int amount = GachaEconomy.weeklyPodiumAmount(rank);
+        int amount = GachaEconomy.weeklyPodiumAmount(podiumRankOrZero(
+                dailyRosterRepository.bestWeeklyGuildPodiumRank(discordPlayerId, weekStart, weekEnd)));
         if (amount <= 0) {
             return;
         }
         tryGrant(
                 discordPlayerId,
                 GachaEconomy.REASON_GUILD_WEEKLY_PODIUM,
-                guildId + ":" + weekStart,
+                weekStart.toString(),
                 amount);
     }
 
+    private static int podiumRankOrZero(Integer rank) {
+        return rank == null ? 0 : rank;
+    }
+
+    /**
+     * Lock tipoff has passed — necessary but not sufficient for podium. The SQL rank queries
+     * also require loaded fantasy scores (skip all-null / all-zero guild boards).
+     */
     private boolean scoresSettled(LocalDate date) {
         Optional<IsLocked> lock = isLockedServices.findLock(date);
         if (lock.isEmpty() || lock.get().getLockTime() == null) {
             return false;
         }
         return !lock.get().getLockTime().isAfter(OffsetDateTime.now());
-    }
-
-    private int rankOnDailyGuildBoard(String guildId, LocalDate date, String discordPlayerId) {
-        List<DailyRosterPlayer> rows = dailyRosterRepository.getTodaysLeaderboardByGuildId(guildId, date);
-        return rankFromPlayerRows(rows, discordPlayerId);
-    }
-
-    private int rankOnWeeklyGuildBoard(
-            String guildId, LocalDate start, LocalDate end, String discordPlayerId) {
-        List<DailyRosterPlayer> rows = dailyRosterRepository.getWeeksLeaderboardByGuildId(guildId, start, end);
-        LinkedHashMap<String, Double> totals = new LinkedHashMap<>();
-        for (DailyRosterPlayer row : rows) {
-            totals.merge(
-                    row.getDiscordPlayerId(),
-                    row.getFantasyScore() == null ? 0.0 : row.getFantasyScore(),
-                    Double::sum);
-        }
-        int rank = 0;
-        for (String id : totals.keySet()) {
-            rank++;
-            if (id.equals(discordPlayerId)) {
-                return rank <= 3 ? rank : 0;
-            }
-        }
-        return 0;
-    }
-
-    private int rankFromPlayerRows(List<DailyRosterPlayer> rows, String discordPlayerId) {
-        LinkedHashMap<String, Double> totals = new LinkedHashMap<>();
-        for (DailyRosterPlayer row : rows) {
-            totals.merge(
-                    row.getDiscordPlayerId(),
-                    row.getFantasyScore() == null ? 0.0 : row.getFantasyScore(),
-                    Double::sum);
-        }
-        List<Map.Entry<String, Double>> ranked = new ArrayList<>(totals.entrySet());
-        ranked.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
-        for (int i = 0; i < ranked.size() && i < 3; i++) {
-            if (ranked.get(i).getKey().equals(discordPlayerId)) {
-                return i + 1;
-            }
-        }
-        return 0;
     }
 
     private void updateStreakAfterRosterComplete(String discordPlayerId, LocalDate playDay) {

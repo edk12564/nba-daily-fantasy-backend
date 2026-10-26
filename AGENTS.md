@@ -41,14 +41,16 @@ Active routes are under `/api/activity`:
 - `GET /rosters/{guildId}`
 - `GET /lock-time`
 - `POST /token`
-- `GET /gacha/wallet` — rolls, dust, pity, streak (lazy-claims pending guild podium grants)
+- `GET /gacha/wallet` — rolls, dust, pity, streak (lazy-claims pending guild podium)
 - `GET /gacha/inventory` — owned skins; `displaySkin` marks max rarity per player; includes `playerName`
 - `GET /gacha/rates` — published rates / pity / dust / pull cost
 - `POST /gacha/pull` — body `{ "count": 1 | 10 }`; results include `playerName`, rarity, art, frame, outcome, dustGranted
 
 All routes except `/token` require a backend bearer JWT. `/token` exchanges a Discord authorization code, fetches `/users/@me`, and returns the backend JWT plus Discord access token.
 
-Gacha pull / wallet / inventory resolve the actor from JWT claim `id` (same idea as roster writes). There is no `/gacha/equip`. Roster and leaderboard `DailyRosterPlayer` payloads may include `equippedSkinRarity`, `equippedArtUrl`, `frameKey`, and `playerStar` (owner’s max owned rarity for that `nba_player_id`). Starter Rolls (`GachaEconomy.STARTER_ROLLS` = 1000 = 10 pulls) are credited once via `gacha_token_grants` reason `STARTER` / period `once` on `ensureWallet` (covers wallets created earlier at 0 rolls). Completing a 5/5 roster grants Rolls once per Pacific day; streak and guild podium grants are idempotent via `gacha_token_grants`.
+Gacha pull / wallet / inventory resolve the actor from JWT claim `id` (same idea as roster writes). There is no `/gacha/equip`. Roster and leaderboard `DailyRosterPlayer` payloads may include `equippedSkinRarity`, `equippedArtUrl`, `frameKey`, and `playerStar` (owner’s max owned rarity for that `nba_player_id`). Starter Rolls (`GachaEconomy.STARTER_ROLLS` = 1000 = 10 pulls) are credited once via `gacha_token_grants` reason `STARTER` / period `once` on `ensureWallet` (covers wallets created earlier at 0 rolls). Completing a 5/5 roster grants Rolls once per Pacific day; streak bonuses (+50/+80/+200 at 3/7/14) and guild podium grants are idempotent via `gacha_token_grants`.
+
+**Guild podium:** ranked on each guild daily/weekly board; paid **once** per period using best place across the user’s guilds (no multi-guild stack). Amounts in `GachaEconomy`: daily +80/+50/+30, weekly +150/+100/+60. Reasons `GUILD_DAILY_PODIUM` / `GUILD_WEEKLY_PODIUM`; `period_key` is the Pacific date or week-start Monday (not `guildId`). Resolved in one query each via `DailyRosterRepository.bestDailyGuildPodiumRank` / `bestWeeklyGuildPodiumRank`. Requires lock tipoff passed **and** loaded fantasy scores (SQL skips guild boards that are all-null or all-zero). Lazy-claimed from `GET /gacha/wallet`.
 
 ## Product and date rules
 
@@ -61,7 +63,7 @@ Gacha pull / wallet / inventory resolve the actor from JWT claim `id` (same idea
 - Daily leaderboards are guild and global. The guild weekly leaderboard is Monday through the requested Pacific date, inclusive: `previousOrSame(MONDAY)` and `date >= start AND date <= end`. The Python bot's completed-week query is a separate inclusive range and was left unchanged.
 - Prior-season rows are historical data. Never truncate them for the 2026-27 rollover.
 - Test dates such as `2025-12-25` are fixtures, not production season settings.
-- Gacha: Rare/Epic/Legendary skins discount roster salary by 1/2/3 (`GachaEconomy.salaryDiscount`); cap SQL and roster enrichment use billed cost. ★ is a salary display badge, not drop weight. Current bands (tunable for FanDuel slate ~11–34): ≤14→1★, ≤19→2, ≤24→3, ≤28→4, ≥29→5. Keep `GachaEconomy.playerStar` and the three `CASE` expressions in `DailyRosterRepository` synchronized; keep discount CASE in `getTodaysRosterPriceWithPlayer` aligned with `salaryDiscount`.
+- Gacha: Rare/Epic/Legendary skins discount roster salary by 1/2/3 (`GachaEconomy.salaryDiscount`); cap SQL and roster enrichment use billed cost. ★ is a salary display badge, not drop weight. Current bands (tunable for FanDuel slate ~11–34): ≤14→1★, ≤19→2, ≤24→3, ≤28→4, ≥29→5. Keep `GachaEconomy.playerStar` and the three `CASE` expressions in `DailyRosterRepository` synchronized; keep discount CASE in `getTodaysRosterPriceWithPlayer` aligned with `salaryDiscount`. Keep podium amounts / reasons in `GachaEconomy` aligned with `docs/GACHA_MVP.md` and the best-rank SQL above.
 - Pull player selection is uniform across today's pool (weight 1 each); rarity is independent of ★.
 
 ## Authentication and authorization requirements

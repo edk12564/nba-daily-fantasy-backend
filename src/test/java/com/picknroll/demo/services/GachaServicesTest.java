@@ -10,7 +10,6 @@ import com.picknroll.demo.models.gacha.GachaPullResponse;
 import com.picknroll.demo.models.gacha.GachaRatesResponse;
 import com.picknroll.demo.models.gacha.GachaWalletResponse;
 import com.picknroll.demo.models.gacha.WeightedPlayer;
-import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
 import com.picknroll.demo.repositories.*;
 import com.picknroll.demo.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +42,6 @@ class GachaServicesTest {
     @Mock GachaSkinRepository skinRepository;
     @Mock GachaUserSkinRepository userSkinRepository;
     @Mock GachaTokenGrantRepository grantRepository;
-    @Mock DiscordPlayerGuildRepository discordPlayerGuildRepository;
     @Mock DailyRosterRepository dailyRosterRepository;
     @Mock IsLockedRepository isLockedRepository;
     @Mock IsLockedServices isLockedServices;
@@ -59,7 +57,6 @@ class GachaServicesTest {
                 skinRepository,
                 userSkinRepository,
                 grantRepository,
-                discordPlayerGuildRepository,
                 dailyRosterRepository,
                 isLockedRepository,
                 isLockedServices,
@@ -350,7 +347,7 @@ class GachaServicesTest {
                 .pityCounter(2)
                 .streakDays(1)
                 .build()));
-        given(discordPlayerGuildRepository.findGuildIdsByDiscordPlayerId("u1")).willReturn(List.of());
+        given(isLockedServices.findLock(any())).willReturn(Optional.empty());
 
         given(grantRepository.tryInsertGrant(
                         "u1",
@@ -376,50 +373,69 @@ class GachaServicesTest {
     @DisplayName("podium mutation skips grants when scores are not settled")
     void mutationsRejectPodiumWhenNotSettled() {
         LocalDate yesterday = Utils.getCaliforniaDate().minusDays(1);
-        given(discordPlayerGuildRepository.findGuildIdsByDiscordPlayerId("u1")).willReturn(List.of("guild-1"));
         given(isLockedServices.findLock(any())).willReturn(Optional.empty());
 
         services.claimPendingPodiumGrants("u1");
 
         verify(grantRepository, never()).tryInsertGrant(any(), any(), any(), anyInt());
-        verify(dailyRosterRepository, never()).getTodaysLeaderboardByGuildId(any(), eq(yesterday));
+        verify(dailyRosterRepository, never()).bestDailyGuildPodiumRank(any(), eq(yesterday));
+        verify(dailyRosterRepository, never()).bestWeeklyGuildPodiumRank(any(), any(), any());
     }
 
     @Test
-    @DisplayName("daily podium grants 1st place Rolls once scores settle")
+    @DisplayName("daily guild podium grants 1st place once scores settle")
     void dailyPodiumGrantsFirstPlace() {
         LocalDate yesterday = Utils.getCaliforniaDate().minusDays(1);
-        given(discordPlayerGuildRepository.findGuildIdsByDiscordPlayerId("u1")).willReturn(List.of("guild-1"));
         given(isLockedServices.findLock(yesterday)).willReturn(Optional.of(
                 IsLocked.builder().date(yesterday).lockTime(OffsetDateTime.now().minusHours(1)).build()));
-        // weekly path also checks weekEnd lock — leave unset so weekly is skipped
-        given(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
-                .willReturn(Optional.empty());
-        given(dailyRosterRepository.getTodaysLeaderboardByGuildId("guild-1", yesterday)).willReturn(List.of(
-                DailyRosterPlayer.builder().discordPlayerId("u1").fantasyScore(50.0).build(),
-                DailyRosterPlayer.builder().discordPlayerId("u2").fantasyScore(10.0).build()));
+        lenient().when(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
+                .thenReturn(Optional.empty());
+        given(dailyRosterRepository.bestDailyGuildPodiumRank("u1", yesterday)).willReturn(1);
         given(grantRepository.tryInsertGrant(
                 "u1",
                 GachaEconomy.REASON_GUILD_DAILY_PODIUM,
-                "guild-1:" + yesterday,
+                yesterday.toString(),
                 GachaEconomy.GUILD_DAILY_1ST)).willReturn(1);
 
         services.claimPendingPodiumGrants("u1");
 
         verify(walletRepository).addRolls("u1", GachaEconomy.GUILD_DAILY_1ST);
+        verify(dailyRosterRepository, times(1)).bestDailyGuildPodiumRank("u1", yesterday);
+    }
+
+    @Test
+    @DisplayName("multi-guild membership pays best rank once, not per guild")
+    void multiGuildPaysBestRankOnce() {
+        LocalDate yesterday = Utils.getCaliforniaDate().minusDays(1);
+        given(isLockedServices.findLock(yesterday)).willReturn(Optional.of(
+                IsLocked.builder().date(yesterday).lockTime(OffsetDateTime.now().minusHours(1)).build()));
+        lenient().when(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
+                .thenReturn(Optional.empty());
+        // SQL returns MIN place across guilds (e.g. 3rd + 1st → 1)
+        given(dailyRosterRepository.bestDailyGuildPodiumRank("u1", yesterday)).willReturn(1);
+        given(grantRepository.tryInsertGrant(
+                "u1",
+                GachaEconomy.REASON_GUILD_DAILY_PODIUM,
+                yesterday.toString(),
+                GachaEconomy.GUILD_DAILY_1ST)).willReturn(1);
+
+        services.claimPendingPodiumGrants("u1");
+
+        verify(grantRepository, times(1)).tryInsertGrant(
+                eq("u1"), eq(GachaEconomy.REASON_GUILD_DAILY_PODIUM), eq(yesterday.toString()), anyInt());
+        verify(walletRepository).addRolls("u1", GachaEconomy.GUILD_DAILY_1ST);
+        verify(dailyRosterRepository, times(1)).bestDailyGuildPodiumRank("u1", yesterday);
     }
 
     @Test
     @DisplayName("daily podium mutation is idempotent when grant already exists")
     void mutationsRejectDuplicateDailyPodiumGrant() {
         LocalDate yesterday = Utils.getCaliforniaDate().minusDays(1);
-        given(discordPlayerGuildRepository.findGuildIdsByDiscordPlayerId("u1")).willReturn(List.of("guild-1"));
         given(isLockedServices.findLock(yesterday)).willReturn(Optional.of(
                 IsLocked.builder().date(yesterday).lockTime(OffsetDateTime.now().minusHours(1)).build()));
-        given(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
-                .willReturn(Optional.empty());
-        given(dailyRosterRepository.getTodaysLeaderboardByGuildId("guild-1", yesterday)).willReturn(List.of(
-                DailyRosterPlayer.builder().discordPlayerId("u1").fantasyScore(50.0).build()));
+        lenient().when(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
+                .thenReturn(Optional.empty());
+        given(dailyRosterRepository.bestDailyGuildPodiumRank("u1", yesterday)).willReturn(1);
         given(grantRepository.tryInsertGrant(any(), eq(GachaEconomy.REASON_GUILD_DAILY_PODIUM), any(), anyInt()))
                 .willReturn(0);
 
@@ -429,23 +445,19 @@ class GachaServicesTest {
     }
 
     @Test
-    @DisplayName("weekly podium grants when prior week has settled")
+    @DisplayName("weekly guild podium grants when prior week has settled")
     void weeklyPodiumGrantsSecondPlace() {
         LocalDate today = Utils.getCaliforniaDate();
         LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1);
         LocalDate weekEnd = weekStart.plusDays(6);
-        given(discordPlayerGuildRepository.findGuildIdsByDiscordPlayerId("u1")).willReturn(List.of("guild-1"));
-        // daily (yesterday) unsettled
         given(isLockedServices.findLock(today.minusDays(1))).willReturn(Optional.empty());
         given(isLockedServices.findLock(weekEnd)).willReturn(Optional.of(
                 IsLocked.builder().date(weekEnd).lockTime(OffsetDateTime.now().minusHours(2)).build()));
-        given(dailyRosterRepository.getWeeksLeaderboardByGuildId("guild-1", weekStart, weekEnd)).willReturn(List.of(
-                DailyRosterPlayer.builder().discordPlayerId("top").fantasyScore(100.0).build(),
-                DailyRosterPlayer.builder().discordPlayerId("u1").fantasyScore(80.0).build()));
+        given(dailyRosterRepository.bestWeeklyGuildPodiumRank("u1", weekStart, weekEnd)).willReturn(2);
         given(grantRepository.tryInsertGrant(
                 "u1",
                 GachaEconomy.REASON_GUILD_WEEKLY_PODIUM,
-                "guild-1:" + weekStart,
+                weekStart.toString(),
                 GachaEconomy.GUILD_WEEKLY_2ND)).willReturn(1);
 
         services.claimPendingPodiumGrants("u1");
@@ -457,20 +469,66 @@ class GachaServicesTest {
     @DisplayName("podium mutation skips users outside top three")
     void mutationsRejectPodiumOutsideTopThree() {
         LocalDate yesterday = Utils.getCaliforniaDate().minusDays(1);
-        given(discordPlayerGuildRepository.findGuildIdsByDiscordPlayerId("u1")).willReturn(List.of("guild-1"));
         given(isLockedServices.findLock(yesterday)).willReturn(Optional.of(
                 IsLocked.builder().date(yesterday).lockTime(OffsetDateTime.now().minusHours(1)).build()));
-        given(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
-                .willReturn(Optional.empty());
-        given(dailyRosterRepository.getTodaysLeaderboardByGuildId("guild-1", yesterday)).willReturn(List.of(
-                DailyRosterPlayer.builder().discordPlayerId("a").fantasyScore(90.0).build(),
-                DailyRosterPlayer.builder().discordPlayerId("b").fantasyScore(80.0).build(),
-                DailyRosterPlayer.builder().discordPlayerId("c").fantasyScore(70.0).build(),
-                DailyRosterPlayer.builder().discordPlayerId("u1").fantasyScore(10.0).build()));
+        lenient().when(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
+                .thenReturn(Optional.empty());
+        given(dailyRosterRepository.bestDailyGuildPodiumRank("u1", yesterday)).willReturn(null);
 
         services.claimPendingPodiumGrants("u1");
 
         verify(grantRepository, never()).tryInsertGrant(eq("u1"), eq(GachaEconomy.REASON_GUILD_DAILY_PODIUM), any(), anyInt());
+    }
+
+    @Test
+    @DisplayName("podium skips when lock passed but fantasy scores were never loaded")
+    void podiumSkipsWhenAllFantasyScoresNull() {
+        LocalDate yesterday = Utils.getCaliforniaDate().minusDays(1);
+        given(isLockedServices.findLock(yesterday)).willReturn(Optional.of(
+                IsLocked.builder().date(yesterday).lockTime(OffsetDateTime.now().minusHours(1)).build()));
+        lenient().when(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
+                .thenReturn(Optional.empty());
+        given(dailyRosterRepository.bestDailyGuildPodiumRank("u1", yesterday)).willReturn(null);
+
+        services.claimPendingPodiumGrants("u1");
+
+        verify(grantRepository, never()).tryInsertGrant(eq("u1"), eq(GachaEconomy.REASON_GUILD_DAILY_PODIUM), any(), anyInt());
+    }
+
+    @Test
+    @DisplayName("podium skips when every roster totals 0 (unscored / all DNPs)")
+    void podiumSkipsWhenAllTotalsAreZero() {
+        LocalDate yesterday = Utils.getCaliforniaDate().minusDays(1);
+        given(isLockedServices.findLock(yesterday)).willReturn(Optional.of(
+                IsLocked.builder().date(yesterday).lockTime(OffsetDateTime.now().minusHours(1)).build()));
+        lenient().when(isLockedServices.findLock(argThat(d -> d != null && !d.equals(yesterday))))
+                .thenReturn(Optional.empty());
+        given(dailyRosterRepository.bestDailyGuildPodiumRank("u1", yesterday)).willReturn(null);
+
+        services.claimPendingPodiumGrants("u1");
+
+        verify(grantRepository, never()).tryInsertGrant(eq("u1"), eq(GachaEconomy.REASON_GUILD_DAILY_PODIUM), any(), anyInt());
+    }
+
+    @Test
+    @DisplayName("weekly podium ranks by score, not insertion order")
+    void weeklyPodiumRanksByScoreNotInsertionOrder() {
+        LocalDate today = Utils.getCaliforniaDate();
+        LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1);
+        LocalDate weekEnd = weekStart.plusDays(6);
+        given(isLockedServices.findLock(today.minusDays(1))).willReturn(Optional.empty());
+        given(isLockedServices.findLock(weekEnd)).willReturn(Optional.of(
+                IsLocked.builder().date(weekEnd).lockTime(OffsetDateTime.now().minusHours(2)).build()));
+        given(dailyRosterRepository.bestWeeklyGuildPodiumRank("u1", weekStart, weekEnd)).willReturn(1);
+        given(grantRepository.tryInsertGrant(
+                "u1",
+                GachaEconomy.REASON_GUILD_WEEKLY_PODIUM,
+                weekStart.toString(),
+                GachaEconomy.GUILD_WEEKLY_1ST)).willReturn(1);
+
+        services.claimPendingPodiumGrants("u1");
+
+        verify(walletRepository).addRolls("u1", GachaEconomy.GUILD_WEEKLY_1ST);
     }
 
     private void assertStreakBonus(int priorStreakDays, int expectedStreak, String reason, int amount) {
