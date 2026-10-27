@@ -12,6 +12,7 @@ This is the Java 21/Spring Boot API used by the Discord Activity:
 - `services/`: roster, player, guild/channel, lock, and JWT business logic.
 - `repositories/`: Spring Data JDBC queries against PostgreSQL (including `gacha_*` and roster `equipped*` joins).
 - `httpclient/NbaAPIClient.java`: NBA live box-score proxy.
+- `config/CacheConfig.java`: Caffeine caches — `livePlayerData` (60s), `nbaSchedule` (24h), `gachaWeightedPool` (6h), `todaysPlayers` (10m by date), `lockTime` (5m by date), `leaderboardPast` (6h when date &lt; Pacific today **and** at least one fantasy score is non-null, so morning score loads are not stuck behind an unscored cache entry).
 - `interceptors/JwtInterceptor.java`: protects Activity routes.
 - `terraform/`: AWS EC2, Route 53, SSM access, TLS, and service provisioning.
 

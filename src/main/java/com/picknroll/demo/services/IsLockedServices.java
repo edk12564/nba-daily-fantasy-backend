@@ -2,6 +2,7 @@ package com.picknroll.demo.services;
 
 import com.picknroll.demo.models.dtos.IsLocked;
 import com.picknroll.demo.repositories.IsLockedRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class IsLockedServices {
         return isLocked.filter(locked -> locked.getLockTime().isAfter(OffsetDateTime.now())).isPresent();
     }
 
+    @Cacheable(cacheNames = "lockTime", key = "#date.toString()")
     public Optional<IsLocked> findLock(LocalDate date) {
         return isLockedRepository.isLocked(date).filter(lock -> lock.getLockTime() != null);
     }

@@ -24,6 +24,13 @@ public class CacheConfig {
                                 .expireAfterWrite(60, TimeUnit.SECONDS)
                                 .build()),
                 new CaffeineCache(
+                        "boxScorePast",
+                        Caffeine.newBuilder()
+                                .maximumSize(500)
+                                // Finals for past Pacific dates — refresh far less often.
+                                .expireAfterWrite(6, TimeUnit.HOURS)
+                                .build()),
+                new CaffeineCache(
                         "nbaSchedule",
                         Caffeine.newBuilder()
                                 .maximumSize(2)
@@ -33,7 +40,27 @@ public class CacheConfig {
                         "gachaWeightedPool",
                         Caffeine.newBuilder()
                                 .maximumSize(2)
-                                .expireAfterWrite(30, TimeUnit.MINUTES)
+                                // Pool is keyed by Pacific date; loader usually runs once/day.
+                                .expireAfterWrite(6, TimeUnit.HOURS)
+                                .build()),
+                new CaffeineCache(
+                        "todaysPlayers",
+                        Caffeine.newBuilder()
+                                .maximumSize(8)
+                                .expireAfterWrite(10, TimeUnit.MINUTES)
+                                .build()),
+                new CaffeineCache(
+                        "lockTime",
+                        Caffeine.newBuilder()
+                                .maximumSize(16)
+                                .expireAfterWrite(5, TimeUnit.MINUTES)
+                                .build()),
+                new CaffeineCache(
+                        "leaderboardPast",
+                        Caffeine.newBuilder()
+                                .maximumSize(500)
+                                // Only used when date < Pacific today (see DailyRosterServices).
+                                .expireAfterWrite(6, TimeUnit.HOURS)
                                 .build())));
         return manager;
     }

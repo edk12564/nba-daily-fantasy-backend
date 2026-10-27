@@ -3,6 +3,7 @@ package com.picknroll.demo.services;
 import com.picknroll.demo.models.dtos.NbaPlayer;
 import com.picknroll.demo.models.joinTables.NbaPlayerTeam;
 import com.picknroll.demo.repositories.NbaPlayerRepository;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,10 +27,10 @@ public class NbaPlayerServices {
 
 
     // With Team Today
+    @Cacheable(cacheNames = "todaysPlayers", key = "#localDate.toString()")
     @Transactional(readOnly = true)
     public List<NbaPlayerTeam> getNbaPlayersWithTeam(LocalDate localDate) {
-        List<NbaPlayerTeam> nbaPlayersWithTeam = nbaPlayerRepository.getNbaPlayersWithTeam(localDate.toString());
-        return nbaPlayersWithTeam;
+        return nbaPlayerRepository.getNbaPlayersWithTeam(localDate.toString());
     }
 
     // All NBA Players Today

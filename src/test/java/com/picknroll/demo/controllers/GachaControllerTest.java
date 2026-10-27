@@ -80,7 +80,7 @@ class GachaControllerTest {
     @MockBean
     private com.picknroll.demo.services.IsLockedServices isLockedServices;
     @MockBean
-    private com.picknroll.demo.httpclient.NbaAPIClient nbaAPIClient;
+    private com.picknroll.demo.services.NbaBoxScoreService nbaBoxScoreService;
     @MockBean
     private com.picknroll.demo.services.NbaScheduleService nbaScheduleService;
     @MockBean

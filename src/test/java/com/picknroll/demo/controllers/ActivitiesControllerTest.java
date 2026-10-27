@@ -81,7 +81,7 @@ class ActivitiesControllerTest {
     @MockBean
     private IsLockedServices isLockedServices;
     @MockBean
-    private NbaAPIClient nbaAPIClient;
+    private NbaBoxScoreService nbaBoxScoreService;
     @MockBean
     private NbaScheduleService nbaScheduleService;
     @MockBean
@@ -121,7 +121,7 @@ class ActivitiesControllerTest {
 
     @Test
     void liveData_returnsString() throws Exception {
-        given(nbaAPIClient.getGamesData("123")).willReturn("OK");
+        given(nbaBoxScoreService.getBoxScoreJson(eq("123"), any(LocalDate.class))).willReturn("OK");
         mockMvc.perform(get("/api/activity/livedata/123")
                         .header("Authorization", AUTH_HEADER))
                 .andExpect(status().isOk())
@@ -137,7 +137,7 @@ class ActivitiesControllerTest {
                 null,
                 StandardCharsets.UTF_8,
                 null);
-        given(nbaAPIClient.getGamesData("0022600003"))
+        given(nbaBoxScoreService.getBoxScoreJson(eq("0022600003"), any(LocalDate.class)))
                 .willThrow(FeignException.errorStatus(
                         "NbaAPIClient#getGamesData(String)",
                         feign.Response.builder()

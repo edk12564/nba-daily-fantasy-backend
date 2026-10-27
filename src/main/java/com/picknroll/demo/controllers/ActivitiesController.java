@@ -2,7 +2,6 @@ package com.picknroll.demo.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.picknroll.demo.httpclient.NbaAPIClient;
 import com.picknroll.demo.interceptors.JwtInterceptor;
 import com.picknroll.demo.models.dtos.SetPlayerDTO;
 import com.picknroll.demo.models.joinTables.DailyRosterPlayer;
@@ -11,6 +10,7 @@ import com.picknroll.demo.services.DailyRosterServices;
 import com.picknroll.demo.services.DiscordPlayerGuildServices;
 import com.picknroll.demo.services.IsLockedServices;
 import com.picknroll.demo.services.JwtService;
+import com.picknroll.demo.services.NbaBoxScoreService;
 import com.picknroll.demo.services.NbaPlayerServices;
 import com.picknroll.demo.services.NbaScheduleService;
 import com.picknroll.demo.services.RosterWriteOutcome;
@@ -54,7 +54,7 @@ public class ActivitiesController {
     @Autowired
     IsLockedServices isLockedServices;
     @Autowired
-    NbaAPIClient nbaAPIClient;
+    NbaBoxScoreService nbaBoxScoreService;
     @Autowired
     NbaScheduleService nbaScheduleService;
     @Autowired
@@ -75,11 +75,13 @@ public class ActivitiesController {
     }
 
     @GetMapping(value = "/livedata/{gameId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> getLiveGameData(@PathVariable String gameId) {
+    public ResponseEntity<String> getLiveGameData(
+            @PathVariable String gameId, @RequestParam Optional<LocalDate> date) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(nbaAPIClient.getGamesData(gameId));
+                    .body(nbaBoxScoreService.getBoxScoreJson(
+                            gameId, date.orElse(Utils.getCaliforniaDate())));
         } catch (FeignException e) {
             // CDN often returns S3 AccessDenied (403) when the boxscore object is not
             // published yet (pre-tip); treat like missing rather than bubbling a 500.

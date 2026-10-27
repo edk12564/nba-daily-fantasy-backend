@@ -8,6 +8,7 @@ import com.picknroll.demo.repositories.DiscordChannelRepository;
 import com.picknroll.demo.services.RosterWriteOutcome.Status;
 import com.picknroll.demo.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.stereotype.Service;
@@ -126,16 +127,35 @@ public class DailyRosterServices {
                 });
     }
 
-    /* Leaderboards */
+    /**
+     * Leaderboards for past Pacific dates are cached 6h once fantasy scores exist.
+     * Unscored boards (all null) are never cached so the morning score loader is
+     * visible on the next request. Today always hits the DB (rosters still move).
+     */
+    @Cacheable(
+            cacheNames = "leaderboardPast",
+            condition = "#date.isBefore(T(com.picknroll.demo.utils.Utils).getCaliforniaDate())",
+            unless = "#result == null || #result.isEmpty() || #result.?[fantasyScore != null].isEmpty()",
+            key = "'guild:' + #guildId + ':' + #date")
     public List<DailyRosterPlayer> getGuildLeaderboard(String guildId, LocalDate date) {
         return withBilledCosts(dailyRosterRepository.getTodaysLeaderboardByGuildId(guildId, date));
     }
 
+    @Cacheable(
+            cacheNames = "leaderboardPast",
+            condition = "#date.isBefore(T(com.picknroll.demo.utils.Utils).getCaliforniaDate())",
+            unless = "#result == null || #result.isEmpty() || #result.?[fantasyScore != null].isEmpty()",
+            key = "'weekly:' + #guildId + ':' + #date")
     public List<DailyRosterPlayer> getWeeklyGuildLeaderboard(String guildId, LocalDate date) {
         LocalDate weekStart = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         return withBilledCosts(dailyRosterRepository.getWeeksLeaderboardByGuildId(guildId, weekStart, date));
     }
 
+    @Cacheable(
+            cacheNames = "leaderboardPast",
+            condition = "#date.isBefore(T(com.picknroll.demo.utils.Utils).getCaliforniaDate())",
+            unless = "#result == null || #result.isEmpty() || #result.?[fantasyScore != null].isEmpty()",
+            key = "'global:' + #date")
     public List<DailyRosterPlayer> getGlobalLeaderboard(LocalDate date) {
         return withBilledCosts(dailyRosterRepository.getTodaysGlobalLeaderboard(date));
     }
