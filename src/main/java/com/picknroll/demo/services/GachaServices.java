@@ -222,7 +222,7 @@ public class GachaServices {
 
     private void maybeGrantBestWeeklyPodium(
             String discordPlayerId, LocalDate weekStart, LocalDate weekEnd) {
-        if (!scoresSettled(weekEnd)) {
+        if (!weekScoresSettled(weekStart, weekEnd)) {
             return;
         }
         int amount = GachaEconomy.weeklyPodiumAmount(podiumRankOrZero(
@@ -251,6 +251,23 @@ public class GachaServices {
             return false;
         }
         return !lock.get().getLockTime().isAfter(OffsetDateTime.now());
+    }
+
+    /**
+     * Weekly podium settles on the latest game day in the week that has a lock row
+     * (NBA weeks often have no Sunday slate). Returns false if the week had no locks.
+     * Rank SQL still skips all-null / all-zero boards, so a wallet open before scores
+     * load simply waits for a later claim attempt.
+     */
+    private boolean weekScoresSettled(LocalDate weekStart, LocalDate weekEnd) {
+        for (LocalDate day = weekEnd; !day.isBefore(weekStart); day = day.minusDays(1)) {
+            Optional<IsLocked> lock = isLockedServices.findLock(day);
+            if (lock.isEmpty() || lock.get().getLockTime() == null) {
+                continue;
+            }
+            return !lock.get().getLockTime().isAfter(OffsetDateTime.now());
+        }
+        return false;
     }
 
     private void updateStreakAfterRosterComplete(String discordPlayerId, LocalDate playDay) {

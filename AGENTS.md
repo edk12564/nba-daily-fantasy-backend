@@ -84,7 +84,7 @@ Primary tables are `teams`, `nba_players`, `daily_roster`, `is_locked`, `discord
 - The score loader updates `fantasy_score`, `pts`, `reb`, `ast`, `blk`, `tov`, and `stl`.
 - Gacha catalog seed: `scripts/src/seed_gacha_skins.py` (also invoked from `load-todays-players.py`); see `DATABASE.md`.
 - Production already supports the loader contract, and the checked-in test schema mirrors its player constraint and score/stat columns.
-- Spring uses `ddl-auto=validate`; there is no checked-in production schema or Flyway/Liquibase migration history.
+- `spring.jpa.hibernate.ddl-auto=validate` is inert (JDBC only, no JPA). Verify schema with `DATABASE.md` before releases; there is no Flyway/Liquibase.
 
 Use `DATABASE.md` to verify the production contract. Use additive, versioned migrations and back up production before future schema changes.
 
@@ -119,7 +119,7 @@ For the Supabase **shared pooler**, `DATABASE_USER` must be `postgres.<project-r
 
 Use this path when infrastructure is already up and you only need to ship a new backend JAR. Terraform provisioners upload `../target/demo-0.0.1-SNAPSHOT.jar` and run `terraform/setup.sh`, which refreshes the env file from SSM, syncs TLS PEMs, and restarts `nba.service`.
 
-1. **Schema first (only if needed).** Spring starts with `ddl-auto=validate`. For additive SQL, back up PostgreSQL, apply the migration, and verify with `DATABASE.md` before restarting the app. Skip this step for pure code changes.
+1. **Schema first (only if needed).** Do not rely on `ddl-auto`. For additive SQL, back up PostgreSQL, apply the migration, and verify with `DATABASE.md` before restarting the app. Skip this step for pure code changes.
 
 2. **SSH private key for Terraform provisioners.** The AWS `.pem` is a PEM-encoded private key; Terraform expects it at `~/.ssh/id_rsa` (same key material, OpenSSH default name):
 

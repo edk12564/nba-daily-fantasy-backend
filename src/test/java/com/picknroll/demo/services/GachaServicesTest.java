@@ -466,6 +466,29 @@ class GachaServicesTest {
     }
 
     @Test
+    @DisplayName("weekly podium settles on last game day when Sunday has no slate")
+    void weeklyPodiumSettlesWithoutSundayLock() {
+        LocalDate today = Utils.getCaliforniaDate();
+        LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).minusWeeks(1);
+        LocalDate weekEnd = weekStart.plusDays(6);
+        LocalDate saturday = weekEnd.minusDays(1);
+        given(isLockedServices.findLock(today.minusDays(1))).willReturn(Optional.empty());
+        given(isLockedServices.findLock(weekEnd)).willReturn(Optional.empty());
+        given(isLockedServices.findLock(saturday)).willReturn(Optional.of(
+                IsLocked.builder().date(saturday).lockTime(OffsetDateTime.now().minusHours(2)).build()));
+        given(dailyRosterRepository.bestWeeklyGuildPodiumRank("u1", weekStart, weekEnd)).willReturn(1);
+        given(grantRepository.tryInsertGrant(
+                "u1",
+                GachaEconomy.REASON_GUILD_WEEKLY_PODIUM,
+                weekStart.toString(),
+                GachaEconomy.GUILD_WEEKLY_1ST)).willReturn(1);
+
+        services.claimPendingPodiumGrants("u1");
+
+        verify(walletRepository).addRolls("u1", GachaEconomy.GUILD_WEEKLY_1ST);
+    }
+
+    @Test
     @DisplayName("podium mutation skips users outside top three")
     void mutationsRejectPodiumOutsideTopThree() {
         LocalDate yesterday = Utils.getCaliforniaDate().minusDays(1);
